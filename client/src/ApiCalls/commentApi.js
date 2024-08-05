@@ -1,0 +1,24 @@
+import axiosInstance from "../helpers/axios/axiosInstance"; 
+import { server_url } from "../constants/constants";
+
+export const addComment = async (content, fileId, fileType, userId, iSDoctor) => {
+    var uid = userId;
+    if (iSDoctor === 1){
+        uid = localStorage.getItem("email");
+    }
+    const data = {
+        content,
+        fileId,
+        fileType,
+        userId: uid,
+        iSDoctor,
+    };
+    try {
+        const response = await axiosInstance.post(`${server_url}/comments/addComment`, data);
+        return response.data;
+    } catch (error) {
+        console.error("Error adding comment:", error);
+    }
+};
+
+
