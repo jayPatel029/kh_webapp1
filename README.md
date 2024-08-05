@@ -1,5 +1,3 @@
-# SPIT-Interns
-Sardar Patel Internship project
 ## Contributing guide
 ### Opening a pull request
 - Commit all changes and push to feature branch.
