@@ -1,0 +1,34 @@
+{
+  "name": "kifayti",
+  "version": "0.0.0",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.540.0",
+    "aws-sdk": "^2.1586.0",
+    "axios": "^1.7.2",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "date-fns": "^3.6.0",
+    "dotenv": "^16.4.1",
+    "express": "^4.18.2",
+    "express-async-handler": "^1.2.0",
+    "firebase": "^10.10.0",
+    "firebase-admin": "^12.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mariadb": "^3.2.3",
+    "mime-types": "^2.1.35",
+    "moment": "^2.30.1",
+    "multer": "^1.4.5-lts.1",
+    "mysql": "^2.18.1",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.9",
+    "nodemon": "^3.0.3",
+    "pdf-parse": "^1.1.1",
+    "pdf.js-extract": "^0.2.1",
+    "sequelize": "^6.37.1",
+    "socket.io": "^4.7.4",
+    "xlsx": "^0.18.5"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}
