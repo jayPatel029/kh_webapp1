@@ -1,0 +1,768 @@
+import React, { useEffect, useState } from "react";
+import "./userProfile.scss";
+import Sidebar from "../../components/sidebar/Sidebar";
+import Navbar from "../../components/navbar/Navbar";
+import { Link, useNavigate } from "react-router-dom";
+import Collapsible from "react-collapsible";
+import profilePic from "../../assets/pp.png";
+import LineChartComponent from "../../components/Linechart/LineChartComponent";
+import LineChartDialysis from "../../components/Linechart/Linechart_Dialysis/LineChartDialysis";
+import { useLocation } from "react-router-dom";
+import NameModal from "./NameModal";
+import axiosInstance from "../../helpers/axios/axiosInstance";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import BorderColorIcon from "@mui/icons-material/BorderColor";
+import QuestionsContainer from "../../components/questions/QuestionsContainer";
+import { server_url } from "../../constants/constants";
+import Table from "../../components/table/table";
+import DialysisTable from "../../components/table/DialysisTable";
+import { useParams } from "react-router-dom";
+import AilmentModal from "./AilmentModal";
+import LineChartComponentSys from "../../components/linecomponent-sys-dys/LineChartComponentSys";
+import LineChartDialysisSys from "../../components/Linechart/Linechart_Dialysis/LineChartDialyisisSys";
+import { useSelector } from "react-redux";
+import getValidImageUrl from "../../helpers/utils";
+import LineChartComponentLab from "../../components/linechartlab/LineChartComponentLab";
+
+function UserProfile({ patient }) {
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editalimentsModalOpen, setEditalimentsModalOpen] = useState(false);
+  const [generalParameters, setGeneralParameters] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [dialysisParameters, setDialysisParameters] = useState([]);
+  const [ailments, setAilments] = useState([]);
+  const role = useSelector((state) => state.permission);
+  const [labReadings, setLabReadings] = useState([]);
+  const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const { id } = useParams();
+
+  const [selectedaliments, setSelectedaliments] = useState([]);
+
+  const openEditalimentsModal = () => {
+    setEditalimentsModalOpen(true);
+  };
+
+  const closeEditalimentsModal = () => {
+    setEditalimentsModalOpen(false);
+  };
+  const openEditModal = () => {
+    setEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setEditModalOpen(false);
+  };
+
+  const handleEdit = () => {
+    setEditModalOpen(false);
+  };
+  // console.log(userData.id);
+
+  const [userData, setUserData] = useState({
+    ailments: [],
+  });
+  // Function to update user data
+  const updateUserData = (updatedData) => {
+    setUserData((prevData) => ({
+      ...prevData,
+      ...updatedData,
+    }));
+  };
+
+  const fetchPatientData = async () => {
+    setLoading(true);
+    try {
+      const response = await axiosInstance.get(
+        `${server_url}/patient/getPatient/${id}`
+      );
+      setUserData(response.data.data);
+      // console.log(userData);
+      setAilments(response.data.data.ailments);
+      // console.log(response.data.data)
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching questions:", error);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditaliments = (updatedaliments) => {
+    setSelectedaliments(updatedaliments);
+    closeEditalimentsModal();
+  };
+
+  async function fetchQuestionsForAilment(ailment) {
+    try {
+      const response = await axiosInstance.get(
+        `${server_url}/questions/generalParameter/fetchQuestions`,
+        {
+          params: {
+            user: id,
+            ailment: ailment,
+          },
+        }
+      );
+      // console.log("custom id", id)
+      // console.log("custom ailments", response.data)
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching questions:", error);
+      return [];
+    }
+  }
+
+  async function fetchQuestionsForAilmentDialysis(ailment) {
+    // console.log(id);
+    try {
+      const response = await axiosInstance.get(
+        `${server_url}/questions/dialysisParameter/${ailment}?user=${id}`,
+        {
+          user: id,
+        }
+      );
+      // console.log(response.data)
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching questions:", error);
+      return [];
+    }
+  }
+
+  useEffect(() => {
+    fetchPatientData();
+    // console.log(userData.id)
+  }, []);
+
+  useEffect(() => {
+    const uniqueQuestionsSet = [];
+    const seenIds = new Set();
+    Promise.all(
+      userData.ailments.map(async (ailment) => {
+        const questions = await fetchQuestionsForAilment(ailment);
+        questions.forEach((question) => {
+          if (!seenIds.has(question.id)) {
+            uniqueQuestionsSet.push(question);
+            seenIds.add(question.id);
+          }
+        });
+      })
+    ).then(() => {
+      const temp = uniqueQuestionsSet;
+      // console.log("update general parameter response with count",temp)
+      temp.sort((a, b) => {
+        // Check if both objects have a responseCount
+        if (a.responseCount && b.responseCount) {
+          // Nested sorting by priority if both have responseCount
+          if (a.priority < b.priority) return -1;
+          if (a.priority > b.priority) return 1;
+        } else if (a.responseCount) {
+          // If only `a` has responseCount, it comes first
+          return -1;
+        } else if (b.responseCount) {
+          // If only `b` has responseCount, it comes first
+          return 1;
+        }
+
+        // If responseCount is not present in both or they have equal priority, return 0
+        return 0;
+      });
+      setGeneralParameters(temp);
+      setLoading(false);
+    });
+  }, [ailments]);
+
+  useEffect(() => {
+    async function fetchData(ailment) {
+      try {
+        const response = await fetchQuestionsForAilmentDialysis(ailment);
+        const questions = response;
+        // console.log(questions)
+        setDialysisParameters((prevData) => {
+          const filteredData = response.filter(
+            (item) => !prevData.some((prevItem) => prevItem.id === item.id)
+          );
+          return [...prevData, ...filteredData];
+        });
+        // console.log(dialysisParameters);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+
+    fetchData("Hemo dialysis");
+  }, [ailments]);
+
+  useEffect(() => {
+    const fetchLabReadings = async () => {
+      try {
+        const response = await axiosInstance.get(`${server_url}/labreport/LabReadings`);
+        setLabReadings(response.data.data); // Assuming your API response structure
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLabReadings();
+  }, []);
+
+  const formatDate = (date) => {
+    const newDate = new Date(date);
+    return newDate.toDateString();
+  };
+
+  useEffect(() => {
+
+
+  }, [])
+
+
+  const handleUpdateRangeSuccess = () => {
+    fetchPatientData();
+  };
+  if (loading) {
+    return <p>Loading...</p>;
+  } else {
+    return (
+      <div className="userProfile md:flex block">
+        <div className="md:flex-1 hidden md:flex sticky top-0 h-screen overflow-y-auto">
+          <Sidebar />
+        </div>
+        <div className="md:flex-[5] block w-screen">
+          <div className="sticky top-0 z-10">
+            <Navbar />
+          </div>
+          <div className="container justify-center px-20">
+            <div className="left"></div>
+            <div className="right">
+              <a
+                href="/patient"
+                className="text-primary border-b-2 border-primary"
+              >
+                go back
+              </a>
+              <div className="w-3/4 flex justify-center mx-auto">
+                <div className="flex flex-wrap justify-center">
+                  <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
+                    <div className="navbuttons">
+                      <Link to={"/adminChat/" + id} className="text-sm">
+                        ADMIN CHAT
+                      </Link>
+                    </div>
+                  </div>
+                  <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
+                    <div className="navbuttons">
+                      <Link to={"/doctorChat/" + id} className="text-sm">
+                        DOCTOR CHAT
+                      </Link>
+                    </div>
+                  </div>
+                  <div className="w-1/2 md:w-1/4 mb-2 flex justify-center ">
+                    <div className="navbuttons">
+                      <button
+                        onClick={() =>
+                          navigate(`/userPrescription/${id}`, {
+                            state: userData,
+                          })
+                        }
+                      >
+                        PRESCRIPTIONS
+                      </button>
+                    </div>
+                  </div>
+                  <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
+                    <div className="navbuttons">
+                      <button
+                        onClick={() =>
+                          navigate(`/UserLabReports/${id}`, {
+                            state: userData,
+                          })
+                        }
+                      >
+                        LAB REPORTS
+                      </button>
+                    </div>
+                  </div>
+                  <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
+                    <div className="navbuttons">
+                      <button
+                        onClick={() =>
+                          navigate(`/UserDietDetails/${id}`, {
+                            state: userData,
+                          })
+                        }
+                      >
+                        DIET DETAILS
+                      </button>
+                    </div>
+                  </div>
+                  <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
+                    <div className="navbuttons">
+                      <button
+                        onClick={() =>
+                          navigate(`/UserRequisition/${id}`, {
+                            state: userData,
+                          })
+                        }
+                      >
+                        REQUISITION REPORTS
+                      </button>
+                    </div>
+                  </div>
+                  <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
+                    <div className="navbuttons">
+                      <Link to={"/ShowAlarms/" + id}>ALARMS</Link>
+                    </div>
+                  </div>
+                  <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
+                    <div className="navbuttons">
+                      <button
+                        onClick={() =>
+                          navigate(`/manageparameters/${id}`, {
+                            state: userData,
+                          })
+                        }
+                      >
+                        MANAGE PARAMETERS
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rightbottom">
+                <Collapsible
+                  trigger={
+                    <div className="flex justify-between p-2 ">
+                      <span className="text-[#19b9d4] font-bold text-xl border-">
+                        Basic Details And Ailment
+                      </span>
+                      <span>
+                        <KeyboardArrowDownIcon />
+                      </span>
+                    </div>
+                  }
+                  className="collapsable"
+                  openedClassName="collapsable-open"
+                  open={true}
+                >
+                  <div className="basicprofile border-t border-gray-400 pt-3">
+                    <div className="left">
+                      <div className="profilepic">
+                        <img
+                          src={
+                            getValidImageUrl(userData.profile_photo)
+                          }
+                          className="rounded-full h-48 w-48"
+                          alt="profile pic"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="right">
+                      <div className="filter">
+                        <span className="name">
+                          <span className="font-bold">Name: </span>
+                          <span>{userData.name}</span>
+                          {role?.canEditPatients && (
+                            <button onClick={openEditModal}>
+                              <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
+                            </button>
+                          )}
+                          {editModalOpen && (
+                            <NameModal
+                              closeEditModal={closeEditModal}
+                              onSuccess={handleUpdateRangeSuccess}
+                              initialData={userData}
+                              updateData={updateUserData}
+                              user_id={userData.id}
+                              name={userData.name}
+                              number={userData.number}
+                              dob={userData.dob}
+                            />
+                          )}
+                        </span>
+                        <div className="number">
+                          <span className="font-bold">Number: </span>
+                          <span>{userData.number}</span>
+                          {role?.canEditPatients && (
+                            <button onClick={openEditModal}>
+                              <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
+                            </button>
+                          )}
+                          {editModalOpen && (
+                            <NameModal
+                              closeEditModal={closeEditModal}
+                              initialData={userData}
+                              updateData={updateUserData}
+                              user_id={userData.id}
+                              name={userData.name}
+                              number={userData.number}
+                              dob={userData.dob}
+                              onSuccess={handleUpdateRangeSuccess}
+                            />
+                          )}
+                        </div>
+                        <div className="aliments mb-2">
+                          <span className="font-bold">Ailments: </span>
+                          <span>{userData.ailments.join(", ")}</span>
+                          {role?.canEditPatients && (
+                            <button onClick={openEditalimentsModal}>
+                              <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
+                            </button>
+                          )}
+                          {editalimentsModalOpen && (
+                            <AilmentModal
+                              closeEditalimentsModal={closeEditalimentsModal}
+                              initialAilments={userData.ailments}
+                              updateData={updateUserData}
+                              user_id={userData.id}
+                              onSuccess={handleUpdateRangeSuccess}
+                            />
+                          )}
+                        </div>
+                        <div className="Dob">
+                          <span className="font-bold"> DOB: </span>
+                          <span>{userData.dob}</span>
+                          {role?.canEditPatients && (
+                            <button onClick={openEditModal}>
+                              <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
+                            </button>
+                          )}
+                          {editModalOpen && (
+                            <NameModal
+                              closeEditModal={closeEditModal}
+                              initialData={userData}
+                              updateData={updateUserData}
+                              user_id={userData.id}
+                              name={userData.name}
+                              number={userData.number}
+                              dob={userData.dob}
+                              onSuccess={handleUpdateRangeSuccess}
+                            />
+                          )}
+                        </div>
+
+                        {/* Conditionally rendering EGFR and GFR columns */}
+                        {userData.ailments.includes("CKD") && (
+                          <React.Fragment>
+                            <div className="egfr">
+                              <span className="font-bold">eGFR: </span>
+                              <span>{userData.eGFR}</span>
+                              {role?.canEditPatients && (
+                                <button onClick={openEditalimentsModal}>
+                                  <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
+                                </button>
+                              )}
+                              {/* Render eGFR data here */}
+                            </div>
+                            <div className="gfr">
+                              <span className="font-bold">GFR: </span>
+                              <span>{userData.GFR}</span>
+                              {role?.canEditPatients && (
+                                <button onClick={openEditalimentsModal}>
+                                  <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
+                                </button>
+                              )}
+                            </div>
+                          </React.Fragment>
+                        )}
+                        {/* Conditionally rendering Dry Weight column */}
+                        {userData.ailments.includes("Hemo Dialysis") && (
+                          <div className="dry-weight">
+                            <span className="font-bold">Dry Weight: </span>
+                            <span>{userData.dry_weight}</span>
+                            <button onClick={openEditalimentsModal}>
+                              <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
+                            </button>
+                          </div>
+                        )}
+                        {userData.ailments.includes("CKD") &&
+                          !userData.ailments.includes("Hemo Dialysis") &&
+                          !userData.ailments.includes(
+                            "Peritoneal Dialysis"
+                          ) && (
+                            <div className="kefr">
+                              <span className="font-bold">KFRE: </span>
+                              <span>{userData.kefr}</span>
+                              {role?.canEditPatients && (
+                                <button onClick={openEditalimentsModal}>
+                                  <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
+                                </button>
+                              )}
+                            </div>
+                          )}
+                      </div>
+                    </div>
+                  </div>
+                </Collapsible>
+
+                <Collapsible
+                  trigger={
+                    <div className="flex justify-between p-2 ">
+                      <span className="text-[#19b9d4] font-bold text-xl border-">
+                        Generic Profile
+                      </span>
+                      <span>
+                        <KeyboardArrowDownIcon />
+                      </span>
+                    </div>
+                  }
+                  className="collapsable"
+                  openedClassName="collapsable-open"
+                >
+                  <QuestionsContainer
+                    aliment="Generic Profile"
+                    user_id={userData.id}
+                  />
+                </Collapsible>
+
+                <div>
+                  <h1 className="sectionTitle">Ailment Details</h1>
+                  {userData.ailments.map((aliment, index) => (
+                    <Collapsible
+                      key={index}
+                      trigger={
+                        <div className="flex justify-between p-2 ">
+                          <span className="text-[#19b9d4] font-bold text-xl border-">
+                            {aliment}
+                          </span>
+                          <span>
+                            <KeyboardArrowDownIcon />
+                          </span>
+                        </div>
+                      }
+                      className="collapsable"
+                      openedClassName="collapsable-open"
+                    >
+                      <QuestionsContainer
+                        aliment={aliment}
+                        user_id={userData.id}
+                      />
+                    </Collapsible>
+                  ))}
+                </div>
+                <div className="generalParameters">
+                  {generalParameters.length > 0 &&
+                    <h1 className="sectionTitle">General Parameter</h1>}
+                  {generalParameters
+                    .filter(
+                      (question) =>
+                        !question.title.toLowerCase().includes("diastolic")
+                    )
+                    .map((question, index) => {
+                      let componentToRender;
+                      let questionTitle = question.title;
+
+                      if (question.isGraph === 1) {
+                        if (question.title.toLowerCase().includes("systolic")) {
+                          const systolicIndex = questionTitle
+                            .toLowerCase()
+                            .indexOf("systolic");
+                          const systolicEndIndex =
+                            systolicIndex + "systolic".length;
+
+                          // Insert "+ and Diastolic" after "systolic"
+                          questionTitle =
+                            questionTitle.slice(0, systolicEndIndex) +
+                            " and Diastolic" +
+                            questionTitle.slice(systolicEndIndex);
+
+                          componentToRender = (
+                            <LineChartComponentSys
+                              aspect={2 / 1}
+                              questionId={question.id}
+                              user_id={userData.id}
+                              title={questionTitle}
+                              unit={question.unit}
+                            />
+                          );
+                        } else {
+                          componentToRender = (
+                            <LineChartComponent
+                              aspect={2 / 1}
+                              questionId={question.id}
+                              user_id={userData.id}
+                              title={questionTitle}
+                              unit={question.unit}
+                            />
+                          );
+                        }
+                      } else {
+                        componentToRender = (
+                          <Table
+                            questionId={question.id}
+                            user_id={userData.id}
+                            title={questionTitle}
+                            question={question}
+                          />
+                        );
+                      }
+
+                      return (
+                        <Collapsible
+                          key={index}
+                          trigger={
+                            <div className="flex justify-between items-center p-2">
+                              <span className="text-[#19b9d4] font-bold text-xl ">
+                                {questionTitle}
+                              </span>
+                              {question.responseCount === 0 ? (
+                                <span className="inline-block rounded-lg px-4 py-2 bg-gray-200 text-gray-800 font-semibold text-sm">
+                                  no response
+                                </span>
+                              ) : (
+                                <span>
+                                  {/* You can add an icon or any indicator for response exist */}
+                                </span>
+                              )}
+                            </div>
+                          }
+                          className="collapsable"
+                          openedClassName="collapsable-open"
+                        >
+                          {componentToRender}
+                        </Collapsible>
+                      );
+                    })}
+                </div>
+
+                <div className="dialysisParameters">
+                  {dialysisParameters.length > 0 &&
+                    <h1 className="sectionTitle">Dialysis Parameters</h1>}
+                  {dialysisParameters
+                    .filter(
+                      (question) =>
+                        !question.title.toLowerCase().includes("diastolic")
+                    )
+                    .map((question, index) => {
+                      let componentToRender;
+                      let questionTitle = question.title;
+
+                      if (question.isGraph === 1) {
+                        if (question.title.toLowerCase().includes("systolic")) {
+                          const systolicIndex = questionTitle
+                            .toLowerCase()
+                            .indexOf("systolic");
+                          const systolicEndIndex =
+                            systolicIndex + "systolic".length;
+
+                          // Insert "+ and Diastolic" after "systolic"
+                          questionTitle =
+                            questionTitle.slice(0, systolicEndIndex) +
+                            " and Diastolic" +
+                            questionTitle.slice(systolicEndIndex);
+
+                          componentToRender = (
+                            <LineChartDialysisSys
+                              aspect={2 / 1}
+                              questionId={question.id}
+                              user_id={userData.id}
+                              title={questionTitle}
+                              unit={question.unit}
+                            />
+                          );
+                        } else {
+                          componentToRender = (
+                            <LineChartDialysis
+                              aspect={2 / 1}
+                              questionId={question.id}
+                              user_id={userData.id}
+                              title={questionTitle}
+                              unit={question.unit}
+                            />
+                          );
+                        }
+                      } else {
+                        componentToRender = (
+                          <DialysisTable
+                            questionId={question.id}
+                            user_id={userData.id}
+                            title={questionTitle}
+                            question={question}
+                          />
+                        );
+                      }
+
+                      return (
+                        <Collapsible
+                          key={index}
+                          trigger={
+                            <div className="flex justify-between items-center p-2">
+                              <span className="text-[#19b9d4] font-bold text-xl ">
+                                {questionTitle}
+                              </span>
+                              {question.responseCount === 0 ? (
+                                <span className="inline-block rounded-lg px-4 py-2 bg-gray-200 text-gray-800 font-semibold text-sm">
+                                  no response
+                                </span>
+                              ) : (
+                                <span>
+                                  {/* You can add an icon or any indicator for response exist */}
+                                </span>
+                              )}
+                            </div>
+                          }
+                          className="collapsable"
+                          openedClassName="collapsable-open"
+                        >
+                          {componentToRender}
+                        </Collapsible>
+                      );
+                    })}
+                </div>
+
+                <div className="generalParameters">
+                  <h1 className="sectionTitle">Lab Reports</h1>
+                  {labReadings.map((reading) => (
+
+                    <Collapsible
+                      key={reading.id}
+                      trigger={
+                        <div className="flex justify-between items-center p-2">
+                          <span className="text-[#19b9d4] font-bold text-xl ">
+                            {reading.title}
+                          </span>
+                          {reading.responseCount === 0 ? (
+                            <span className="inline-block rounded-lg px-4 py-2 bg-gray-200 text-gray-800 font-semibold text-sm">
+                              no response
+                            </span>
+                          ) : (
+                            <span>
+                              {/* You can add an icon or any indicator for response exist */}
+                            </span>
+                          )}
+                        </div>
+                      }
+                      className="collapsable"
+                      openedClassName="collapsable-open"
+                    >
+                      <LineChartComponentLab
+                        key={reading.id}
+                        aspect={2 / 1}
+                        questionId={reading.id} // Assuming 'id' is suitable for questionId
+                        user_id={userData.id} // Assuming userData is available in scope
+                        title={reading.title}
+                        unit={reading.unit}
+                      />
+                    </Collapsible>
+                  ))}
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
+export default UserProfile;
