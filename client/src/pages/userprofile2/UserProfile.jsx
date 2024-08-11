@@ -23,15 +23,37 @@ import LineChartDialysisSys from "../../components/Linechart/Linechart_Dialysis/
 import { useSelector } from "react-redux";
 import getValidImageUrl from "../../helpers/utils";
 import LineChartComponentLab from "../../components/linechartlab/LineChartComponentLab";
+import { getUsers, identifyRole } from "../../ApiCalls/authapis";
+import { getPatientById, getPatientMedicalTeam } from "../../ApiCalls/patientAPis";
+import { getAllChats, getAllChatsAdmin } from "../../ApiCalls/chatApis";
+import { dummyadmin } from "../../assets";
+import { getDoctorsChat } from "../../ApiCalls/doctorApis";
 
 function UserProfile({ patient }) {
+  const { pid } = useParams();
+  const [role, setRole] = useState("");
+
+  const [messages, setMessages] = useState([]);
+  const [currentMessage, setCurrentMessage] = useState("");
+  const [chats, setChats] = useState([]);
+  const [chats1, setChats1] = useState([]);
+  const [patient1, setPatient1] = useState({});
+  const [patient2, setPatient2] = useState({});
+  const [activeReciever, serActiveReciever] = useState("");
+  const [sender, setSender] = useState("");
+  const [sender1, setSender2] = useState("");
+  const [Users, setUsers] = useState("");
+  const [adminTeam, setAdminTeam] = useState([]);
+  const [medicalTeam, setMedicalTeam] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editalimentsModalOpen, setEditalimentsModalOpen] = useState(false);
   const [generalParameters, setGeneralParameters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialysisParameters, setDialysisParameters] = useState([]);
   const [ailments, setAilments] = useState([]);
-  const role = useSelector((state) => state.permission);
+
   const [labReadings, setLabReadings] = useState([]);
   const [error, setError] = useState(null);
 
@@ -212,16 +234,115 @@ function UserProfile({ patient }) {
 
     fetchLabReadings();
   }, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const roleResult = await identifyRole();
+        setRole(roleResult.data.data.role_name);
+        const patientRes = await getPatientById(id);
+        console.log(patientRes);
+        const userEmail = localStorage.getItem("email");
+        setPatient1(patientRes.data.data);
+        setSender(userEmail);
+        if (roleResult.data.data.role_name === "Admin") {
+          const chatResult = await getAllChatsAdmin(id);
+          const emailArray = chatResult?.data.map((a) => a.receiverEmail);
+          const result = await getPatientMedicalTeam(id);
+          if (result.success && chatResult.success) {
+
+            setChats(
+              chatResult.data.filter(
+                (chat) => chat.role == "Doctor" || chat.role == "Medical Staff"
+              )
+            );
+            setMedicalTeam(
+              result.data.data.filter(
+                (user) =>
+                  user.email !== userEmail && !emailArray.includes(user.email)
+              )
+            );
+            console.log(chats);
+          } else {
+            console.error("Failed to fetch users:", result.data);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching users/roles:", error);
+      }
+    };
+
+    fetchData();
+  }, [messages]);
+
+
 
   const formatDate = (date) => {
     const newDate = new Date(date);
     return newDate.toDateString();
   };
-
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const roleResult = await identifyRole();
+        setRole(roleResult.data.data.role_name);
+        if (roleResult.data.data.role_name === "Admin") {
+          const getDoctorsResult = await getDoctorsChat(id);
+          if (getDoctorsResult.success) {
+            setDoctors(getDoctorsResult.data.data);
+          } else {
+            console.error("Failed to fetch doctors:", getDoctorsResult.data);
+          }
+        } else if (
+          roleResult.data.data.role_name === "Medical Staff" ||
+          roleResult.data.data.role_name === "Doctor"
+        ) {
+          const chatResult = await getAllChats(id);
+          let emailArray = [];
+          if (chatResult.success) {
+            emailArray = chatResult?.data.map((a) => a.receiverEmail);
+            setChats1(
+              chatResult.data.filter(
+                (chat) => chat.role == "Doctor" || chat.role == "Medical Staff"
+              )
+            );
+          } else {
+            console.error("Failed to fetch chats:", chatResult.data);
+          }
 
-
-  }, [])
+          const patientRes = await getPatientById(pid);
+          const result = await getUsers();
+          if (result.success && patientRes.success) {
+            const userEmail = localStorage.getItem("email");
+            setPatient2(patientRes.data.data);
+            setSender2(userEmail);
+            if (chatResult.success && emailArray.length > 0) {
+              setUsers(
+                result.data.data.filter(
+                  (user) =>
+                    user.email !== userEmail &&
+                    !emailArray.includes(user.email) &&
+                    (user.role == "Doctor" || user.role == "Medical Staff")
+                )
+              );
+            } else {
+              setUsers(
+                result.data.data.filter(
+                  (user) =>
+                    user.email !== userEmail &&
+                    (user.role == "Doctor" || user.role == "Medical Staff")
+                )
+              );
+            }
+          } else {
+            console.error("Failed to fetch users:", result.data);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching users/roles:", error);
+      }
+    };
+    fetchData();
+  }, [messages]);
 
 
   const handleUpdateRangeSuccess = () => {
@@ -248,10 +369,25 @@ function UserProfile({ patient }) {
               >
                 go back
               </a>
+
               <div className="w-3/4 flex justify-center mx-auto">
                 <div className="flex flex-wrap justify-center">
-                  <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
-                    <div className="navbuttons">
+                  <div className="w-1/2 md:w-1/4 mb-2 flex  justify-center">
+                    <div className="navbuttons gap-2">
+
+                    {role === "Admin" ? (
+                        <div className="h-full ">
+                          {chats.length > 0 ?  (
+                            <div>
+                              <span className="rounded-full inline-flex justify-center w-6 h-6 items-center text-xs p-0 text-center bg-red-700 text-white">
+                                {chats.reduce((total, chat) => total + chat.unreadCount, 0)}
+                              </span>
+                            </div>
+                          ):<></>}
+                        </div>
+                      ) : <></>}
+
+
                       <Link to={"/adminChat/" + id} className="text-sm">
                         ADMIN CHAT
                       </Link>
@@ -259,6 +395,17 @@ function UserProfile({ patient }) {
                   </div>
                   <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
                     <div className="navbuttons">
+                    {role === "Doctor" ? (
+                        <div className="h-full ">
+                          {chats1.length > 0 ?  (
+                            <div>
+                              <span className="rounded-full inline-flex justify-center w-6 h-6 items-center text-xs p-0 text-center bg-red-700 text-white">
+                                {chats1.reduce((total, chat) => total + chat.unreadCount, 0)}
+                              </span>
+                            </div>
+                          ):<></>}
+                        </div>
+                      ) : <></>}
                       <Link to={"/doctorChat/" + id} className="text-sm">
                         DOCTOR CHAT
                       </Link>

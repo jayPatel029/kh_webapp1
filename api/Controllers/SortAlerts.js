@@ -258,7 +258,10 @@ const generateMissedAlarmAlert = async (obj, did) => {
 
 const generateNewPrescriptionAlarmAlert = async (obj, did) => {
     try {
+
+        
         const alarmId = obj.alarmId;
+        console.log(did+alarmId)
         // console.log("AlarmId", alarmId)
         const patientId = obj.patientId;
         const getPatientNameQuery = `SELECT name FROM patients WHERE id = '${patientId}'`;
@@ -269,17 +272,23 @@ const generateNewPrescriptionAlarmAlert = async (obj, did) => {
 
         // console.log("PatientName", patientName
         // )
-        const getAlarmQuery = `SELECT * FROM alarm WHERE id = '${alarmId}' AND doctorId = ${did}`;
+        const getAlarmQuery = `SELECT * FROM alarm WHERE id = ${alarmId} AND doctorId = ${did}`;
         let alarm;
         try {
-            alarm = await pool.query(getAlarmQuery);
-            alarm = alarm[0];
+            const alarmQueryResult = await pool.query(getAlarmQuery);
+            if (alarmQueryResult.length > 0) {
+                alarm = alarmQueryResult[0];
+            } else {
+                console.log("No alarm found with the specified ID and doctor ID");
+                return null;
+            }
 
         } catch (error) {
             console.log(error)
             return null;
 
         }
+        console.log(alarm)
         // alarm = alarm[0];
         // console.log("Alamar",alarm);
         // console.log("Alarm", alarm)
@@ -294,7 +303,7 @@ const generateNewPrescriptionAlarmAlert = async (obj, did) => {
         // console.log(prescription);
         const presImg = prescription.Prescription
         const presDate = prescription.Date;
-        const desc = alarm.description;
+         const desc = alarm.description;
         const weekdays = alarm.weekdays || alarm.dateofmonth;
         const time = alarm.time;
         const timesaday = alarm.timesaday || alarm.timesamonth;
@@ -843,28 +852,30 @@ const getDoctorAlerts = async (req, res) => {
         `
     )
     alerts = patientAlerts;
-    var reading = []
-    const readingAlertsQueryWhoseEnteryIsPresentInAlertsReadTable = `
-        SELECT ra.*
-        FROM readingalerts ra
-        JOIN doctor_patients dp ON ra.patientId = dp.patient_id
-        WHERE dp.doctor_id = ${doctor_id}
-        AND ra.id IN (
-            SELECT ar.alertId
-            FROM alertsread ar
-            WHERE ar.doctorId = ${doctor_id}
-        );
-    `
-    const readingAlerts = await pool.query(readingAlertsQueryWhoseEnteryIsPresentInAlertsReadTable);
-    reading = readingAlerts
+    // var reading = []
+    // const readingAlertsQueryWhoseEnteryIsPresentInAlertsReadTable = `
+    //     SELECT ra.*
+    //     FROM readingalerts ra
+    //     JOIN doctor_patients dp ON ra.patientId = dp.patient_id
+    //     WHERE dp.doctor_id = ${doctor_id}
+    //     AND ra.id IN (
+    //         SELECT ar.alertId
+    //         FROM alertsread ar
+    //         WHERE ar.doctorId = ${doctor_id}
+    //     );
+    // `
+    // const readingAlerts = await pool.query(readingAlertsQueryWhoseEnteryIsPresentInAlertsReadTable);
+    // reading = readingAlerts
 
 
     var finalAlerts = [];
+console.log(alerts)
 
     for (var i = 0; i < alerts.length; i++) {
-        if (alerts[i].category === "New Prescription Alarm") {
+        if (alerts[i].category === "New Prescription") {
             const palert = await generateNewPrescriptionAlarmAlert(alerts[i], doctor_id);
             if (palert) {
+                console.log(palert)
                 finalAlerts.push(palert);
             }
         }
@@ -876,12 +887,12 @@ const getDoctorAlerts = async (req, res) => {
         }
     }
 
-    for (var i = 0; i < reading.length; i++) {
-        const ralert = await structureReadingAlert(reading[i], doctor_id);
-        if (ralert) {
-            finalAlerts.push(ralert);
-        }
-    }
+    // for (var i = 0; i < reading.length; i++) {
+    //     const ralert = await structureReadingAlert(reading[i], doctor_id);
+    //     if (ralert) {
+    //         finalAlerts.push(ralert);
+    //     }
+    // }
     res.status(200).send(finalAlerts);
 }
 
