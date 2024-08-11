@@ -36,8 +36,8 @@ const getTotalUsers = async (req, res, next) => {
     console.log(userId);
 
     var query = `SELECT * FROM patients`;
-    if(userId!==1){
-       query = `
+    if (userId !== 1) {
+      query = `
         SELECT p.*
         FROM patients p
         JOIN admin_patients ap ON p.id = ap.patient_id
@@ -50,7 +50,6 @@ const getTotalUsers = async (req, res, next) => {
       success: true,
       data: totalUsers,
     });
-    
   } catch (error) {
     console.error("Error fetching users by role:", error);
     return res.status(500).json({
@@ -172,13 +171,13 @@ const deleteUser = async (req, res, next) => {
 const getTotalUsersThisWeek = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    console.log(userId);
+    console.log("User ID:", userId);
 
-    // Define the base query to get patients registered in the last week
     let query = `
       SELECT * FROM patients 
-      WHERE registered_date > DATE_SUB(NOW(), INTERVAL 1 WEEK)
+      WHERE registered_date > DATE_SUB(NOW(), INTERVAL 1 WEEK);
     `;
+    let queryParams = [];
 
     // If the user is not an admin, modify the query to filter based on the user's role
     if (userId !== 1) {
@@ -186,21 +185,26 @@ const getTotalUsersThisWeek = async (req, res, next) => {
         SELECT p.*
         FROM patients p
         JOIN admin_patients ap ON p.id = ap.patient_id
-        WHERE ap.admin_id = ${userId}
+        WHERE ap.admin_id = ? 
           AND p.registered_date > DATE_SUB(NOW(), INTERVAL 1 WEEK)
       `;
+      queryParams = [userId];
     }
 
     // Execute the query
-    const users = await pool.query(query);
+    const users = [];
+    const response = await pool.query(query, queryParams);
+    // console.log("Response:", response);
+    users.push(...response);
+    // console.log("Users:", users);
     const total = users.length;
+    // console.log("Total:", total);
 
     // Send the response with the total number of users
     return res.status(200).json({
       success: true,
       data: total,
     });
-
   } catch (error) {
     // Handle any errors that occur during the process
     console.error("Error fetching users by role:", error);
@@ -210,7 +214,6 @@ const getTotalUsersThisWeek = async (req, res, next) => {
     });
   }
 };
-
 
 const getUsersAssignedToPatient = async (req, res, next) => {
   try {

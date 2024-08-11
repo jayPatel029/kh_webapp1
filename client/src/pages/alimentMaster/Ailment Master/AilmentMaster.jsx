@@ -158,7 +158,7 @@ export default function AilmentMasterComponent() {
           })}
           <div className="flex flex-col mt-4">
             <label className="block mb-2 text-sm font-medium text-gray-500">
-              Description
+              Icon
             </label>
             <input
               type="file"
@@ -178,16 +178,14 @@ export default function AilmentMasterComponent() {
             {!editMode ? (
               <button
                 className="bg-primary text-white px-4 py-2 rounded-md w-1/3"
-                onClick={submitAilment}
-              >
+                onClick={submitAilment}>
                 Submit
               </button>
             ) : (
               <>
                 <button
                   onClick={submitAilment}
-                  className=" flex-1 mr-2 mt-5 border md:inline-block text-white bg-primary font-semibold tracking-wide text-lg border-gray-300 w-[12vw] rounded-lg p-1.5"
-                >
+                  className=" flex-1 mr-2 mt-5 border md:inline-block text-white bg-primary font-semibold tracking-wide text-lg border-gray-300 w-[12vw] rounded-lg p-1.5">
                   UPDATE
                 </button>
                 <button
@@ -195,8 +193,7 @@ export default function AilmentMasterComponent() {
                     setEditMode(false);
                     clearFields();
                   }}
-                  className="flex-1 border text-[#ff0000] md:inline-block bg-white font-semibold tracking-wide text-lg border-[#ff0000] w-[12vw] rounded-lg  p-1.5"
-                >
+                  className="flex-1 border text-[#ff0000] md:inline-block bg-white font-semibold tracking-wide text-lg border-[#ff0000] w-[12vw] rounded-lg  p-1.5">
                   CANCEL
                 </button>
               </>

@@ -53,8 +53,11 @@ export default function DailyTable({
         <table className=" w-full text-sm text-left rtl:text-right text-gray-800 ">
           <thead className="text-base text-gray-700 border-b-2 border-gray-800 ">
             <tr>
-              <th scope="col" className="px-6 py-3 w-2/4">
+              <th scope="col" className="px-6 py-3 w-1/3">
                 Title
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Alert Text
               </th>
               <th scope="col" className="px-6 py-3">
                 Ailment
@@ -73,6 +76,7 @@ export default function DailyTable({
                 return (
                   <tr key={index} className="bg-white border-b ">
                     <td className="px-6 py-4">{item.title}</td>
+                    <td className="px-6 py-4">{item.alertTextDoc}</td>
                     <td className="px-6 py-4">{displayAilment}</td>
                     <td className="px-6 py-4 text-2xl">
                       <button
@@ -112,8 +116,7 @@ export default function DailyTable({
                             left: 0,
                             behavior: "smooth",
                           });
-                        }}
-                      >
+                        }}>
                         <BsPencilSquare />
                       </button>
                       <button
@@ -124,8 +127,7 @@ export default function DailyTable({
                             setSuccessful("Reading Deleted Successful!");
                             setResetter(!resetter);
                           });
-                        }}
-                      >
+                        }}>
                         <BsTrash />
                       </button>
                     </td>
