@@ -12,7 +12,7 @@ import DoctorAlarmModal from "./DoctorAlarmModal";
 function ShowAlarms() {
   const [showModal, setShowModal] = useState(false);
   const { pid } = useParams();
-  const [userAlarmData, setUserAlarmData] = useState(null);
+  const [userAlarmData, setUserAlarmData] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editData, setEditData] = useState(null);
   const [openAlarmId, setOpenAlarmId] = useState(null);
@@ -87,7 +87,8 @@ function ShowAlarms() {
     const getData = async () => {
       const result = await axiosInstance.get(`${server_url}/alarms/byPatientId/${pid}`);
       console.log(result.data.data);
-      setUserAlarmData(result.data.data);
+      await setUserAlarmData(result.data.data);
+      console.log(userAlarmData)
       setDosesData(result.data.doses);
       return result;
     };
@@ -105,6 +106,7 @@ function ShowAlarms() {
   }, [showModal, showEditModal, showDoctorModal]);
 
   function AlarmCard({ alarm, onDelete, onApprove, onReject }) {
+    console.log(alarm)
     const alarmId = localStorage.getItem("alarmId");
     const isHighlighted = alarmId && parseInt(alarmId) === alarm.id;
 
@@ -115,15 +117,16 @@ function ShowAlarms() {
           isHighlighted ? "bg-green-100" : ""
         } border-b border-gray-200`}
       >
-        <td>{alarm.dateadded.slice(0, 10)}</td>
-        <td>{alarm.type}</td>
+        <td>{alarm.dateadded? alarm.dateadded.slice(0, 10):'-'}</td>
+        <td>{alarm.type? alarm.type.type : 'No type available'}</td>
+
         <td
           // align the text in center
           className="text-center"
         >
           {alarm.time}
         </td>
-        <td>{alarm.timesamonth}</td>
+        <td>{alarm.timesamonth? alarm.timesamonth:'Not specified'}</td>
         <td>{alarm.status}</td>
         {isDoctor &&
         alarm.type === "Prescription"  ? (
