@@ -1,4 +1,3 @@
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const fs = require("fs");
 const dotenv = require("dotenv");
 const path = require("path");
@@ -55,6 +54,7 @@ exports.uploadFiles = async (req, res) => {
     res.status(200).send({ message: "Files uploaded", filePaths });
   } catch (err) {
     console.error(err);
+    res.status(500).send("Failed to upload files: " + err.message);
     res.status(500).send("Failed to upload files: " + err.message);
   }
 };

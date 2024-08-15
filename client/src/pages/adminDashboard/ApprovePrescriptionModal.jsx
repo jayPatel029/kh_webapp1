@@ -53,14 +53,14 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
     setIsDisAll(false);
     setShowDisapproveModal(true);
   };
-  
+
   const closeImage = () => {
     setPrescriptionImage(null);
     setIsPrescriptionSelected(false);
   };
-const handlePrescriptionImage=()=>{
-  setShowmodel(true)
-}
+  const handlePrescriptionImage = () => {
+    setShowmodel(true)
+  }
   useEffect(() => {
     var pres = localStorage.getItem("prescriptionAlerts");
     pres = JSON.parse(pres);
@@ -75,7 +75,7 @@ const handlePrescriptionImage=()=>{
       return acc;
     }, {});
     setGroupedData(groupData);
-  }, []);
+  }, [groupedData]);
 
   return (
     <>
@@ -84,7 +84,7 @@ const handlePrescriptionImage=()=>{
           <div className="header flex justify-between items-center border-b pb-2 mb-4  lg:pt-0  ">
             <h2 className="text-2xl font-bold  ">Digitised Prescription Copy</h2>
             <div className="flex flex-col lg:flex-row items-center">
-              <Link to={"/userProfile/"}>
+              <Link to={groupedData[1] ? `/userProfile/${groupedData[1][0].patientId}` : "#"}>
                 <div
                   className="rounded-lg text-primary border-2 border-primary w-40 py-2 justify-center flex shadow-lg m-1"
                   style={{ cursor: "pointer" }}
@@ -92,6 +92,7 @@ const handlePrescriptionImage=()=>{
                   View Profile
                 </div>
               </Link>
+
               <div
                 className="rounded-lg text-red-800 border-2 border-red-800 w-40 py-2 justify-center flex shadow-lg"
                 onClick={closeModal}
@@ -100,7 +101,7 @@ const handlePrescriptionImage=()=>{
                 Close
               </div>
               {showmodel && (
-                  <div className="fixed inset-0 flex items-center justify-center z-50 bg-opacity-50 bg-black">
+                <div className="fixed inset-0 flex items-center justify-center z-50 bg-opacity-50 bg-black">
                   <div className="p-7 ml-4 mr-4 mt-4 bg-white w-full md:w-3/5 h-4/5 md:h-4/5 shadow-md border-t-4 border-teal-500 rounded z-50 overflow-auto">
                     <div className="flex justify-end">
                       <button
@@ -110,7 +111,7 @@ const handlePrescriptionImage=()=>{
                         Close
                       </button>
                     </div>
-                
+
                     <div className="h-4/5 md:h-full">
                       <img
                         src={prescriptionImage}
@@ -124,9 +125,9 @@ const handlePrescriptionImage=()=>{
                     </div>
                   </div>
                 </div>
-                
-                        
-                  )}
+
+
+              )}
             </div>
           </div>
           <div className="flex flex-col lg:flex-row">
@@ -143,7 +144,7 @@ const handlePrescriptionImage=()=>{
                               <b>Prescription on </b>
                               {groupedData[key][0].date.slice(0, 10)}
                             </button>
-                            <div 
+                            <div
                               onClick={() => {
                                 var url = groupedData[key][0].presImg;
                                 setIsPrescriptionSelected(true);
@@ -151,7 +152,7 @@ const handlePrescriptionImage=()=>{
                               }}
                               style={{
                                 cursor: "pointer",
-                                textDecoration: "underline",                           
+                                textDecoration: "underline",
                                 padding: "5px 10px",
                               }}
                             >
@@ -247,9 +248,9 @@ const handlePrescriptionImage=()=>{
                                   <span class="lg:hidden absolute top-0 left-0 bg-gray-200 px-2 py-1 text-xs font-bold uppercase">
                                     Alarm Description
                                   </span>
-                    
+
                                   {item.desc}
-                   
+
                                 </td>
                                 {showDisapproveModal && (
                                   <Modal
@@ -313,7 +314,7 @@ const handlePrescriptionImage=()=>{
             {isPrescriptionSelected ? (
               <div className="w-[60%] relative">
                 <div className="p-2">
-                  <img src={prescriptionImage} onClick={handlePrescriptionImage}   alt="" />
+                  <img src={prescriptionImage} onClick={handlePrescriptionImage} alt="" />
                 </div>
               </div>
             ) : (

@@ -157,6 +157,7 @@ const ChatApp = () => {
       const SWResponse = await getAllSWChats(pid, senderEmail);
       if (SWResponse.success) {
         setChats(SWResponse.data);
+        console.log(chats)
       }
     } catch (error) {
       console.error("Error fetching chatId:", error);
