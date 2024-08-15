@@ -13,6 +13,7 @@ const getAlerts = async (req, res) => {
 const getAlertbyType = async (req, res) => {
   const { type } = req.params;
   try {
+    console.log("getAlertbyType function called with type : ", type);
     const query = `SELECT * FROM alerts WHERE type = '${type}'`;
     const response = await pool.execute(query);
     res.status(200).json(response);
@@ -192,16 +193,16 @@ const createContactUsAlert = async (req, res) => {
   const category = "Contact Us";
   const { patientId } = req.body;
   const date = new Date().toISOString().slice(0, 19).replace("T", " ");
-  console.log(patientId)
+  console.log(patientId);
   const query = `INSERT INTO alerts (type, category, patientId,date) VALUES ('${type}', '${category}', '${patientId}','${date}')`;
   try {
     const response = await pool.query(query);
     res.status(200).json({
       success: true,
-      data: "Alert Added Successfully"
+      data: "Alert Added Successfully",
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).json(error);
   }
 };
@@ -357,14 +358,14 @@ const approveAllAlerts = async (req, res) => {
   }
 };
 
-const createNewPrescriptionAlert = async (prescriptionId,patientId) => {
+const createNewPrescriptionAlert = async (prescriptionId, patientId) => {
   try {
     const type = "patient";
     const category = "New Prescription";
     const date = new Date().toISOString().slice(0, 19).replace("T", " ");
     const query = `INSERT INTO alerts (type, category, prescriptionId,date,patientId) VALUES ('${type}', '${category}', ${prescriptionId},'${date}',${patientId})`;
     const response = await pool.query(query);
-    console.log("Alert added!!")
+    console.log("Alert added!!");
     // res.status(200).json("Alert created");
   } catch (error) {
     console.log(error);
@@ -382,7 +383,7 @@ const updateIsReadAlert = async (req, res) => {
     console.log(error);
     res.status(500).json(error);
   }
-}
+};
 
 module.exports = {
   getAlerts,
