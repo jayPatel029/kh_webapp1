@@ -30,9 +30,10 @@ import { dummyadmin } from "../../assets";
 import { getDoctorsChat } from "../../ApiCalls/doctorApis";
 
 function UserProfile({ patient }) {
+  const [totalUnreadCount,settotalUnreadCount]= useState(0);
   const { pid } = useParams();
   const [role, setRole] = useState("");
-
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const [messages, setMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState("");
   const [chats, setChats] = useState([]);
@@ -138,7 +139,29 @@ function UserProfile({ patient }) {
       return [];
     }
   }
+  useEffect(() => {
+    const getUnreadMessagesFromAdmin = async () => {
+      try {
+        const chatResult = await getAllChatsAdmin(id);
+        if (chatResult.success) {
+          console.log(chatResult)
+          const unreadMsgs = chatResult.data.filter(
+            (chat) => chat.unreadCount > 0
+          );
+          const tp = unreadMsgs.reduce((acc, chat) => acc + chat.unreadCount, 0);
+            settotalUnreadCount(tp);
+        setUnreadMessages(unreadMsgs);
+          console.log("Unread messages from admin:", totalUnreadCount);
+        } else {
+          console.error("Failed to fetch chats:", chatResult.data);
+        }
+      } catch (error) {
+        console.error("Error fetching unread messages from admin:", error);
+      }
+    };
+getUnreadMessagesFromAdmin();
 
+  }, []);
   async function fetchQuestionsForAilmentDialysis(ailment) {
     // console.log(id);
     try {
@@ -385,7 +408,13 @@ function UserProfile({ patient }) {
                             </div>
                           ):<></>}
                         </div>
-                      ) : <></>}
+                      ) : <>
+                     <div className="">
+                     <span className="rounded-full inline-flex justify-center w-6 h-6 items-center text-xs p-0 text-center bg-red-700 text-white">
+                                {totalUnreadCount}
+                              </span>
+                     </div>
+                      </>}
 
 
                       <Link to={"/adminChat/" + id} className="text-sm">
