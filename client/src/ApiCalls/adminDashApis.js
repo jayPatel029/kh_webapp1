@@ -1,57 +1,55 @@
-import axiosInstance from "../helpers/axios/axiosInstance"; 
+import axiosInstance from "../helpers/axios/axiosInstance";
 import { server_url } from "../constants/constants";
-import getAlertData from "../helpers/alertsSorting";
 
 const getTotalUsers = async () => {
-    try {
-        const response = await axiosInstance.get(`${server_url}/users/total`);
+  try {
+    const response = await axiosInstance.get(`${server_url}/users/total`);
     return response.data.data;
-        
-    } catch (error) {
-        console.error("Error fetching total users:", error);
-        
-    }
-}
-
-const getUsersThisWeek = async () => {
-    try {
-        const response = await axiosInstance.get(`${server_url}/users/totalThisWeek`);
-    return response.data.data;
-        
-    } catch (error) {
-        console.error("Error fetching new users:", error);
-        
-    }
-}
-
-const getAlerts = async () => {
- try {
-    const email = localStorage.getItem("email");
-    const id = await axiosInstance.post(`${server_url}/users/byEmail/id`, { email: email }); 
-    var alertData = await axiosInstance.get(`${server_url}/sortAlerts/${id.data.id}`);
-    // console.log(alertData);
-    return alertData;
-    
- } catch (error) {
-        console.error("Error fetching alerts:", error);
-    
- }
-
-
+  } catch (error) {
+    console.error("Error fetching total users:", error);
+  }
 };
 
-const getDoctorAlerts = async () =>{
-    console.log("Doctor Alerts");
+const getUsersThisWeek = async () => {
+  try {
+    const response = await axiosInstance.get(
+      `${server_url}/users/totalThisWeek`
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching new users:", error);
+  }
+};
+
+const getAlerts = async () => {
+  try {
     const email = localStorage.getItem("email");
-    console.log("Email",email);
-    const res = await axiosInstance.post(`${server_url}/doctor/byEmail/id`, { email: email });
-    const id = res.data;
-    const alertData = await axiosInstance.get(`${server_url}/sortAlerts/doctor/${id}`);
-    console.log("Data",alertData);
+    const id = await axiosInstance.post(`${server_url}/users/byEmail/id`, {
+      email: email,
+    });
+    var alertData = await axiosInstance.get(
+      `${server_url}/sortAlerts/${id.data.id}`
+    );
+    // console.log(alertData);
     return alertData;
+  } catch (error) {
+    console.error("Error fetching alerts:", error);
+  }
+};
 
-    
+const getDoctorAlerts = async () => {
+  console.log("Doctor Alerts");
+  const email = localStorage.getItem("email");
+  console.log("Email", email);
+  const res = await axiosInstance.post(`${server_url}/doctor/byEmail/id`, {
+    email: email,
+  });
+  const id = res.data;
+  const alertData = await axiosInstance.get(
+    `${server_url}/sortAlerts/doctor/${id}`
+  );
+  console.log("Data", alertData);
+  return alertData;
+};
 
-}
-
-export { getTotalUsers,getUsersThisWeek,getAlerts,getDoctorAlerts };
+export { getTotalUsers, getUsersThisWeek, getAlerts, getDoctorAlerts };

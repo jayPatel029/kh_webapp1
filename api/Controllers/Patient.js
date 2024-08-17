@@ -1,22 +1,23 @@
 const { pool } = require("../databaseConn/database.js");
+// const { createNewEnrollmentAlert } = require("../Controllers/Alerts.js");
+const axios = require("axios");
+const { createNewEnrollmentAlertFunction } = require("./Alerts.js");
 
 const getPatients = async (req, res) => {
   try {
-
     const { role, id } = req.user; // Assuming role and userId are available in req.user
     let query;
-    if(role === 'Admin') {
+    if (role === "Admin") {
       query = `
         SELECT p.*
         FROM patients p
         JOIN admin_patients ap ON p.id = ap.patient_id and ap.admin_id = ${id}
       `;
 
-      if(id === 1){
-        query ="SELECT * FROM patients"
+      if (id === 1) {
+        query = "SELECT * FROM patients";
       }
-    }
-    else if(role === 'Doctor') {
+    } else if (role === "Doctor") {
       const doctor_id_query = ` select * from doctors where email = '${req.user.email}'`;
       const result = await pool.execute(doctor_id_query);
       // console.log(result[0].id)
@@ -26,13 +27,11 @@ const getPatients = async (req, res) => {
         FROM patients p
         JOIN doctor_patients dp ON p.id = dp.patient_id and dp.doctor_id = ${doctor_id}
       `;
-
-
-    }else{
+    } else {
       return res.status(404).json({
         success: false,
-        message: "You are not authorized to access this route"
-      })
+        message: "You are not authorized to access this route",
+      });
     }
     const patients = await pool.execute(query);
     // Return the fetched patients
@@ -48,7 +47,7 @@ const getPatients = async (req, res) => {
     });
   }
 };
-  
+
 const AddPatient = async (req, res, next) => {
   const {
     name,
@@ -63,21 +62,13 @@ const AddPatient = async (req, res, next) => {
     pushNotificationId,
   } = req.body;
 
-  if (
-    !name ||
-    !aliments ||
-    !number ||
-    !dob ||
-    // !profile_photo ||
-    !registered_date
-    // !program_assigned_to ||
-    // !medical_team
-  ) {
+  if (!name || !aliments || !number || !dob || !registered_date) {
     return res.status(400).json({
       success: false,
       data: "All fields are required",
     });
   }
+
   const numberString = number.toString();
   if (numberString.length !== 10) {
     return res.status(400).json({
@@ -85,52 +76,45 @@ const AddPatient = async (req, res, next) => {
       data: "Phone number must be of length 10",
     });
   }
-  const checkNumberQuery = `SELECT * FROM patients WHERE number = '${numberString}'`;
-  const existingNumber = await pool.query(checkNumberQuery);
 
-  if (existingNumber.length > 0) {
-    return res.status(400).json({
-      success: false,
-      data: "Phone number already exists",
-    });
-  }
-  
-  // console.log(
-  //   //   name,
-  //   aliments
-  //   //   number,
-  //   //   dob,
-  //   //   profile_photo,
-  //   //   registered_date,
-  //   //   program_assigned_to,
-  //   //   medical_team,
-  //   //   pushNotificationId
-  // );
-  const query = `
-        INSERT INTO patients (name, number, dob, profile_photo, registered_date, program_assigned_to, medical_team, program, push_notification_id)
-        VALUES ('${name}','${number}','${dob}','${profile_photo}','${registered_date}','${program_assigned_to}','${medical_team}', '${program}', '${pushNotificationId}')
-    `;
+  const connection = await pool.getConnection();
+
   try {
-    const result = await pool.query(query);
-    const patientId = result.insertId;
-    // const ailmentsQuery = 'INSERT INTO ailment_patient (patient_id, ailment_id) VALUES ?';
-    aliments.map(async (ailmentId) => {
-      const ailmentsQuery = `INSERT INTO ailment_patient (patient_id, ailment_id) VALUES (${patientId},${ailmentId})`;
-      await pool.query(ailmentsQuery);
-    });
+    await connection.beginTransaction();
 
-    // Extract ailment names
+    const checkNumberQuery = `SELECT * FROM patients WHERE number = '${numberString}'`;
+    const existingNumber = await connection.query(checkNumberQuery);
+
+    if (existingNumber.length > 0) {
+      await connection.rollback();
+      return res.status(400).json({
+        success: false,
+        data: "Phone number already exists",
+      });
+    }
+
+    const query = `
+      INSERT INTO patients (name, number, dob, profile_photo, registered_date, program_assigned_to, medical_team, program, push_notification_id)
+      VALUES ('${name}','${number}','${dob}','${profile_photo}','${registered_date}','${program_assigned_to}','${medical_team}', '${program}', '${pushNotificationId}')
+    `;
+    const result = await connection.query(query);
+    const patientId = result.insertId;
+
+    // Handle aliments insertion
+    await Promise.all(
+      aliments.map(async (ailmentId) => {
+        const ailmentsQuery = `INSERT INTO ailment_patient (patient_id, ailment_id) VALUES (${patientId},${ailmentId})`;
+        await connection.query(ailmentsQuery);
+      })
+    );
+
+    // Extract and update ailment names
     let updateAilmentNames = "";
     await Promise.all(
       aliments.map(async (ailmentId) => {
-        const ailmentsNames = `
-        SELECT name
-        FROM ailments
-        WHERE id = ${ailmentId}
-      `;
-        const ailmentName = await pool.query(ailmentsNames);
+        const ailmentsNames = `SELECT name FROM ailments WHERE id = ${ailmentId}`;
+        const ailmentName = await connection.query(ailmentsNames);
         const name = ailmentName[0].name;
-        console.log(name);
         updateAilmentNames += name + ", ";
       })
     );
@@ -138,19 +122,26 @@ const AddPatient = async (req, res, next) => {
     if (updateAilmentNames.length > 0) {
       updateAilmentNames = updateAilmentNames.slice(0, -2);
     }
-    // console.log(updateAilmentNames)
+
     const updatePatientQuery = `
       UPDATE patients
       SET aliments = '${updateAilmentNames}'
       WHERE id = ${patientId}
     `;
-    await pool.query(updatePatientQuery);
+    await connection.query(updatePatientQuery);
 
     const insertPatientIntoDoctorQuery = `INSERT INTO doctor_patients (doctor_id, patient_id) VALUES (? , ?)`;
     const insertPatientIntoAdminQuery = `INSERT INTO admin_patients (admin_id, patient_id) VALUES (? , ?)`;
 
-    await pool.query(insertPatientIntoDoctorQuery, [medical_team, patientId]);
-    await pool.query(insertPatientIntoAdminQuery, [1, patientId]);
+    await connection.query(insertPatientIntoDoctorQuery, [
+      medical_team,
+      patientId,
+    ]);
+    await connection.query(insertPatientIntoAdminQuery, [1, patientId]);
+
+    createNewEnrollmentAlertFunction(patientId);
+
+    await connection.commit();
 
     res.status(200).json({
       success: true,
@@ -161,11 +152,14 @@ const AddPatient = async (req, res, next) => {
         "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VybmFtZSI6IkRlZXJhaiIsIlVzZXJJbWFnZSI6IiIsIlVzZXJJRCI6Ijg5IiwiSXNBZHZhbmNlZCI6ImZhbHNlIiwiRGF0ZU9mQmlydGgiOiIxMC8xMC8yMDAzIDEyOjAwOjAwIEFNIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiJkMGI2MjBjYi1lNzFlLTRlYWEtYmRjZS1iYTM4MGMzYmExOWUiLCJleHAiOjE3NDIwMjI2NTUsImlzcyI6Imh0dHBzOi8vbG9jYWxob3N0OjcxNzMvIiwiYXVkIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NzE3My8ifQ.Ste1qMw9OgllwGwVKUMUFo3RrFOTFy78VjdEvxoSnQw",
     });
   } catch (err) {
-    console.log(err);
+    await connection.rollback();
+    console.error("Error Details:", err);
     res.status(500).json({
       success: false,
       data: "Error while Registering Patient",
     });
+  } finally {
+    connection.release();
   }
 };
 

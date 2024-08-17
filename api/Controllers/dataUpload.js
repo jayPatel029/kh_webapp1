@@ -1,6 +1,7 @@
 const fs = require("fs");
 const dotenv = require("dotenv");
 const path = require("path");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
 // Set up AWS credentials
 const s3Client = new S3Client({
@@ -91,8 +92,9 @@ exports.uploadFile = async (req, res) => {
   }
 
   const uploadDir = path.join(__dirname, "uploads");
+  // console.log("uploadDir", uploadDir);
   const targetPath = path.join(uploadDir, req.file.originalname);
-
+  console.log("targetPath", targetPath);
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
   }
