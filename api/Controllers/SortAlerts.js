@@ -872,7 +872,7 @@ const getDoctorAlerts = async (req, res) => {
 console.log(alerts)
 
     for (var i = 0; i < alerts.length; i++) {
-        if (alerts[i].category === "New Prescription") {
+        if (alerts[i].category === "New Prescription Alarm") {
             const palert = await generateNewPrescriptionAlarmAlert(alerts[i], doctor_id);
             if (palert) {
                 console.log(palert)

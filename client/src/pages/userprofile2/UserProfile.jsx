@@ -422,13 +422,13 @@ getUnreadMessagesFromAdmin();
                       </Link>
                     </div>
                   </div>
-                  <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
+                  <div className="w-1/2 md:w-1/4 mb-2 flex gap-2 justify-center">
                     <div className="navbuttons">
                     {role === "Doctor" ? (
                         <div className="h-full ">
                           {chats1.length > 0 ?  (
                             <div>
-                              <span className="rounded-full inline-flex justify-center w-6 h-6 items-center text-xs p-0 text-center bg-red-700 text-white">
+                              <span className="rounded-full inline-flex justify-center w-6 h-6 mx-2 items-center text-xs p-0 text-center bg-red-700 text-white">
                                 {chats1.reduce((total, chat) => total + chat.unreadCount, 0)}
                               </span>
                             </div>
