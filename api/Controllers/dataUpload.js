@@ -1,26 +1,9 @@
 const fs = require("fs");
 const path = require("path");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
-// Set up AWS credentials
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  },
-});
-
-// AWS S3 Code for multiple file upload
-// exports.uploadFiles = async (req, res) => {
-//   let ObjectUrls = [];
-//   try {
-//     for (const file of req.files) {
-//       const fileStream = fs.createReadStream(file.path);
-//       const params = {
-//         Bucket: process.env.AWS_BUCKET_NAME,
-//         Key: parseInt(Math.random() * 10000) + "_" + file.originalname,
-//         Body: fileStream,
-//       };
+// Directory where you want to store the files
+const uploadDirectory = path.join(__dirname, 'uploads');
 
 // Ensure the directory exists
 if (!fs.existsSync(uploadDirectory)) {

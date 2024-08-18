@@ -80,7 +80,7 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
       getFileRes(selectedImage)
         .then((res) => {
           console.log("res", res);
-          if (res.data.filePath === undefined) {
+          if (res.data.objectUrl === undefined) {
             alert("failed to upload you document, please try again later");
             return;
           }
@@ -150,7 +150,7 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
       getFileRes(file, "Prescription.pdf")
         .then((res) => {
           console.log("res", res);
-          if (res.data.objectUrl === undefined) {
+          if (res===null) {
             alert("failed to upload you document, please try again later");
             return;
           }
@@ -191,10 +191,7 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
       getFileRes(file, "Prescription.pdf")
         .then((res) => {
           console.log("res", res);
-          if (res.data.objectUrl === undefined) {
-            alert("failed to upload you document, please try again later");
-            return;
-          }
+          
           let data = {
             patient_id: user_id,
             date: selectedDate,

@@ -33,7 +33,7 @@ const Modal = ({ closeModal,disAll,item,presId}) => {
 
   return (
     <>
-      <div className="fixed inset-0 flex items-center justify-center bg-opacity-50 bg-black">
+      <div className="fixed z-50 inset-0 flex items-center justify-center bg-opacity-50 bg-black">
         <div className="p-7 ml-4 mr-4 mt-4 bg-white shadow-md border-t-4 border-teal-500 rounded z-50 overflow-y-auto">
           <div className="header flex justify-between items-center border-b pb-2 mb-4">
             <h2 className="text-2xl font-bold">Please Enter a Reason for Disapproving: </h2>
