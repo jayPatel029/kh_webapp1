@@ -37,6 +37,7 @@ const addPrescriptionFromApp = async (req, res) => {
     } else {
       phtotolocation = "";
     }
+
     // the date should be in form 24-Mar-2024, we are getting in the form 24 Mar 2024, thus modifiying the date
     const date2 = convertDateFormatYYYYmmDD(date);
     // console.log(date2);
