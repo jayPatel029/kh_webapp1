@@ -5,11 +5,12 @@ import { io } from "socket.io-client";
 import { MdSend } from "react-icons/md";
 import dummyAdmin from "../../assets/dummyadmin.png";
 import { getUsers } from "../../ApiCalls/authapis";
+
 import {
   getPatientById,
   getPatientMedicalTeam,
 } from "../../ApiCalls/patientAPis";
-import { useParams,Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { adminEmail } from "../../constants/constants";
 import {
   getAllChatsAdmin,
@@ -24,6 +25,8 @@ import { createMessageAlert } from "../../ApiCalls/alertsApis";
 
 const ChatApp = () => {
   const { pid } = useParams();
+  const location = useLocation();
+
   const [role, setRole] = useState("");
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -106,6 +109,7 @@ const ChatApp = () => {
     fetchData();
   }, []);
 
+  // old one
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -144,6 +148,40 @@ const ChatApp = () => {
     fetchData();
   }, [messages]);
 
+  //not done yet
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const roleResult = await identifyRole();
+  //       setRole(roleResult.data.data.role_name);
+  //       const patientRes = await getPatientById(pid);
+  //       const userEmail = localStorage.getItem("email");
+  //       setPatient(patientRes.data.data[0]);
+  //       setSender(userEmail);
+
+  //       const queryParams = new URLSearchParams(location.search);
+  //       const receiver = queryParams.get("receiver");
+
+  //       if (receiver) {
+  //         serActiveReciever(receiver);
+  //         loadChats(receiver);
+  //       } else if (
+  //         roleResult.data.data.role_name === "Doctor" ||
+  //         roleResult.data.data.role_name === "Medical Staff"
+  //       ) {
+  //         const adminTeamRes = await getPatientAdminTeam(pid);
+  //         setAdminTeam(adminTeamRes.data.data);
+  //         serActiveReciever(adminEmail);
+  //         loadChats(adminEmail);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching users/roles:", error);
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, [location.search]);
+
   const sendCurrentMessage = async () => {
     try {
       const messageData = {
@@ -171,7 +209,6 @@ const ChatApp = () => {
       console.error("Error sending message:", error);
     }
   };
-  
 
   return (
     <div className="userProfile md:flex block">
@@ -182,11 +219,13 @@ const ChatApp = () => {
         <div className="sticky top-0 z-10">
           <Navbar />
         </div>
-       <div className="bg-gray-100 p-4">
-       <Link to={`/userProfile/${pid}`} className="text-primary border-b-2 border-primary">
-                go back
-                </Link>
-       </div>
+        <div className="bg-gray-100 p-4">
+          <Link
+            to={`/userProfile/${pid}`}
+            className="text-primary border-b-2 border-primary">
+            go back
+          </Link>
+        </div>
         <div className="bg-gray-100 min-h-screen md:py-10 md:px-40 ">
           <div className=" w-full bg-white h-[80vh] rounded-lg border-t-4 border-primary shadow-2xl">
             <div className="flex bg-white h-[8vh] border-b-2 border-gray-300">
@@ -222,8 +261,7 @@ const ChatApp = () => {
                         loadMessages(chat.id).then((res) => {
                           setLoading(false);
                         });
-                      }}
-                    >
+                      }}>
                       <img
                         className="inline-block h-12 w-12 mx-4"
                         src={dummyAdmin}
@@ -250,8 +288,7 @@ const ChatApp = () => {
                         loadChats(user.email).then((res) => {
                           setLoading(false);
                         });
-                      }}
-                    >
+                      }}>
                       <img
                         className="inline-block h-12 w-12 mx-4"
                         src={dummyAdmin}
@@ -268,8 +305,7 @@ const ChatApp = () => {
                   {adminTeam.map((admin, index) => (
                     <div
                       key={index}
-                      className="w-full p-3 border-b-2 border-gray-300 bg-white"
-                    >
+                      className="w-full p-3 border-b-2 border-gray-300 bg-white">
                       <img
                         className="inline-block h-12 w-12 mx-4"
                         src={dummyAdmin}
@@ -282,8 +318,7 @@ const ChatApp = () => {
               <div className="items-center justify-center w-[65%] bg-gradient-to-br from-gray-200 to-white rounded-br-lg h-full">
                 <div
                   className="w-full h-[88%] overflow-y-scroll p-8"
-                  style={{ transform: "scaleY(-1)" }}
-                >
+                  style={{ transform: "scaleY(-1)" }}>
                   {loading ? (
                     <div className="h-full w-full flex justify-center items-center">
                       <ReactLoading
@@ -314,8 +349,7 @@ const ChatApp = () => {
                               ? "w-full flex justify-end py-2"
                               : "w-full flex py-2"
                           }
-                          style={{ transform: "scaleY(-1)" }}
-                        >
+                          style={{ transform: "scaleY(-1)" }}>
                           <div>
                             <div className="px-2 text-gray-500">
                               {message.firstname} {message.lastname}{" "}
@@ -325,8 +359,7 @@ const ChatApp = () => {
                                 message.sender === sender
                                   ? "p-4 rounded-t-xl rounded-bl-xl bg-yellow-300"
                                   : "p-4 rounded-t-xl rounded-br-xl bg-blue-300"
-                              }
-                            >
+                              }>
                               {message.message}
                             </div>
                             <div className="px-2 text-gray-500">
@@ -361,8 +394,7 @@ const ChatApp = () => {
                       />
                       <button
                         onClick={sendCurrentMessage}
-                        className="bg-primary text-white rounded-lg w-[8%] mx-2 p-2 flex justify-center items-center"
-                      >
+                        className="bg-primary text-white rounded-lg w-[8%] mx-2 p-2 flex justify-center items-center">
                         <MdSend className="text-2xl" />
                       </button>
                     </>

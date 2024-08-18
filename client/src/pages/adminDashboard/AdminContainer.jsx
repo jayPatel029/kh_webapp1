@@ -8,6 +8,7 @@ import axiosInstance from "../../helpers/axios/axiosInstance";
 import CircleIcon from "@mui/icons-material/Circle";
 
 const UserCard = ({ user }) => {
+  // console.log("from UserCard", user);
   const navigate = useNavigate();
   const [patientName, setPatientName] = useState("");
 
@@ -31,7 +32,7 @@ const UserCard = ({ user }) => {
   }, [user.patientId]);
 
   const actionFunc = async (alert) => {
-    console.log(alert);
+    console.log("alert", alert);
     if (alert.alarmId) {
       localStorage.setItem("alarmId", alert.alarmId);
     }
@@ -50,9 +51,14 @@ const UserCard = ({ user }) => {
     }
 
     if (alert.type === "patient" && alert.patientId) {
-      navigate(`/userProfile/${alert.patientId}`);
-      // } else if (alert.type === "doctor" && alert.chatId) {
-      //   navigate(`/userProfile/${alert.chatId}`);
+      navigate(`/patient/${alert.patientId}`);
+    } else if (
+      alert.type === "doctor" &&
+      alert.chatId &&
+      alert.category.includes("Doctor Message to Admin")
+    ) {
+      navigate(`/adminChat/${alert.patientId}`);
+      // navigate(`/adminChat/${alert.patientId}?receiver=${alert.userEmail}`);
     } else {
       console.error("No valid redirection path found for this alert.");
     }
@@ -83,9 +89,9 @@ const UserCard = ({ user }) => {
         />
         <div>
           <p className="font-semibold">Category : {user.category}</p>
-          <p className="font-semibold">Name : {patientName || user.name}</p>
-          <p className="font-semibold">{user.name}</p>
-          <p>{user.type}</p>
+          <p className="font-semibold">Name : {user.name || patientName}</p>
+          {/* <p className="font-semibold">{user.name}</p> */}
+          {/* <p>{user.type}</p> */}
         </div>
       </div>
 
@@ -124,7 +130,7 @@ const AdminContainer = ({
   doctorAlerts,
   patientAlerts,
 }) => {
-  console.log("from AdminContainer", patientAlerts);
+  console.log("from AdminContainer", doctorAlerts);
   return (
     <div className="bg-gray-100 min-h-screen md:py-10 md:px-40 overflow-y-auto">
       {/* Upper Cards Container */}

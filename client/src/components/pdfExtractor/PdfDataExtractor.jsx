@@ -1,9 +1,9 @@
-import axios from 'axios';
-import React, { useState } from 'react';
+import axios from "axios";
+import React, { useState } from "react";
 
 const PdfDataExtractor = () => {
   const [file, setFile] = useState(null);
-  const [text, setText] = useState('');
+  const [text, setText] = useState("");
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -13,12 +13,16 @@ const PdfDataExtractor = () => {
     if (!file) return;
 
     const formData = new FormData();
-    formData.append('pdf', file);
+    formData.append("pdf", file);
 
     try {
-      const response = await axios.post('http://localhost:3000/api/text/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await axios.post(
+        "http://localhost:3001/api/text/upload",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
 
       setText(response.data.text);
     } catch (error) {
@@ -37,6 +41,6 @@ const PdfDataExtractor = () => {
       </div>
     </div>
   );
-}
+};
 
 export default PdfDataExtractor;

@@ -1,17 +1,18 @@
 const { pool } = require("../databaseConn/database.js");
-const AWS = require('aws-sdk');
+const AWS = require("aws-sdk");
 const { createNewPrescriptionAlert } = require("./Alerts.js");
 const s3 = new AWS.S3();
+const moment = require("moment-timezone");
+
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 });
-
 async function getSignedURLEndpoint(key, operation) {
   var options = {
     Bucket: process.env.AWS_BUCKET_NAME,
-    Key: key, /* Filename in the bucket */
-    Expires: 10 /* Seconds */
+    Key: key /* Filename in the bucket */,
+    Expires: 10 /* Seconds */,
   };
 
   const url = await s3.getSignedUrlPromise(operation, options);
@@ -41,12 +42,18 @@ const addPrescriptionById = async (req, res) => {
     const date = req.body.date;
     const patient_id = req.body.patient_id;
     const prescriptionGivenBy = req.body.prescriptionGivenBy;
+    console.log("addPrescriptionById", req.body);
     const query = `INSERT INTO prescriptions (Prescription, Date, Patient_id,prescriptionGivenBy) VALUES (?, ?, ?,?)`;
-    const response = await pool.query(query, [file, date, patient_id, prescriptionGivenBy]);
+    const response = await pool.query(query, [
+      file,
+      date,
+      patient_id,
+      prescriptionGivenBy,
+    ]);
 
-    console.log(Number(response.insertId),patient_id)
+    console.log(Number(response.insertId), patient_id);
 
-    createNewPrescriptionAlert(Number(response.insertId),patient_id)
+    createNewPrescriptionAlert(Number(response.insertId), patient_id);
 
     res.status(200).json({
       data: Number(response.insertId),
@@ -63,7 +70,6 @@ const addPrescriptionById = async (req, res) => {
 };
 
 const getPrescriptionsById = async (req, res) => {
-
   // const url ="https://kifayti-dev-test.s3.ap-south-1.amazonaws.com/4628_prescription.png"
   // var fileName = url.split(process.env.S3_BASE_URL)[1];
   // console.log("fileName",fileName)
@@ -85,8 +91,14 @@ const getPrescriptionsById = async (req, res) => {
     //   var fileName = p.Prescription.split(process.env.S3_BASE_URL)[1];
     //   console.log(fileName)
     //   const signedUrlObject = await getSignedURLEndpoint(fileName, "getObject");
-    //   p.Prescription = signedUrlObject;      
+    //   p.Prescription = signedUrlObject;
     // }
+
+    prescriptions.forEach((p) => {
+      p.date = moment(p.date).tz("UTC").format("YYYY-MM-DD");
+    });
+
+    // console.log("data sent from api", prescriptions);
     res.status(200).json({
       success: true,
       data: prescriptions,
@@ -98,7 +110,6 @@ const getPrescriptionsById = async (req, res) => {
     });
   }
 };
-
 
 const addComment = async (req, res, next) => {
   try {

@@ -9,6 +9,7 @@ import {
   getTotalUsers,
   getUsersThisWeek,
   getAlerts,
+  getDoctorAlerts,
 } from "../../ApiCalls/adminDashApis";
 import AdminContainer from "./AdminContainer";
 import DoctorContainer from "./DoctorContainer";
@@ -23,6 +24,15 @@ function AdminDashboard() {
   const [allAlerts, setAllAlerts] = useState([]);
   const [doctorAlerts, setDoctorAlerts] = useState([]);
   const [patientAlerts, setPatientAlerts] = useState([]);
+
+  // Redirect to login page if token is not present or expired
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) {
+  //     window.location.href = "/login";
+  //   }
+
+  // }, []);
 
   useEffect(() => {
     // setTimeout(() => {
@@ -62,9 +72,18 @@ function AdminDashboard() {
         const response = await axiosInstance.get(
           `${server_url}/alerts/byType/patient`
         );
-        // console.log("hey :", response.data);
-        // console.log("patientAlertsData : ", patientAlertsData);
         setPatientAlertsData(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const getDoctorAlertsData = async () => {
+      try {
+        const response = await axiosInstance.get(
+          `${server_url}/alerts/byType/doctor`
+        );
+        setDoctorAlerts(response.data);
       } catch (error) {
         console.log(error);
       }
@@ -77,15 +96,8 @@ function AdminDashboard() {
         try {
           getAlerts()
             .then((response) => {
+              console.log("Doctor Alerts: ", response.data);
               setAllAlerts(response.data);
-              setDoctorAlerts(
-                response.data
-                  .filter(
-                    (alert) =>
-                      alert.type0 === "doctor" || alert.type === "doctor"
-                  )
-                  .reverse()
-              );
               setPatientAlerts(
                 response.data
                   .filter(
@@ -110,6 +122,7 @@ function AdminDashboard() {
       await isDoctorfunc();
       await getPatientAlertsData();
       await getAllAlerts();
+      await getDoctorAlertsData();
     };
     getAllData();
     // const interval = setInterval(() => {
@@ -172,7 +185,7 @@ function AdminDashboard() {
             newUsers={newUsers}
             totalUsers={totalUsers}
             doctorAlerts={doctorAlerts}
-            patientAlerts={patientAlerts}
+            patientAlerts={patientAlertsData}
           />
         )}
       </div>

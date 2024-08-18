@@ -3,24 +3,25 @@ const mariadb = require("mariadb");
 
 dotenv.config();
 const pool = mariadb.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'neeljain',
-  database: 'maria',
-  port: 3310,
+  host: process.env.host,
+  user: process.env.user,
+  password: process.env.password,
+  connectionLimit: 5,
+  database: process.env.database,
+  port: process.env.PORT,
 });
 
 const Sequelize = require("sequelize");
 
 // Create a new Sequelize instance
 const sequelize = new Sequelize(
-  "maria",
-  "root",
-  "neeljain",
+  process.env.database,
+  process.env.user,
+  process.env.password,
   {
-    host: "localhost",
+    host: process.env.host,
     dialect: "mariadb",
-    port: 3310,
+    port: process.env.PORT,
     logging: false,
     dialectOptions: {
       useUTC: false,

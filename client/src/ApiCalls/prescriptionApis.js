@@ -35,7 +35,9 @@ export async function addPrescription(prescriptionData) {
 
 export async function deletePrescription(id) {
   try {
-    const response = await axiosInstance.delete(server_url + "/prescription/" + id);
+    const response = await axiosInstance.delete(
+      server_url + "/prescription/" + id
+    );
     return { success: true, data: response.data };
   } catch (error) {
     return { success: false, data: error.response.data.message };
@@ -43,6 +45,7 @@ export async function deletePrescription(id) {
 }
 
 export async function addPrescriptionById(prescriptionData) {
+  console.log("prescriptionData", prescriptionData);
   try {
     const response = await axiosInstance.post(
       server_url + "/prescription/addPrescription",

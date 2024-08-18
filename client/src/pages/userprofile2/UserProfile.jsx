@@ -24,13 +24,16 @@ import { useSelector } from "react-redux";
 import getValidImageUrl from "../../helpers/utils";
 import LineChartComponentLab from "../../components/linechartlab/LineChartComponentLab";
 import { getUsers, identifyRole } from "../../ApiCalls/authapis";
-import { getPatientById, getPatientMedicalTeam } from "../../ApiCalls/patientAPis";
+import {
+  getPatientById,
+  getPatientMedicalTeam,
+} from "../../ApiCalls/patientAPis";
 import { getAllChats, getAllChatsAdmin } from "../../ApiCalls/chatApis";
 import { dummyadmin } from "../../assets";
 import { getDoctorsChat } from "../../ApiCalls/doctorApis";
 
 function UserProfile({ patient }) {
-  const [totalUnreadCount,settotalUnreadCount]= useState(0);
+  const [totalUnreadCount, settotalUnreadCount] = useState(0);
   const { pid } = useParams();
   const [role, setRole] = useState("");
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -144,13 +147,17 @@ function UserProfile({ patient }) {
       try {
         const chatResult = await getAllChatsAdmin(id);
         if (chatResult.success) {
-          console.log(chatResult)
+          // console.log("chatResult : ", chatResult.data);
           const unreadMsgs = chatResult.data.filter(
+            // console.log("unreadMsg : ", unreadMessages),
             (chat) => chat.unreadCount > 0
           );
-          const tp = unreadMsgs.reduce((acc, chat) => acc + chat.unreadCount, 0);
-            settotalUnreadCount(tp);
-        setUnreadMessages(unreadMsgs);
+          const tp = unreadMsgs.reduce(
+            (acc, chat) => acc + chat.unreadCount,
+            0
+          );
+          settotalUnreadCount(tp);
+          setUnreadMessages(unreadMsgs);
           console.log("Unread messages from admin:", totalUnreadCount);
         } else {
           console.error("Failed to fetch chats:", chatResult.data);
@@ -159,8 +166,7 @@ function UserProfile({ patient }) {
         console.error("Error fetching unread messages from admin:", error);
       }
     };
-getUnreadMessagesFromAdmin();
-
+    getUnreadMessagesFromAdmin();
   }, []);
   async function fetchQuestionsForAilmentDialysis(ailment) {
     // console.log(id);
@@ -246,7 +252,9 @@ getUnreadMessagesFromAdmin();
   useEffect(() => {
     const fetchLabReadings = async () => {
       try {
-        const response = await axiosInstance.get(`${server_url}/labreport/LabReadings`);
+        const response = await axiosInstance.get(
+          `${server_url}/labreport/LabReadings`
+        );
         setLabReadings(response.data.data); // Assuming your API response structure
       } catch (err) {
         setError(err.message);
@@ -263,7 +271,7 @@ getUnreadMessagesFromAdmin();
         const roleResult = await identifyRole();
         setRole(roleResult.data.data.role_name);
         const patientRes = await getPatientById(id);
-        console.log(patientRes);
+        // console.log(patientRes);
         const userEmail = localStorage.getItem("email");
         setPatient1(patientRes.data.data);
         setSender(userEmail);
@@ -272,7 +280,6 @@ getUnreadMessagesFromAdmin();
           const emailArray = chatResult?.data.map((a) => a.receiverEmail);
           const result = await getPatientMedicalTeam(id);
           if (result.success && chatResult.success) {
-
             setChats(
               chatResult.data.filter(
                 (chat) => chat.role == "Doctor" || chat.role == "Medical Staff"
@@ -296,8 +303,6 @@ getUnreadMessagesFromAdmin();
 
     fetchData();
   }, [messages]);
-
-
 
   const formatDate = (date) => {
     const newDate = new Date(date);
@@ -367,7 +372,6 @@ getUnreadMessagesFromAdmin();
     fetchData();
   }, [messages]);
 
-
   const handleUpdateRangeSuccess = () => {
     fetchPatientData();
   };
@@ -388,8 +392,7 @@ getUnreadMessagesFromAdmin();
             <div className="right">
               <a
                 href="/patient"
-                className="text-primary border-b-2 border-primary"
-              >
+                className="text-primary border-b-2 border-primary">
                 go back
               </a>
 
@@ -397,25 +400,30 @@ getUnreadMessagesFromAdmin();
                 <div className="flex flex-wrap justify-center">
                   <div className="w-1/2 md:w-1/4 mb-2 flex  justify-center">
                     <div className="navbuttons gap-2">
-
-                    {role === "Admin" ? (
+                      {role === "Admin" ? (
                         <div className="h-full ">
-                          {chats.length > 0 ?  (
+                          {chats.length > 0 ? (
                             <div>
                               <span className="rounded-full inline-flex justify-center w-6 h-6 items-center text-xs p-0 text-center bg-red-700 text-white">
-                                {chats.reduce((total, chat) => total + chat.unreadCount, 0)}
+                                {chats.reduce(
+                                  (total, chat) => total + chat.unreadCount,
+                                  0
+                                )}
                               </span>
                             </div>
-                          ):<></>}
+                          ) : (
+                            <></>
+                          )}
                         </div>
-                      ) : <>
-                     <div className="">
-                     <span className="rounded-full inline-flex justify-center w-6 h-6 items-center text-xs p-0 text-center bg-red-700 text-white">
-                                {totalUnreadCount}
-                              </span>
-                     </div>
-                      </>}
-
+                      ) : (
+                        <>
+                          <div className="">
+                            <span className="rounded-full inline-flex justify-center w-6 h-6 items-center text-xs p-0 text-center bg-red-700 text-white">
+                              {totalUnreadCount}
+                            </span>
+                          </div>
+                        </>
+                      )}
 
                       <Link to={"/adminChat/" + id} className="text-sm">
                         ADMIN CHAT
@@ -424,17 +432,21 @@ getUnreadMessagesFromAdmin();
                   </div>
                   <div className="w-1/2 md:w-1/4 mb-2 flex gap-2 justify-center">
                     <div className="navbuttons">
-                    {role === "Doctor" ? (
+                      {role === "Doctor" ? (
                         <div className="h-full ">
-                          {chats1.length > 0 ?  (
+                          {chats1.length > 0 ? (
                             <div>
                               <span className="rounded-full inline-flex justify-center w-6 h-6 mx-2 items-center text-xs p-0 text-center bg-red-700 text-white">
                                 {chats1.reduce((total, chat) => total + chat.unreadCount, 0)}
                               </span>
                             </div>
-                          ):<></>}
+                          ) : (
+                            <></>
+                          )}
                         </div>
-                      ) : <></>}
+                      ) : (
+                        <></>
+                      )}
                       <Link to={"/doctorChat/" + id} className="text-sm">
                         DOCTOR CHAT
                       </Link>
@@ -447,8 +459,7 @@ getUnreadMessagesFromAdmin();
                           navigate(`/userPrescription/${id}`, {
                             state: userData,
                           })
-                        }
-                      >
+                        }>
                         PRESCRIPTIONS
                       </button>
                     </div>
@@ -460,8 +471,7 @@ getUnreadMessagesFromAdmin();
                           navigate(`/UserLabReports/${id}`, {
                             state: userData,
                           })
-                        }
-                      >
+                        }>
                         LAB REPORTS
                       </button>
                     </div>
@@ -473,8 +483,7 @@ getUnreadMessagesFromAdmin();
                           navigate(`/UserDietDetails/${id}`, {
                             state: userData,
                           })
-                        }
-                      >
+                        }>
                         DIET DETAILS
                       </button>
                     </div>
@@ -486,8 +495,7 @@ getUnreadMessagesFromAdmin();
                           navigate(`/UserRequisition/${id}`, {
                             state: userData,
                           })
-                        }
-                      >
+                        }>
                         REQUISITION REPORTS
                       </button>
                     </div>
@@ -504,8 +512,7 @@ getUnreadMessagesFromAdmin();
                           navigate(`/manageparameters/${id}`, {
                             state: userData,
                           })
-                        }
-                      >
+                        }>
                         MANAGE PARAMETERS
                       </button>
                     </div>
@@ -527,15 +534,12 @@ getUnreadMessagesFromAdmin();
                   }
                   className="collapsable"
                   openedClassName="collapsable-open"
-                  open={true}
-                >
+                  open={true}>
                   <div className="basicprofile border-t border-gray-400 pt-3">
                     <div className="left">
                       <div className="profilepic">
                         <img
-                          src={
-                            getValidImageUrl(userData.profile_photo)
-                          }
+                          src={getValidImageUrl(userData.profile_photo)}
                           className="rounded-full h-48 w-48"
                           alt="profile pic"
                         />
@@ -692,8 +696,7 @@ getUnreadMessagesFromAdmin();
                     </div>
                   }
                   className="collapsable"
-                  openedClassName="collapsable-open"
-                >
+                  openedClassName="collapsable-open">
                   <QuestionsContainer
                     aliment="Generic Profile"
                     user_id={userData.id}
@@ -716,8 +719,7 @@ getUnreadMessagesFromAdmin();
                         </div>
                       }
                       className="collapsable"
-                      openedClassName="collapsable-open"
-                    >
+                      openedClassName="collapsable-open">
                       <QuestionsContainer
                         aliment={aliment}
                         user_id={userData.id}
@@ -726,8 +728,9 @@ getUnreadMessagesFromAdmin();
                   ))}
                 </div>
                 <div className="generalParameters">
-                  {generalParameters.length > 0 &&
-                    <h1 className="sectionTitle">General Parameter</h1>}
+                  {generalParameters.length > 0 && (
+                    <h1 className="sectionTitle">General Parameter</h1>
+                  )}
                   {generalParameters
                     .filter(
                       (question) =>
@@ -802,8 +805,7 @@ getUnreadMessagesFromAdmin();
                             </div>
                           }
                           className="collapsable"
-                          openedClassName="collapsable-open"
-                        >
+                          openedClassName="collapsable-open">
                           {componentToRender}
                         </Collapsible>
                       );
@@ -811,8 +813,9 @@ getUnreadMessagesFromAdmin();
                 </div>
 
                 <div className="dialysisParameters">
-                  {dialysisParameters.length > 0 &&
-                    <h1 className="sectionTitle">Dialysis Parameters</h1>}
+                  {dialysisParameters.length > 0 && (
+                    <h1 className="sectionTitle">Dialysis Parameters</h1>
+                  )}
                   {dialysisParameters
                     .filter(
                       (question) =>
@@ -887,8 +890,7 @@ getUnreadMessagesFromAdmin();
                             </div>
                           }
                           className="collapsable"
-                          openedClassName="collapsable-open"
-                        >
+                          openedClassName="collapsable-open">
                           {componentToRender}
                         </Collapsible>
                       );
@@ -898,7 +900,6 @@ getUnreadMessagesFromAdmin();
                 <div className="generalParameters">
                   <h1 className="sectionTitle">Lab Reports</h1>
                   {labReadings.map((reading) => (
-
                     <Collapsible
                       key={reading.id}
                       trigger={
@@ -918,8 +919,7 @@ getUnreadMessagesFromAdmin();
                         </div>
                       }
                       className="collapsable"
-                      openedClassName="collapsable-open"
-                    >
+                      openedClassName="collapsable-open">
                       <LineChartComponentLab
                         key={reading.id}
                         aspect={2 / 1}
@@ -930,7 +930,6 @@ getUnreadMessagesFromAdmin();
                       />
                     </Collapsible>
                   ))}
-
                 </div>
               </div>
             </div>

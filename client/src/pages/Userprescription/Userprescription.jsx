@@ -7,7 +7,7 @@ import { useLocation } from "react-router-dom";
 import axiosInstance from "../../helpers/axios/axiosInstance";
 import { server_url } from "../../constants/constants";
 import { BsTrash } from "react-icons/bs";
-import { useParams,Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 // import CommentModal from "./commentModal";
 import UploadedFileModal from "./UploadedFileModal";
 import { FaFilePdf } from "react-icons/fa6";
@@ -42,9 +42,12 @@ const Userprescription = () => {
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const dateObject = new Date(dateString);
-    return dateObject.toISOString().split("T")[0];
+    const day = String(dateObject.getDate()).padStart(2, "0");
+    const month = String(dateObject.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const year = dateObject.getFullYear();
+    return `${day}-${month}-${year}`;
   };
-console.log(id)
+  console.log(id);
   const fetchData = async () => {
     const patient_id = id;
     try {
@@ -53,7 +56,7 @@ console.log(id)
       );
       setUserPrescriptionData(response.data.data);
       setFilteredPrescriptionData(response.data.data);
-      console.log(response.data.data);
+      // console.log("data received on frontend : ", response.data.data);
     } catch (error) {
       console.error("Error fetching prescription data:", error);
     }
@@ -84,20 +87,22 @@ console.log(id)
   }, []);
 
   const handleDelete = async (prescriptionId) => {
-    const isConfirmed = window.confirm("Are you sure you want to delete this prescription?");
+    const isConfirmed = window.confirm(
+      "Are you sure you want to delete this prescription?"
+    );
     if (isConfirmed) {
       try {
         console.log("prescription id", prescriptionId);
         await axiosInstance.delete(
           `${server_url}/prescription/deletePrescription/${prescriptionId}`
         );
-       
+
         // Remove the deleted prescription from the state
-        setUserPrescriptionData(prevData =>
-          prevData.filter(prescription => prescription.id !== prescriptionId)
+        setUserPrescriptionData((prevData) =>
+          prevData.filter((prescription) => prescription.id !== prescriptionId)
         );
-        setFilteredPrescriptionData(prevData =>
-          prevData.filter(prescription => prescription.id !== prescriptionId)
+        setFilteredPrescriptionData((prevData) =>
+          prevData.filter((prescription) => prescription.id !== prescriptionId)
         );
       } catch (error) {
         console.error("Error deleting prescription:", error);
@@ -105,8 +110,7 @@ console.log(id)
       }
     }
   };
-  
-  
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -132,9 +136,11 @@ console.log(id)
         <div className="container">
           <div className="bg-gray-100 min-h-screen md:py-10 md:px-40">
             <div className="manage-roles-container p-7 ml-4 mr-4 mt-4 bg-white shadow-md border-t-4 border-primary">
-            <Link to={`/userProfile/${id}`} className="text-primary border-b-2 border-primary">
-             go back
-             </Link>
+              <Link
+                to={`/userProfile/${id}`}
+                className="text-primary border-b-2 border-primary">
+                go back
+              </Link>
               <div className="mt-4 mb-4 flex items-center justify-end">
                 <h1 className="text-xl text-bold">{location?.state?.name}</h1>
               </div>
@@ -143,8 +149,7 @@ console.log(id)
                 <div className="flex items-center justify-end">
                   <button
                     className="block rounded-lg text-primary border-2 border-primary w-40 py-2"
-                    onClick={() => openModal()}
-                  >
+                    onClick={() => openModal()}>
                     Upload Prescription
                   </button>
                   {showModal && (
@@ -179,8 +184,7 @@ console.log(id)
                   id="doctorId"
                   className="w-1/3 border-2 py-2 px-3 rounded focus:outline-none focus:border-amber-950"
                   // value={selectedDoctorId}
-                  onChange={handleSelectChange}
-                >
+                  onChange={handleSelectChange}>
                   <option>sort by doctor</option>
                   {Array.isArray(doctorOptions) &&
                     doctorOptions.map((doctor, index) => (
@@ -193,8 +197,7 @@ console.log(id)
                   className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center ml-2"
                   onClick={() => {
                     setFilteredPrescriptionData(userPrescriptionData);
-                  }}
-                >
+                  }}>
                   Clear Filter
                 </button>
               </div>
@@ -219,7 +222,7 @@ console.log(id)
                             <td className="px-4 border-black">
                               {formatDate(prescriptionItem.Date)}
                             </td>
-                            <td className="px-4 border-black">
+                            <td className="px-4 border-black text-center">
                               {prescriptionItem.prescriptionGivenByName}
                             </td>
                             <td className="flex justify-center">
@@ -227,7 +230,7 @@ console.log(id)
                               prescriptionItem.Prescription.endsWith(".pdf") ? (
                                 <FaFilePdf
                                   className="w-20 h-16 cursor-pointer py-3 text-red-500"
-                                  onClick={() => 
+                                  onClick={() =>
                                     openFileModal(
                                       prescriptionItem.id,
                                       prescriptionItem.Prescription
@@ -253,8 +256,7 @@ console.log(id)
                                 className="text-[#ff0000] inline-block mx-2 text-2xl"
                                 onClick={() =>
                                   handleDelete(prescriptionItem.id)
-                                }
-                              >
+                                }>
                                 <BsTrash />
                               </button>
                             </td>
