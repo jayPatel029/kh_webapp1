@@ -59,7 +59,7 @@ const generatePrescriptionDisapprovalAlert = async (obj) => {
       id: obj.id,
       name: doctorName,
       type0: obj.type,
-      type: `Prescription Dissapproval by ${doctorName}`,
+      type: `Prescription Dissapproved by ${doctorName}`,
       date: obj.date,
       redirect: `/ShowAlarms/${patientID}`,
       alarmId: alarmId,

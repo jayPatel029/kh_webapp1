@@ -14,7 +14,7 @@ const getAlertbyType = async (req, res) => {
   const { type } = req.params;
   try {
     console.log("getAlertbyType function called with type : ", type);
-    const query = `SELECT * FROM alerts WHERE type = '${type}'`;
+    const query = `SELECT * FROM alerts WHERE type = '${type}' order by date desc`;
     const response = await pool.execute(query);
     res.status(200).json(response);
   } catch (error) {

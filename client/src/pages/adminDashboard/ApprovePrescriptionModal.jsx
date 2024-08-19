@@ -64,7 +64,7 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
   useEffect(() => {
     var pres = localStorage.getItem("prescriptionAlerts");
     pres = JSON.parse(pres);
-    console.log(pres);
+    //console.log(pres);
     // group these prescriptions by presId
     const groupData = pres.reduce((acc, item) => {
       const { presId, ...rest } = item;
@@ -75,7 +75,7 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
       return acc;
     }, {});
     setGroupedData(groupData);
-  }, [groupedData]);
+  }, []);
 
   return (
     <>
@@ -84,14 +84,14 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
           <div className="header flex justify-between items-center border-b pb-2 mb-4  lg:pt-0  ">
             <h2 className="text-2xl font-bold  ">Digitised Prescription Copy</h2>
             <div className="flex flex-col lg:flex-row items-center">
-              <Link to={groupedData[1] ? `/userProfile/${groupedData[1][0].patientId}` : "#"}>
+              {/* <Link to={groupedData[1] ? `/userProfile/${groupedData[1][0].patientId}` : "#"}>
                 <div
                   className="rounded-lg text-primary border-2 border-primary w-40 py-2 justify-center flex shadow-lg m-1"
                   style={{ cursor: "pointer" }}
                 >
                   View Profile
                 </div>
-              </Link>
+              </Link> */}
 
               <div
                 className="rounded-lg text-red-800 border-2 border-red-800 w-40 py-2 justify-center flex shadow-lg"

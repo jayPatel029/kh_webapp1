@@ -400,59 +400,42 @@ function UserProfile({ patient }) {
                 <div className="flex flex-wrap justify-center">
                   <div className="w-1/2 md:w-1/4 mb-2 flex  justify-center">
                     <div className="navbuttons gap-2">
-                      {role === "Admin" ? (
-                        <div className="h-full ">
-                          {chats.length > 0 ? (
-                            <div>
-                              <span className="rounded-full inline-flex justify-center w-6 h-6 items-center text-xs p-0 text-center bg-red-700 text-white">
-                                {chats.reduce(
-                                  (total, chat) => total + chat.unreadCount,
-                                  0
-                                )}
-                              </span>
-                            </div>
-                          ) : (
-                            <></>
-                          )}
+                      <Link to={"/adminChat/" + id} className="text-sm">
+                        ADMIN CHAT
+                      </Link>
+                      {role === "Admin" && chats.length > 0 && chats.reduce((total, chat) => total + chat.unreadCount, 0) > 0 ? (
+                        <div className="h-full">
+                          <div>
+                            <span className="rounded-full inline-flex justify-center w-6 h-6 items-center text-xs p-0 text-center bg-red-700 text-white">
+                              {chats.reduce((total, chat) => total + chat.unreadCount, 0)}
+                            </span>
+                          </div>
                         </div>
                       ) : (
-                        <>
-                          <div className="">
+                        totalUnreadCount > 0 && (
+                          <div>
                             <span className="rounded-full inline-flex justify-center w-6 h-6 items-center text-xs p-0 text-center bg-red-700 text-white">
                               {totalUnreadCount}
                             </span>
                           </div>
-                        </>
+                        )
                       )}
-
-                      <Link to={"/adminChat/" + id} className="text-sm">
-                        ADMIN CHAT
-                      </Link>
                     </div>
                   </div>
-                  <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
+                  <div className="w-1/2 md:w-1/4 mb-2 flex gap-2 justify-center">
                     <div className="navbuttons">
-                      {role === "Doctor" ? (
-                        <div className="h-full ">
-                          {chats1.length > 0 ? (
-                            <div>
-                              <span className="rounded-full inline-flex justify-center w-6 h-6 items-center text-xs p-0 text-center bg-red-700 text-white">
-                                {chats1.reduce(
-                                  (total, chat) => total + chat.unreadCount,
-                                  0
-                                )}
-                              </span>
-                            </div>
-                          ) : (
-                            <></>
-                          )}
-                        </div>
-                      ) : (
-                        <></>
-                      )}
                       <Link to={"/doctorChat/" + id} className="text-sm">
                         DOCTOR CHAT
                       </Link>
+                      {role === "Doctor" && chats1.length > 0 && chats1.reduce((total, chat) => total + chat.unreadCount, 0) > 0 ? (
+                        <div className="h-full">
+                          <div>
+                            <span className="rounded-full inline-flex justify-center w-6 h-6 mx-2 items-center text-xs p-0 text-center bg-red-700 text-white">
+                              {chats1.reduce((total, chat) => total + chat.unreadCount, 0)}
+                            </span>
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                   <div className="w-1/2 md:w-1/4 mb-2 flex justify-center ">
