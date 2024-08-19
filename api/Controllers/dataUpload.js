@@ -52,7 +52,7 @@ exports.uploadFiles = async (req, res) => {
       fs.renameSync(file.path, targetPath);
       filePaths.push(targetPath);
     }
-    res.status(200).send({ message: "Files uploaded", objectUrl});
+    res.status(200).send({ message: "Files uploaded", filePaths });
   } catch (err) {
     console.error(err);
     res.status(500).send("Failed to upload files: " + err.message);
@@ -101,7 +101,7 @@ exports.uploadFile = async (req, res) => {
 
   try {
     fs.renameSync(req.file.path, targetPath);
-    res.status(200).send({ message: "File uploaded", objectUrl: targetPath });
+    res.status(200).send({ message: "File uploaded", filePath: targetPath });
   } catch (err) {
     console.error(err);
     res.status(500).send("Failed to upload file: " + err.message);
