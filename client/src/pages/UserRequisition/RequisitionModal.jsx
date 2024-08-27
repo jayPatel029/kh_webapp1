@@ -42,14 +42,14 @@ const RequisitionModal = ({ closeModal, user_id, onSuccess }) => {
       getFileRes(selectedImage)
         .then((res) => {
           console.log("res", res);
-          if (res.data.objectUrl === undefined) {
+          if (res.data.filePath === undefined) {
             alert("failed to upload you document, please try again later");
             return;
           }
           let data = {
             Patient_id: user_id,
             Date: selectedDate,
-            Requisition: res.data.objectUrl,
+            Requisition: res.data.filePath,
           };
 
           UploadRequisition(data).then(() => {
@@ -86,14 +86,14 @@ const RequisitionModal = ({ closeModal, user_id, onSuccess }) => {
       getFileRes(file, "Requisition.pdf")
         .then(async (res) => {
           console.log("res", res);
-          if (res.data.objectUrl === undefined) {
+          if (res.data.filePath === undefined) {
             alert("failed to upload you document, please try again later");
             return;
           }
           let data = {
             Patient_id: user_id,
             Date: selectedDate,
-            Requisition: res.data.objectUrl,
+            Requisition: res.data.filePath,
           };
           UploadRequisition(data).then(() => {
             onSuccess();

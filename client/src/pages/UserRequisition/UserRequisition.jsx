@@ -57,6 +57,7 @@ const UserRequisition = () => {
       const response = await axiosInstance.get(
         `${server_url}/requisition/getRequisition/${patient_id}`
       );
+      console.log(response.data.data)
       setUserRequisitionData(response.data.data);
       console.log(response.data.data);
     } catch (error) {
