@@ -43,14 +43,14 @@ const DietModal = ({ closeModal, user_id, onSuccess }) => {
       getFileRes(selectedImage)
         .then(async (res) => {
           console.log("res", res);
-          if (res.data.objectUrl === undefined) {
+          if (res.data.filePath === undefined) {
             alert("failed to upload you document, please try again later");
             return;
           }
           let data = {
             date: selectedDate,
             type: selectedReportType,
-            img: res.data.objectUrl,
+            img: res.data.filePath,
             desc: description,
             patientId: id,
           };
@@ -89,14 +89,14 @@ const DietModal = ({ closeModal, user_id, onSuccess }) => {
       getFileRes(file, "DietDetail.pdf")
         .then(async (res) => {
           console.log("res", res);
-          if (res.data.objectUrl === undefined) {
+          if (res.data.filePath === undefined) {
             alert("failed to upload you document, please try again later");
             return;
           }
           let data = {
             date: selectedDate,
             type: selectedReportType,
-            img: res.data.objectUrl,
+            img: res.data.filePath,
             desc: description,
             patientId: id,
           };

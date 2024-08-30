@@ -98,7 +98,10 @@ const UserCard = ({ user }) => {
           className="mr-4 h-12 w-12 rounded-full"
         />
         <div>
-          <p className="font-semibold">Category : {user.category}</p>
+          <div className="flex">
+            <p className="font-semibold">Category: </p>
+            <div className="ml-1">{user.category}</div>
+          </div>
           <p className="font-semibold">Name : {user.name || patientName}</p>
           {/* <p className="font-semibold">{user.name}</p> */}
           {/* <p>{user.type}</p> */}
@@ -140,7 +143,13 @@ const AdminContainer = ({
   doctorAlerts,
   patientAlerts,
 }) => {
-  // console.log("from AdminContainer", doctorAlerts);
+  console.log("from AdminContainer", doctorAlerts);
+  const filteredPatientAlerts = patientAlerts.filter(
+    (alert) => alert.category !== "Prescription Approved"
+  );
+  const finalPatientAlerts = filteredPatientAlerts.filter(
+    (alert) => alert.category !== "New Prescription Alarm"
+  );
   return (
     <div className="bg-gray-100 min-h-screen md:py-10 md:px-40 overflow-y-auto">
       {/* Upper Cards Container */}
@@ -203,7 +212,7 @@ const AdminContainer = ({
             Patient Alerts
           </p>
           <div style={{ maxHeight: "calc(100% - 2rem)", overflowY: "auto" }}>
-            {patientAlerts.map((user) => (
+            {finalPatientAlerts.map((user) => (
               <div>
                 <UserCard key={user.id} user={user} />
               </div>

@@ -37,7 +37,7 @@ const getAlertbyId = async (req, res) => {
 const createDoctorMessageToAdminAlert = async (req, res) => {
   const { chatId, message, pid } = req.body;
   const type = "doctor";
-  const category = `Doctor Message to Admin ! ${message}`;
+  const category = `Doctor Message to Admin -"${message}"`;
   const date = new Date().toISOString().slice(0, 19).replace("T", " ");
   const query = `INSERT INTO alerts (type, category, chatId,date,patientId) VALUES ('${type}', '${category}', ${chatId},'${date}',${pid})`;
   try {
@@ -103,6 +103,30 @@ const createNewProgramEnrollmentAlert = async (req, res) => {
     res.status(500).json(error);
   }
 };
+
+const createProgramAlert = async (req, res) => {
+  const { patientId, programName, category } = req.body;
+  const type = "patient";
+  const date = new Date().toISOString().slice(0, 19).replace("T", " ");
+
+  // Ensure category is provided, otherwise default to "New Program Enrollment"
+  const alertCategory = category || "New Program Enrollment";
+
+  const query = `INSERT INTO alerts (type, category, patientId, programName, date) 
+                 VALUES ('${type}', '${alertCategory}', ${patientId}, '${programName}', '${date}')`;
+
+  try {
+    await pool.query(query);
+    res.status(200).json({
+      message: "Successful",
+      result: true,
+    });
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
+
+
 
 //patient alert
 const createNewPrescriptionAlarmAlert = async (req, res) => {
@@ -417,7 +441,7 @@ module.exports = {
   createPrescriptionDisapprovedAlarmAlert,
   createChangeInProgramAlert,
   createNewLabReportAlert,
-  createNewRequisitionAlert,
+  createNewRequisitionAlert, //no need
   createDeleteAccountAlert,
   createPrescriptionNotViewedAlert,
   approveOrDisapprovePrescription,
@@ -431,4 +455,5 @@ module.exports = {
   updateIsReadAlert,
   createContactUsAlert,
   createNewEnrollmentAlertFunction,
+  createProgramAlert,
 };

@@ -3,13 +3,9 @@ const { getCurrentFormattedDate } = require("../Helpers/date_formatter.js");
 const { uploadFile } = require("../Helpers/auth/uploadDataHelper.js");
 
 const insertDietDetails = async (req, res) => {
-  const { type, desc, img, patientid, isimage } = req.headers;
+  const { type, desc, img, patientid, isimage,date } = req.headers;
   // console.log(type, desc, img, patientid, isimage);
   console.log(isimage);
-  const formattedDate = getCurrentFormattedDate()
-    .split(" ")
-    .reverse()
-    .join("-");
   try {
     if (isimage!=="false") {
       console.log("here2");
@@ -28,7 +24,7 @@ const insertDietDetails = async (req, res) => {
         photolocation = await uploadFile(fileName, image.path);
         // console.log(photolocation);
         const query = `INSERT INTO dietdetails (Date, Meal_Type, meal_desc, meal_img, patient_id) VALUES ( ? , ? , ? , ? , ?)`;
-        const values = [formattedDate, type, desc, photolocation, patientid];
+        const values = [date, type, desc, photolocation, patientid];
         const response = await pool.query(query, values);
         res.status(200).json({
           userID: patientid,
@@ -42,7 +38,7 @@ const insertDietDetails = async (req, res) => {
     } else {
       console.log("here");
       const query = `INSERT INTO dietdetails (Date,Meal_Type,meal_desc,meal_img,patient_id) VALUES ( ? , ? , ? , ? , ?)`;
-      const values = [formattedDate, type, desc, img, patientid];
+      const values = [date, type, desc, img, patientid];
       const response = await pool.query(query, values);
       res.status(200).json({
         userID: patientid,

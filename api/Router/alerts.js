@@ -19,7 +19,8 @@ const {getAlerts,
     dissapproveAllAlerts,
     createNewPrescriptionAlert,
     updateIsReadAlert,
-    createContactUsAlert
+    createContactUsAlert,
+    createProgramAlert
 } = require('../Controllers/Alerts.js');
 const { verifyToken } = require("../Helpers/middlewares/roles.js");
 
