@@ -1,6 +1,5 @@
 import React from "react";
 import { admindashblue, admindashred, dummyadmin } from "../../assets";
-import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { server_url } from "../../constants/constants";
@@ -50,7 +49,11 @@ const UserCard = ({ user }) => {
       updateIsReadAlert(alert.id);
     }
 
-    if (alert.type === "patient" && alert.patientId) {
+    if (
+      alert.type === "patient" &&
+      alert.patientId &&
+      alert.category === "New Enrollment"
+    ) {
       navigate(`/patient/${alert.patientId}`);
     } else if (
       alert.type === "doctor" &&
@@ -59,6 +62,13 @@ const UserCard = ({ user }) => {
     ) {
       navigate(`/adminChat/${alert.patientId}`);
       // navigate(`/adminChat/${alert.patientId}?receiver=${alert.userEmail}`);
+    } else if (
+      (alert.type === "patient" || alert.type === "doctor") &&
+      (alert.category === "New Prescription" ||
+        alert.category === "Prescription Disapproved" ||
+        alert.category === "Prescription Not Viewed")
+    ) {
+      navigate(`/userPrescription/${alert.patientId}`);
     } else {
       console.error("No valid redirection path found for this alert.");
     }
@@ -130,7 +140,7 @@ const AdminContainer = ({
   doctorAlerts,
   patientAlerts,
 }) => {
-  console.log("from AdminContainer", doctorAlerts);
+  // console.log("from AdminContainer", doctorAlerts);
   return (
     <div className="bg-gray-100 min-h-screen md:py-10 md:px-40 overflow-y-auto">
       {/* Upper Cards Container */}
