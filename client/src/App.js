@@ -9,6 +9,7 @@ import Patient from "./pages/patient/Patient";
 import ProfileQuestions from "./pages/profileQuestion/ProfileQuestions";
 import UserProgramSelection from "./pages/userProgramSelection/UserProgramSelection";
 import Login from "./pages/login/Login";
+import UniqueUserProgramSelection from "./pages/userProgramSelection/UniqueUserProgramSelection"
 // import UserProfile from './pages/userProfile/UserProfile'
 import UserRoles from "./pages/adminManagement/UserRoles";
 import AddRole from "./pages/adminManagement/AddRole";
@@ -109,6 +110,14 @@ function App() {
               element={
                 <ProtectedRoute routeName={"UserProgramSelection"}>
                   <UserProgramSelection />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="userProgramSelection/:id"
+              element={
+                <ProtectedRoute routeName={"UserProgramSelection"}>
+                  <UniqueUserProgramSelection />
                 </ProtectedRoute>
               }
             />

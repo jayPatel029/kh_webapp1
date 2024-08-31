@@ -172,7 +172,7 @@ function UserProgramSelection() {
                         <td className="py-2 px-4">{request?.filter(alert => alert.patientId === record.id).map(alert => (
               <div key={alert.id}>
                 
-                <p>{alert.programName}</p>
+                <p className="font-bold">{alert.programName}</p>
                 <p>Date: {new Date(alert.date).toLocaleDateString()}</p>
                 <button className="bg-green-800 p-2 rounded-sm text-white " onClick={()=>handleSubmit(alert.programName,record.id)}>Accept?</button>
               </div>))}</td>

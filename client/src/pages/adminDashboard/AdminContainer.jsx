@@ -42,10 +42,10 @@ const UserCard = ({ user }) => {
       localStorage.setItem("requisitionId", alert.requisitionId);
     }
     // update the isRead of the alert object
-    if (alert.missedAlertId && alert.isOpened == 0) {
+    if (alert.missedAlertId && alert.isOpened == 0 && alert.category!=="New Program Enrollment") {
       updateIsReadAlert(alert.missedAlertId);
       updateIsReadAlert(alert.id);
-    } else if (alert.isOpened == 0) {
+    } else if (alert.isOpened == 0 && alert.category!=="New Program Enrollment") {
       updateIsReadAlert(alert.id);
     }
 
@@ -79,7 +79,7 @@ const UserCard = ({ user }) => {
       (alert.category === "New Program Enrollment" ||
         alert.category === "Change In Program")
     ) {
-      navigate(`/userProgramSelection`);
+      navigate(`/userProgramSelection/${alert.patientId}`);
     } else if (
       alert.type === "patient" &&
       alert.category === "New Requisition"
