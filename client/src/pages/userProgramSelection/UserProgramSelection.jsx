@@ -10,6 +10,7 @@ function UserProgramSelection() {
   const recordsPerPage = 5;
   const [currentPage, setCurrentPage] = useState(1);
   const [records, setRecords] = useState([]);
+  const [request, setrequest] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
@@ -33,6 +34,20 @@ function UserProgramSelection() {
     currentPage * recordsPerPage
   );
 
+  useEffect(()=>{
+    const getProgramChangeAlert = async ()=>{
+      try {
+        const response= await axiosInstance.get(`${server_url}/alerts/byCategory`);
+        console.log("Program",response);
+        setrequest(response.data)
+      }
+      catch(error){
+  console.log(error)
+      }
+    }
+    getProgramChangeAlert();
+  },[])
+ 
   function handleFilter(event) {
     const newData = records.filter((row) => {
       return row.name.toLowerCase().includes(event.target.value.toLowerCase());
@@ -45,6 +60,12 @@ function UserProgramSelection() {
     setCurrentPage(page);
   };
 
+  const handleAccept= async(program,patientId)=>{
+    const response = await axiosInstance.put(`${server_url}/patient/updateProgram`,{
+      id:patientId,
+      program_id:program
+    })
+  }
   const handleSubmit = async (program, patientId) => {
     try {
       const response = await axiosInstance.put(`${server_url}/patient/updateProgram`, {
@@ -138,7 +159,13 @@ function UserProgramSelection() {
                         <td className="py-2 px-8">
                           {formatDate(record.registered_date)}
                         </td>
-                        <td className="py-2 px-4">{record.requestFor}</td>
+                        <td className="py-2 px-4">{request?.filter(alert => alert.patientId === record.id).map(alert => (
+              <div key={alert.id}>
+                
+                <p>{alert.programName}</p>
+                <p>Date: {new Date(alert.date).toLocaleDateString()}</p>
+                <button className="bg-green-800 p-2 rounded-sm text-white " onClick={()=>handleSubmit(alert.programName,record.id)}>Accept?</button>
+              </div>))}</td>
                         <td className="py-2 px-4">
                           <button
                             className={`block mb-2 text-primary border-primary border-2 rounded-md w-40 ${

@@ -222,9 +222,9 @@ const updatePatientProgram = async (req, res, next) => {
       SET program = '${program_id}'
       WHERE id = '${id}'
     `;
-
+    const query2 =`UPDATE  alerts SET isOpened='1' where patientId =${id} AND category ="New Program Enrollment" `
     await pool.query(query);
-
+    await pool.query(query2);
     res.status(200).json({
       success: true,
       data: "Patient Program Updated Successfully",

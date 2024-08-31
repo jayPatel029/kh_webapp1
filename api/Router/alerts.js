@@ -2,6 +2,7 @@ const router = require('express').Router();
 
 const {getAlerts,
      getAlertbyType,
+     getAlertbyCategory,
     createDoctorMessageToAdminAlert,
     createNewEnrollmentAlert,
     createNewProgramEnrollmentAlert,
@@ -26,6 +27,7 @@ const { verifyToken } = require("../Helpers/middlewares/roles.js");
 
 router.get('/',verifyToken, getAlerts);
 router.get('/byType/:type',verifyToken, getAlertbyType);
+router.get('/byCategory',verifyToken, getAlertbyCategory);
 router.post('/doctorMessageToAdmin',verifyToken, createDoctorMessageToAdminAlert);
 router.post('/newEnrollment',verifyToken, createNewEnrollmentAlert);
 router.post('/newProgramEnrollment',verifyToken, createNewProgramEnrollmentAlert);

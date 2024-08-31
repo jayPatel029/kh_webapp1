@@ -9,6 +9,19 @@ const getAlerts = async (req, res) => {
     res.status(500).json(error);
   }
 };
+const getAlertbyCategory = async(req,res)=>{
+  try{
+    const query = "SELECT * FROM alerts WHERE category = 'New Program Enrollment' AND isOpened=0";
+    const response = await pool.execute(query);
+    
+    res.status(200).json(response)
+  }
+  catch(error){
+    console.log(error)
+
+  }
+}
+
 
 const getAlertbyType = async (req, res) => {
   const { type } = req.params;
@@ -92,6 +105,16 @@ const createNewProgramEnrollmentAlert = async (req, res) => {
   const category = "New Program Enrollment";
   const { patientId, programName } = req.body;
   const date = new Date().toISOString().slice(0, 19).replace("T", " ");
+  const selectQuery= `SELECT programName  from alerts where patientId = ${patientId} AND category ="New Program Enrollment" AND isOpened=0 `
+  const ans=await pool.execute(selectQuery)
+  console.log(ans,"auwg")
+  
+  if(ans[0]){
+    return res.status(200).json({
+      message: "An alert already exists and is not opened.",
+      result: false,
+    });
+  }
   const query = `INSERT INTO alerts (type, category, patientId, programName, date) VALUES ('${type}', '${category}', ${patientId},'${programName}','${date}')`;
   try {
     await pool.query(query);
@@ -113,7 +136,7 @@ const createProgramAlert = async (req, res) => {
   const alertCategory = category || "New Program Enrollment";
 
   const query = `INSERT INTO alerts (type, category, patientId, programName, date) 
-                 VALUES ('${type}', '${alertCategory}', ${patientId}, '${programName}', '${date}')`;
+  VALUES ('${type}', '${alertCategory}', ${patientId}, '${programName}', '${date}')`;
 
   try {
     await pool.query(query);
@@ -434,6 +457,7 @@ const updateIsReadAlert = async (req, res) => {
 module.exports = {
   getAlerts,
   getAlertbyType,
+  getAlertbyCategory,
   createDoctorMessageToAdminAlert,
   createNewEnrollmentAlert,
   createNewProgramEnrollmentAlert,
