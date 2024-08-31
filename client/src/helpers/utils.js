@@ -8,12 +8,14 @@ export default function getValidImageUrl(url) {
 }
 
 export const formatDate = (dateString) => {
-  if (!dateString) return "";
-  const dateObject = new Date(dateString);
-  const day = String(dateObject.getDate()).padStart(2, "0");
-  const month = String(dateObject.getMonth() + 1).padStart(2, "0"); // Months are zero-based
-  const year = dateObject.getFullYear();
-  return `${day}-${month}-${year}`;
+  // if (!dateString) return "";
+  // const dateObject = new Date(dateString);
+  // const day = String(dateObject.getDate()).padStart(2, "0");
+  // const month = String(dateObject.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+  // const year = dateObject.getFullYear();
+  // return `${day}-${month}-${year}`;
+  const [year, month, day] = dateString.split("-");
+  return `${day}/${month}/${year}`;
 };
 
 // export function checkURl(url) {

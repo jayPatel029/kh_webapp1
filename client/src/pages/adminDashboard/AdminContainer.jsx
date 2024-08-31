@@ -42,10 +42,17 @@ const UserCard = ({ user }) => {
       localStorage.setItem("requisitionId", alert.requisitionId);
     }
     // update the isRead of the alert object
-    if (alert.missedAlertId && alert.isOpened == 0 && alert.category!=="New Program Enrollment") {
+    if (
+      alert.missedAlertId &&
+      alert.isOpened == 0 &&
+      alert.category !== "New Program Enrollment"
+    ) {
       updateIsReadAlert(alert.missedAlertId);
       updateIsReadAlert(alert.id);
-    } else if (alert.isOpened == 0 && alert.category!=="New Program Enrollment") {
+    } else if (
+      alert.isOpened == 0 &&
+      alert.category !== "New Program Enrollment"
+    ) {
       updateIsReadAlert(alert.id);
     }
 
@@ -66,12 +73,13 @@ const UserCard = ({ user }) => {
       (alert.type === "patient" || alert.type === "doctor") &&
       (alert.category === "New Prescription" ||
         alert.category === "Prescription Disapproved" ||
-        alert.category === "Prescription Not Viewed")
+        alert.category === "Prescription Not Viewed" ||
+        alert.category === "New Prescription Alarm")
     ) {
       navigate(`/userPrescription/${alert.patientId}/${alert.prescriptionId}`);
     } else if (
       alert.type === "patient" &&
-      alert.category === "Delete Account"
+      alert.category === "Account Deletion"
     ) {
       navigate(`/patient/${alert.patientId}`);
     } else if (

@@ -35,11 +35,11 @@ const UserCard = ({ title, Alerts }) => {
   const closeCommentsModal = async (comments) => {
     const email = localStorage.getItem("email");
     console.log("Comments:", comments);
-    console.log("marking as read comments")
+    console.log("marking as read comments");
 
     try {
       var unreadComments = comments.filter(
-        (comment) => comment?.isRead === false 
+        (comment) => comment?.isRead === false
       );
       var commentIds = unreadComments.map((comment) => comment.id);
 
@@ -174,8 +174,7 @@ const UserCard = ({ title, Alerts }) => {
                 {/* Wrapping each button in a div */}
                 <button
                   className="bg-primary mr-2 hover:bg-[#317581] text-white p-2 rounded transition duration-300 ease-in-out transform hover:scale-105"
-                  onClick={() => openModalPrescription()}
-                >
+                  onClick={() => openModalPrescription()}>
                   {prescriptionCount} Approve Prescription
                 </button>
               </div>
@@ -187,8 +186,7 @@ const UserCard = ({ title, Alerts }) => {
                 <button
                   className="text-white p-2 rounded transition duration-300 ease-in-out transform hover:scale-105"
                   onClick={() => openAlertModal()}
-                  style={{ backgroundColor: alertsCount > 0 ? "red" : "gray" }}
-                >
+                  style={{ backgroundColor: alertsCount > 0 ? "red" : "gray" }}>
                   {alertsCount} Alerts
                 </button>
               </div>
@@ -203,8 +201,7 @@ const UserCard = ({ title, Alerts }) => {
                       ? "bg-yellow-600 hover:bg-yellow-800"
                       : "bg-gray-500"
                   }`}
-                  onClick={() => openCommentsModal()}
-                >
+                  onClick={() => openCommentsModal()}>
                   {commentsCount} comments
                 </button>
               </div>
@@ -219,10 +216,9 @@ const UserCard = ({ title, Alerts }) => {
       {commentsModal && (
         <CommentConatainer
           comments={patientComments}
-          closeModal={()=>{
-            closeCommentsModal(patientComments)
-          }
-          }
+          closeModal={() => {
+            closeCommentsModal(patientComments);
+          }}
         />
       )}
       {showAlertModal && <AlertModal closeModal={closeAlertModal} />}
@@ -239,7 +235,8 @@ const DoctorContainer = () => {
         var res1 = await axiosInstance.post(`${server_url}/doctor/byEmail/id`, {
           email: localStorage.getItem("email"),
         });
-        console.log("Doctor ID: ", res1.data.data);
+        console.log("Doctor ID: ", res1);
+        // console.log("Doctor ID: ", res1.data.data);
         var res = await axiosInstance.get(
           `${server_url}/sortAlerts/doctor/${res1.data.data}`
         );
@@ -300,8 +297,8 @@ const DoctorContainer = () => {
             {Array.isArray(names) &&
               names.map((name) => (
                 <div key={name} className="mb-5 text-center sm:mb-2">
-                <UserCard title={name} Alerts={Alerts} />
-              </div>
+                  <UserCard title={name} Alerts={Alerts} />
+                </div>
               ))}
 
             {/* {typeof groupedAlerts === 'object' && Object.keys(groupedAlerts).map(patientId => (
