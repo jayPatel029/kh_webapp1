@@ -68,7 +68,7 @@ const UserCard = ({ user }) => {
         alert.category === "Prescription Disapproved" ||
         alert.category === "Prescription Not Viewed")
     ) {
-      navigate(`/userPrescription/${alert.patientId}`);
+      navigate(`/userPrescription/${alert.patientId}/${alert.prescriptionId}`);
     } else if (
       alert.type === "patient" &&
       alert.category === "Delete Account"

@@ -10,6 +10,7 @@ import { BsTrash } from "react-icons/bs";
 import { useParams, Link } from "react-router-dom";
 // import CommentModal from "./commentModal";
 import UploadedFileModal from "./UploadedFileModal";
+
 import { FaFilePdf } from "react-icons/fa6";
 // import UploadBulkProfile from "../labreports/uploadBulkProfileQuestions";
 
@@ -21,11 +22,12 @@ const Userprescription = () => {
   const { id } = useParams();
   const [doctorOptions, setDoctorOptions] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const location = useLocation();
+ 
   const openModal = () => {
     setShowModal(true);
   };
-
+  
   const closeModal = () => {
     setShowModal(false);
   };
@@ -38,7 +40,6 @@ const Userprescription = () => {
     setUploadedFile(null);
   };
 
-  const location = useLocation();
   // console.log(location.pathname);
 
   const formatDate = (dateString) => {
@@ -57,6 +58,7 @@ const Userprescription = () => {
       const response = await axiosInstance.get(
         `${server_url}/prescription/getPrescription/${patient_id}`
       );
+      console.log(response.data.data)
       setUserPrescriptionData(response.data.data);
       setFilteredPrescriptionData(response.data.data);
       // console.log("data received on frontend : ", response.data.data);

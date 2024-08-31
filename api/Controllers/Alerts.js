@@ -86,7 +86,7 @@ const createNewEnrollmentAlert = async (req, res) => {
 const createNewEnrollmentAlertFunction = async (patientId) => {
   const type = "patient";
   const category = "New Enrollment";
-  const date = new Date().toLocaleString().slice(0, 19).replace("T", " ");
+  const date = new Date().toISOString().slice(0, 19).replace("T", " ");
   const query = `INSERT INTO alerts (type, category, patientId, date) VALUES ('${type}', '${category}', ${patientId}, '${date}')`;
 
   try {
@@ -162,7 +162,7 @@ const createNewPrescriptionAlarmAlert = async (req, res) => {
     const alarm = await pool.query(getAlarmQuery);
     const patientId = alarm[0].patientid;
     console.log(alarm[0]);
-    const date = new Date().toLocaleString().slice(0, 19).replace("T", " ");
+    const date = new Date().toISOString().slice(0, 19).replace("T", " ");
     console.log(date);
     const query = `INSERT INTO alerts (type, category, alarmId, patientId, date) VALUES ('${type}', '${category}', ${alarmId},${patientId},'${date}')`;
     const response = await pool.query(query);
@@ -183,7 +183,7 @@ const createPrescriptionDisapprovedAlarmAlert = async (req, res) => {
   const patientId = alarm[0].patientid;
   console.log(alarm[0]);
   const { alarmId } = req.body;
-  const date = new Date().toLocaleString().slice(0, 19).replace("T", " ");
+  const date = new Date().toISOString().slice(0, 19).replace("T", " ");
   const query = `INSERT INTO alerts (type, category, alarmId, patientId, date) VALUES ('${type}', '${category}', ${alarmId},${patientId},'${date}')`;
   try {
     const response = await pool.query(query);
@@ -324,7 +324,7 @@ const approveOrDisapprovePrescription = async (req, res) => {
   if (status === "Rejected") {
     const type = "doctor";
     const category = "Prescription Disapproved";
-    const date = new Date().toLocaleString().slice(0, 19).replace("T", " ");
+    const date = new Date().toISOString().slice(0, 19).replace("T", " ");
     const query = `INSERT INTO alerts (type, category, alarmId,date,patientId) VALUES ('${type}', '${category}', ${alarmId},'${date}',${patientId})`;
     try {
       const response = await pool.query(query);
@@ -430,7 +430,7 @@ const createNewPrescriptionAlert = async (prescriptionId, patientId) => {
   try {
     const type = "patient";
     const category = "New Prescription";
-    const date = new Date().toLocaleString().slice(0, 19).replace("T", " ");
+    const date = new Date().toISOString().slice(0, 19).replace("T", " ");
     const query = `INSERT INTO alerts (type, category, prescriptionId,date,patientId) VALUES ('${type}', '${category}', ${prescriptionId},'${date}',${patientId})`;
     const response = await pool.query(query);
     console.log("Alert added!!");

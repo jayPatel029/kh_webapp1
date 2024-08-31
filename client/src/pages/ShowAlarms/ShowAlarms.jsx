@@ -70,6 +70,7 @@ function ShowAlarms() {
       alarmId: id,
       status: status,
     };
+    console.log("status:",status)
     const result = await axiosInstance.put(
       `${server_url}/alerts/approveOrDisapprovePrescription`,
       reqbody
