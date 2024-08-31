@@ -39,6 +39,8 @@ const Userprescription = () => {
   };
 
   const location = useLocation();
+  // console.log(location.pathname);
+
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const dateObject = new Date(dateString);
@@ -47,6 +49,7 @@ const Userprescription = () => {
     const year = dateObject.getFullYear();
     return `${day}-${month}-${year}`;
   };
+
   console.log(id);
   const fetchData = async () => {
     const patient_id = id;
@@ -155,7 +158,7 @@ const Userprescription = () => {
                   {showModal && (
                     <PrescriptionModal
                       closeModal={closeModal}
-                      user_id={location.state.id}
+                      user_id={id}
                       onSuccess={fetchData}
                     />
                   )}

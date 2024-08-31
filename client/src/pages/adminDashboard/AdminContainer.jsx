@@ -31,7 +31,7 @@ const UserCard = ({ user }) => {
   }, [user.patientId]);
 
   const actionFunc = async (alert) => {
-    console.log("alert", alert);
+    // console.log("alert", alert);
     if (alert.alarmId) {
       localStorage.setItem("alarmId", alert.alarmId);
     }
@@ -52,7 +52,7 @@ const UserCard = ({ user }) => {
     if (
       alert.type === "patient" &&
       alert.patientId &&
-      alert.category === "New Enrollment"
+      (alert.category === "New Enrollment" || alert.category === "New Program")
     ) {
       navigate(`/patient/${alert.patientId}`);
     } else if (
@@ -69,6 +69,27 @@ const UserCard = ({ user }) => {
         alert.category === "Prescription Not Viewed")
     ) {
       navigate(`/userPrescription/${alert.patientId}`);
+    } else if (
+      alert.type === "patient" &&
+      alert.category === "Delete Account"
+    ) {
+      navigate(`/patient/${alert.patientId}`);
+    } else if (
+      alert.type === "patient" &&
+      (alert.category === "New Program Enrollment" ||
+        alert.category === "Change In Program")
+    ) {
+      navigate(`/userProgramSelection`);
+    } else if (
+      alert.type === "patient" &&
+      alert.category === "New Requisition"
+    ) {
+      navigate(`/UserRequisition/${alert.patientId}`);
+    } else if (
+      alert.type === "patient" &&
+      alert.category === "Delete Account"
+    ) {
+      navigate(`/patient/${alert.patientId}`);
     } else {
       console.error("No valid redirection path found for this alert.");
     }
@@ -85,6 +106,16 @@ const UserCard = ({ user }) => {
       );
     }
   };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const dateObject = new Date(dateString);
+    const day = String(dateObject.getDate()).padStart(2, "0");
+    const month = String(dateObject.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const year = dateObject.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
   return (
     <div
       className="w-full bg-white p-3 border rounded shadow flex items-center"
@@ -110,7 +141,7 @@ const UserCard = ({ user }) => {
 
       {/* User Card Right Content */}
       <div className="ml-auto flex items-center">
-        <p className="mr-2">{user.date.slice(0, 10)}</p>
+        <p className="mr-2">{formatDate(user.date)}</p>
         <div>
           {user.isOpened === 1 ? (
             <div></div>
@@ -143,7 +174,7 @@ const AdminContainer = ({
   doctorAlerts,
   patientAlerts,
 }) => {
-  console.log("from AdminContainer", doctorAlerts);
+  // console.log("from AdminContainer", doctorAlerts);
   const filteredPatientAlerts = patientAlerts.filter(
     (alert) => alert.category !== "Prescription Approved"
   );

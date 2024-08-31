@@ -10,15 +10,18 @@ const NameModal = ({
   name: initialName,
   number: initialNumber,
   dob: initialDob,
-  
 }) => {
   const [name, setName] = useState(initialName || "");
   const [number, setNumber] = useState(initialNumber || "");
   const [dob, setDob] = useState(initialDob || "");
 
-  const formatDate = (date) => {
-    const newDate = new Date(date);
-    return newDate.toDateString();
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const dateObject = new Date(dateString);
+    const day = String(dateObject.getDate()).padStart(2, "0");
+    const month = String(dateObject.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const year = dateObject.getFullYear();
+    return `${day}-${month}-${year}`;
   };
 
   const handleUpdate = async () => {
@@ -30,10 +33,11 @@ const NameModal = ({
     };
     console.log(updatedUserData);
     try {
-
-      await axiosInstance.put(`${server_url}/patient/updatePatient`, updatedUserData)
+      await axiosInstance.put(
+        `${server_url}/patient/updatePatient`,
+        updatedUserData
+      );
       onSuccess();
-      
 
       // await axiosInstance
       // .put(`${server_url}/patient/updatePatient`, updatedUserData)
@@ -45,13 +49,11 @@ const NameModal = ({
       // .catch((error) => {
       //   console.error("Error updating user data:", error);
       // });
-      
     } catch (error) {
-      console.log(error)
-    }finally{
+      console.log(error);
+    } finally {
       closeEditModal();
     }
-    
   };
 
   const handleCancel = () => {
@@ -100,14 +102,12 @@ const NameModal = ({
           <div className="flex justify-end p-4">
             <button
               onClick={handleUpdate}
-              className="bg-primary text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            >
+              className="bg-primary text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline">
               UPDATE
             </button>
             <button
               onClick={handleCancel}
-              className="border-2 border-primary text-primary py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2"
-            >
+              className="border-2 border-primary text-primary py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2">
               CANCEL
             </button>
           </div>

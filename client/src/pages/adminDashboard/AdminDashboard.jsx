@@ -74,6 +74,7 @@ function AdminDashboard() {
           `${server_url}/alerts/byType/patient`
         );
         setPatientAlertsData(response.data);
+        console.log("Patient Alerts: ", response.data);
       } catch (error) {
         console.log(error);
       }

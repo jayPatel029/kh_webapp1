@@ -7,7 +7,7 @@ import { useLocation } from "react-router-dom";
 import axiosInstance from "../../helpers/axios/axiosInstance";
 import { server_url } from "../../constants/constants";
 import { BsTrash } from "react-icons/bs";
-import { useParams,Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import UploadedFileModal from "./UploadedFileModal";
 import { FaFilePdf } from "react-icons/fa6";
 import CSVLab2 from "../../components/csvLab2/CSVLab2";
@@ -22,9 +22,13 @@ const UserLabReports = () => {
     setShowModal(true);
   };
 
-  const formatDate = (date) => {
-    const newDate = new Date(date);
-    return newDate.toDateString();
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const dateObject = new Date(dateString);
+    const day = String(dateObject.getDate()).padStart(2, "0");
+    const month = String(dateObject.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const year = dateObject.getFullYear();
+    return `${day}-${month}-${year}`;
   };
 
   const closeModal = (data) => {
@@ -46,7 +50,9 @@ const UserLabReports = () => {
   };
 
   const deleteLabReport = async (id) => {
-    const isConfirmed = window.confirm("Are you sure you want to delete this lab report?");
+    const isConfirmed = window.confirm(
+      "Are you sure you want to delete this lab report?"
+    );
     if (isConfirmed) {
       try {
         console.log(id);
@@ -54,7 +60,7 @@ const UserLabReports = () => {
           `${server_url}/labreport/deleteLabReport/${id}`
         );
         console.log(response);
-       
+
         // Fetch the updated data to refresh the state
         await fetchData();
       } catch (error) {
@@ -81,12 +87,14 @@ const UserLabReports = () => {
 
   useEffect(() => {
     fetchData();
-    console.log(labReportData)
+    console.log(labReportData);
   }, [showModal]);
 
   const handleDelete = async (id) => {
     try {
-      await axiosInstance.delete(`${server_url}/labreport/deleteLabReport/${id}`);
+      await axiosInstance.delete(
+        `${server_url}/labreport/deleteLabReport/${id}`
+      );
       // Update the userRequisitionData state to reflect the deletion
       setLabReportData(labReportData.filter((patient) => patient.id !== id));
     } catch (error) {
@@ -106,9 +114,11 @@ const UserLabReports = () => {
         <div className="container">
           <div className="bg-gray-100 min-h-screen md:py-10 md:px-40">
             <div className="manage-roles-container p-7 ml-4 mr-4 mt-4 bg-white shadow-md border-t-4 border-primary">
-            <Link to={`/userProfile/${id}`} className="text-primary border-b-2 border-primary">
-             go back
-             </Link>
+              <Link
+                to={`/userProfile/${id}`}
+                className="text-primary border-b-2 border-primary">
+                go back
+              </Link>
               <div className="mt-4 mb-4 flex items-center justify-end">
                 <h1 className="text-xl text-bold">{location?.state?.name}</h1>
                 {/* <img src="" alt="f" className="rounded-full h-12 w-12" /> */}
@@ -118,11 +128,10 @@ const UserLabReports = () => {
                 <div className="flex items-center justify-end">
                   <button
                     className="block rounded-lg text-primary border-2 border-primary w-40 py-2"
-                    onClick={() => openModal()}
-                  >
+                    onClick={() => openModal()}>
                     Upload Lab Report
                   </button>
-                  <CSVLab2/>
+                  <CSVLab2 />
                   {showModal && (
                     <MyModal
                       closeModal={closeModal}
@@ -164,8 +173,7 @@ const UserLabReports = () => {
                              : ""
                          }
                          border-b border-gray-200 
-                        `}
-                        >
+                        `}>
                           <td>
                             {
                               (labReportsItem.Date = formatDate(
@@ -208,8 +216,9 @@ const UserLabReports = () => {
                             <button
                               className="text-red-500 "
                               style={{ fontSize: "1.5rem" }}
-                              onClick={() => deleteLabReport(labReportsItem.id)}
-                            >
+                              onClick={() =>
+                                deleteLabReport(labReportsItem.id)
+                              }>
                               <BsTrash />
                               {/* <button
                                 className="text-green-600 inline-block mx-2 text-m"

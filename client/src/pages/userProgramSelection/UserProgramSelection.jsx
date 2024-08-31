@@ -20,7 +20,9 @@ function UserProgramSelection() {
 
   const getPatients = async () => {
     try {
-      const response = await axiosInstance.get(`${server_url}/patient/getPatients`);
+      const response = await axiosInstance.get(
+        `${server_url}/patient/getPatients`
+      );
       setRecords(response.data.data);
       setTotalPages(Math.ceil(response.data.data.length / recordsPerPage));
     } catch (error) {
@@ -47,16 +49,21 @@ function UserProgramSelection() {
 
   const handleSubmit = async (program, patientId) => {
     try {
-      const response = await axiosInstance.put(`${server_url}/patient/updateProgram`, {
-        id: patientId,
-        program_id: program,
-      });
-  
+      const response = await axiosInstance.put(
+        `${server_url}/patient/updateProgram`,
+        {
+          id: patientId,
+          program_id: program,
+        }
+      );
+
       // Update the records state with the updated program for the specific patient
-      setRecords(records.map(record => 
-        record.id === patientId ? { ...record, program } : record
-      ));
-  
+      setRecords(
+        records.map((record) =>
+          record.id === patientId ? { ...record, program } : record
+        )
+      );
+
       console.log("Selected Program:", program);
       // Handle success response if needed
     } catch (error) {
@@ -67,7 +74,10 @@ function UserProgramSelection() {
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const dateObject = new Date(dateString);
-    return dateObject.toISOString().split("T")[0];
+    const day = String(dateObject.getDate()).padStart(2, "0");
+    const month = String(dateObject.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const year = dateObject.getFullYear();
+    return `${day}-${month}-${year}`;
   };
 
   return (
@@ -144,24 +154,21 @@ function UserProgramSelection() {
                             className={`block mb-2 text-primary border-primary border-2 rounded-md w-40 ${
                               record.program === "Basic" ? "bg-blue-500" : ""
                             }`}
-                            onClick={() => handleSubmit("Basic", record.id)}
-                          >
+                            onClick={() => handleSubmit("Basic", record.id)}>
                             Basic
                           </button>
                           <button
                             className={`block mb-2  text-primary border-primary border-2 w-40 rounded-md ${
                               record.program === "Standard" ? "bg-blue-500" : ""
                             }`}
-                            onClick={() => handleSubmit("Standard", record.id)}
-                          >
+                            onClick={() => handleSubmit("Standard", record.id)}>
                             Standard
                           </button>
                           <button
                             className={`block  text-primary border-primary border-2 w-40 rounded-md ${
                               record.program === "Advanced" ? "bg-blue-500" : ""
                             }`}
-                            onClick={() => handleSubmit("Advanced", record.id)}
-                          >
+                            onClick={() => handleSubmit("Advanced", record.id)}>
                             Advanced
                           </button>
                         </td>
@@ -182,15 +189,13 @@ function UserProgramSelection() {
               <div className="pagination mt-4 flex items-center justify-end">
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
+                  disabled={currentPage === 1}>
                   {"\u2190"}
                 </button>
                 <span>{`Page ${currentPage} of ${totalPages}`}</span>
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
+                  disabled={currentPage === totalPages}>
                   {"\u2192"}
                 </button>
               </div>
