@@ -304,10 +304,15 @@ function UserProfile({ patient }) {
     fetchData();
   }, [messages]);
 
-  const formatDate = (date) => {
-    const newDate = new Date(date);
-    return newDate.toDateString();
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const dateObject = new Date(dateString);
+    const day = String(dateObject.getDate()).padStart(2, "0");
+    const month = String(dateObject.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const year = dateObject.getFullYear();
+    return `${day}-${month}-${year}`;
   };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -403,11 +408,19 @@ function UserProfile({ patient }) {
                       <Link to={"/adminChat/" + id} className="text-sm">
                         ADMIN CHAT
                       </Link>
-                      {role === "Admin" && chats.length > 0 && chats.reduce((total, chat) => total + chat.unreadCount, 0) > 0 ? (
+                      {role === "Admin" &&
+                      chats.length > 0 &&
+                      chats.reduce(
+                        (total, chat) => total + chat.unreadCount,
+                        0
+                      ) > 0 ? (
                         <div className="h-full">
                           <div>
                             <span className="rounded-full inline-flex justify-center w-6 h-6 items-center text-xs p-0 text-center bg-red-700 text-white">
-                              {chats.reduce((total, chat) => total + chat.unreadCount, 0)}
+                              {chats.reduce(
+                                (total, chat) => total + chat.unreadCount,
+                                0
+                              )}
                             </span>
                           </div>
                         </div>
@@ -427,11 +440,19 @@ function UserProfile({ patient }) {
                       <Link to={"/doctorChat/" + id} className="text-sm">
                         DOCTOR CHAT
                       </Link>
-                      {role === "Doctor" && chats1.length > 0 && chats1.reduce((total, chat) => total + chat.unreadCount, 0) > 0 ? (
+                      {role === "Doctor" &&
+                      chats1.length > 0 &&
+                      chats1.reduce(
+                        (total, chat) => total + chat.unreadCount,
+                        0
+                      ) > 0 ? (
                         <div className="h-full">
                           <div>
                             <span className="rounded-full inline-flex justify-center w-6 h-6 mx-2 items-center text-xs p-0 text-center bg-red-700 text-white">
-                              {chats1.reduce((total, chat) => total + chat.unreadCount, 0)}
+                              {chats1.reduce(
+                                (total, chat) => total + chat.unreadCount,
+                                0
+                              )}
                             </span>
                           </div>
                         </div>
@@ -491,18 +512,20 @@ function UserProfile({ patient }) {
                       <Link to={"/ShowAlarms/" + id}>ALARMS</Link>
                     </div>
                   </div>
-                  <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
-                    <div className="navbuttons">
-                      <button
-                        onClick={() =>
-                          navigate(`/manageparameters/${id}`, {
-                            state: userData,
-                          })
-                        }>
-                        MANAGE PARAMETERS
-                      </button>
+                  {localStorage.getItem("isDoctor") === "false" && (
+                    <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
+                      <div className="navbuttons">
+                        <button
+                          onClick={() =>
+                            navigate(`/manageparameters/${id}`, {
+                              state: userData,
+                            })
+                          }>
+                          MANAGE PARAMETERS
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
@@ -596,7 +619,7 @@ function UserProfile({ patient }) {
                         </div>
                         <div className="Dob">
                           <span className="font-bold"> DOB: </span>
-                          <span>{userData.dob}</span>
+                          <span>{formatDate(userData.dob)}</span>
                           {role?.canEditPatients && (
                             <button onClick={openEditModal}>
                               <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />

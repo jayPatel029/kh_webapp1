@@ -1,4 +1,5 @@
 api/.gitignore
+/Controllers/uploads
 
 # Logs
 logs

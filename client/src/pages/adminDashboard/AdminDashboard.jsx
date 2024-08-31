@@ -13,7 +13,7 @@ import {
 } from "../../ApiCalls/adminDashApis";
 import AdminContainer from "./AdminContainer";
 import DoctorContainer from "./DoctorContainer";
-
+import { useNavigate } from "react-router-dom";
 function AdminDashboard() {
   // Separate doctor alerts and patient alerts
   const [patientAlertsData, setPatientAlertsData] = useState([]);
@@ -25,14 +25,15 @@ function AdminDashboard() {
   const [doctorAlerts, setDoctorAlerts] = useState([]);
   const [patientAlerts, setPatientAlerts] = useState([]);
 
-  // Redirect to login page if token is not present or expired
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-  //   if (!token) {
-  //     window.location.href = "/login";
-  //   }
+  const navigate = useNavigate();
 
-  // }, []);
+  // Redirect to login page if token is not present or expired
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+    }
+  }, []);
 
   useEffect(() => {
     // setTimeout(() => {
@@ -73,6 +74,7 @@ function AdminDashboard() {
           `${server_url}/alerts/byType/patient`
         );
         setPatientAlertsData(response.data);
+        console.log("Patient Alerts: ", response.data);
       } catch (error) {
         console.log(error);
       }
@@ -96,7 +98,7 @@ function AdminDashboard() {
         try {
           getAlerts()
             .then((response) => {
-              console.log("Doctor Alerts: ", response.data);
+              // console.log("Doctor Alerts: ", response.data);
               setAllAlerts(response.data);
               setPatientAlerts(
                 response.data

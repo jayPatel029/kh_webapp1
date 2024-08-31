@@ -1,6 +1,5 @@
 import React from "react";
 import { admindashblue, admindashred, dummyadmin } from "../../assets";
-import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { server_url } from "../../constants/constants";
@@ -32,7 +31,7 @@ const UserCard = ({ user }) => {
   }, [user.patientId]);
 
   const actionFunc = async (alert) => {
-    console.log("alert", alert);
+    // console.log("alert", alert);
     if (alert.alarmId) {
       localStorage.setItem("alarmId", alert.alarmId);
     }
@@ -50,7 +49,11 @@ const UserCard = ({ user }) => {
       updateIsReadAlert(alert.id);
     }
 
-    if (alert.type === "patient" && alert.patientId) {
+    if (
+      alert.type === "patient" &&
+      alert.patientId &&
+      (alert.category === "New Enrollment" || alert.category === "New Program")
+    ) {
       navigate(`/patient/${alert.patientId}`);
     } else if (
       alert.type === "doctor" &&
@@ -59,6 +62,34 @@ const UserCard = ({ user }) => {
     ) {
       navigate(`/adminChat/${alert.patientId}`);
       // navigate(`/adminChat/${alert.patientId}?receiver=${alert.userEmail}`);
+    } else if (
+      (alert.type === "patient" || alert.type === "doctor") &&
+      (alert.category === "New Prescription" ||
+        alert.category === "Prescription Disapproved" ||
+        alert.category === "Prescription Not Viewed")
+    ) {
+      navigate(`/userPrescription/${alert.patientId}`);
+    } else if (
+      alert.type === "patient" &&
+      alert.category === "Delete Account"
+    ) {
+      navigate(`/patient/${alert.patientId}`);
+    } else if (
+      alert.type === "patient" &&
+      (alert.category === "New Program Enrollment" ||
+        alert.category === "Change In Program")
+    ) {
+      navigate(`/userProgramSelection`);
+    } else if (
+      alert.type === "patient" &&
+      alert.category === "New Requisition"
+    ) {
+      navigate(`/UserRequisition/${alert.patientId}`);
+    } else if (
+      alert.type === "patient" &&
+      alert.category === "Delete Account"
+    ) {
+      navigate(`/patient/${alert.patientId}`);
     } else {
       console.error("No valid redirection path found for this alert.");
     }
@@ -75,6 +106,16 @@ const UserCard = ({ user }) => {
       );
     }
   };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const dateObject = new Date(dateString);
+    const day = String(dateObject.getDate()).padStart(2, "0");
+    const month = String(dateObject.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const year = dateObject.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
   return (
     <div
       className="w-full bg-white p-3 border rounded shadow flex items-center"
@@ -88,7 +129,10 @@ const UserCard = ({ user }) => {
           className="mr-4 h-12 w-12 rounded-full"
         />
         <div>
-          <div className="flex"><p className="font-semibold">Category: </p><div className="ml-1">{user.category}</div></div>
+          <div className="flex">
+            <p className="font-semibold">Category: </p>
+            <div className="ml-1">{user.category}</div>
+          </div>
           <p className="font-semibold">Name : {user.name || patientName}</p>
           {/* <p className="font-semibold">{user.name}</p> */}
           {/* <p>{user.type}</p> */}
@@ -97,7 +141,7 @@ const UserCard = ({ user }) => {
 
       {/* User Card Right Content */}
       <div className="ml-auto flex items-center">
-        <p className="mr-2">{user.date.slice(0, 10)}</p>
+        <p className="mr-2">{formatDate(user.date)}</p>
         <div>
           {user.isOpened === 1 ? (
             <div></div>
@@ -130,9 +174,13 @@ const AdminContainer = ({
   doctorAlerts,
   patientAlerts,
 }) => {
-  console.log("from AdminContainer", doctorAlerts);
-  const filteredPatientAlerts = patientAlerts.filter((alert)=>alert.category!=="Prescription Approved")
-  const finalPatientAlerts= filteredPatientAlerts.filter((alert)=>alert.category!=="New Prescription Alarm")
+  // console.log("from AdminContainer", doctorAlerts);
+  const filteredPatientAlerts = patientAlerts.filter(
+    (alert) => alert.category !== "Prescription Approved"
+  );
+  const finalPatientAlerts = filteredPatientAlerts.filter(
+    (alert) => alert.category !== "New Prescription Alarm"
+  );
   return (
     <div className="bg-gray-100 min-h-screen md:py-10 md:px-40 overflow-y-auto">
       {/* Upper Cards Container */}
