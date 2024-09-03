@@ -86,6 +86,7 @@ function AdminDashboard() {
           `${server_url}/alerts/byType/doctor`
         );
         setDoctorAlerts(response.data);
+        console.log("Doctor Alerts: ", response.data);
       } catch (error) {
         console.log(error);
       }

@@ -31,7 +31,7 @@ const UserCard = ({ user }) => {
   }, [user.patientId]);
 
   const actionFunc = async (alert) => {
-    // console.log("alert", alert);
+    console.log("alert", alert);
     if (alert.alarmId) {
       localStorage.setItem("alarmId", alert.alarmId);
     }
@@ -72,7 +72,6 @@ const UserCard = ({ user }) => {
     } else if (
       (alert.type === "patient" || alert.type === "doctor") &&
       (alert.category === "New Prescription" ||
-        alert.category === "Prescription Disapproved" ||
         alert.category === "Prescription Not Viewed" ||
         alert.category === "New Prescription Alarm")
     ) {
@@ -82,6 +81,12 @@ const UserCard = ({ user }) => {
       alert.category === "Account Deletion"
     ) {
       navigate(`/patient/${alert.patientId}`);
+    } else if (
+      alert.type === "doctor" &&
+      (alert.category === "Prescription Disapproved " ||
+        alert.category === "Prescription Disapproved")
+    ) {
+      navigate(`/ShowAlarms/${alert.patientId}`);
     } else if (
       alert.type === "patient" &&
       (alert.category === "New Program Enrollment" ||
