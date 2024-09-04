@@ -31,7 +31,7 @@ const UserCard = ({ user }) => {
   }, [user.patientId]);
 
   const actionFunc = async (alert) => {
-    // console.log("alert", alert);
+    console.log("alert", alert);
     if (alert.alarmId) {
       localStorage.setItem("alarmId", alert.alarmId);
     }
