@@ -46,6 +46,7 @@ export const getDialysisReadings = async () => {
     const response = await axiosInstance.get(
       server_url + "/readings/getDialysisReadings"
     );
+    console.log(response.data)
     return { success: true, data: response.data };
   } catch (error) {
     console.error(error);

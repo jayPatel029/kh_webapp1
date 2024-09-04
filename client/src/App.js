@@ -42,6 +42,7 @@ import Kfre from "./pages/kfre/Kfre"
 import AiChat from "./pages/AIChat/AiChat";
 import DoctorReport from "./pages/doctorReport/DoctorReport";
 import UniqueUserprescription from "./pages/Userprescription/UniqueUserprescription";
+import DeletePatient from "./pages/patient/DeletePatient";
 
 function App() {
   return (
@@ -151,6 +152,14 @@ function App() {
               element={
                 <ProtectedRoute routeName={"Patient"}>
                   <Patient />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Deletepatient/:id"
+              element={
+                <ProtectedRoute routeName={"Patient"}>
+                  <DeletePatient />
                 </ProtectedRoute>
               }
             />

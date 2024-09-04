@@ -21,7 +21,8 @@ const {getAlerts,
     createNewPrescriptionAlert,
     updateIsReadAlert,
     createContactUsAlert,
-    createProgramAlert
+    createProgramAlert,
+    deletePatientAlert
 } = require('../Controllers/Alerts.js');
 const { verifyToken } = require("../Helpers/middlewares/roles.js");
 
@@ -44,6 +45,7 @@ router.delete('/delete/:id',verifyToken, deleAlertbyID);
 router.put('/approveAlert',verifyToken, apporoveAlert);
 router.put('/approveAllAlerts',verifyToken, approveAllAlerts);
 router.put('/disapproveAlert',verifyToken, dissapproveAlert);
+router.put('/deletePatientAlert/:id',verifyToken, deletePatientAlert);
 router.put('/disapproveAllAlerts',verifyToken, dissapproveAllAlerts);
 router.post('/newPrescription',verifyToken, createNewPrescriptionAlert);
 router.post('/contactUs',verifyToken, createContactUsAlert);

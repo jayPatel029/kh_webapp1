@@ -72,16 +72,20 @@ const UserCard = ({ user }) => {
     } else if (
       (alert.type === "patient" || alert.type === "doctor") &&
       (alert.category === "New Prescription" ||
-        alert.category === "Prescription Disapproved" ||
+       
         alert.category === "Prescription Not Viewed" ||
         alert.category === "New Prescription Alarm")
     ) {
       navigate(`/userPrescription/${alert.patientId}/${alert.prescriptionId}`);
-    } else if (
+    }
+    else if( alert.category === "Prescription Disapproved" ){
+      navigate(`/showAlarms/${alert.patientId}/`);
+    } 
+    else if (
       alert.type === "patient" &&
-      alert.category === "Account Deletion"
+      alert.category === "Delete patient Alert"
     ) {
-      navigate(`/patient/${alert.patientId}`);
+      navigate(`/Deletepatient/${alert.patientId}`);
     } else if (
       alert.type === "patient" &&
       (alert.category === "New Program Enrollment" ||

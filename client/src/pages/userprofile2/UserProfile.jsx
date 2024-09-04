@@ -31,11 +31,12 @@ import {
 import { getAllChats, getAllChatsAdmin } from "../../ApiCalls/chatApis";
 import { dummyadmin } from "../../assets";
 import { getDoctorsChat } from "../../ApiCalls/doctorApis";
+import Vaccines from "@mui/icons-material/Vaccines";
 
 function UserProfile({ patient }) {
   const [totalUnreadCount, settotalUnreadCount] = useState(0);
   const { pid } = useParams();
-  const [role, setRole] = useState("");
+  const role = useSelector((state)=>state.permission)
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [messages, setMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState("");
@@ -269,7 +270,8 @@ function UserProfile({ patient }) {
     const fetchData = async () => {
       try {
         const roleResult = await identifyRole();
-        setRole(roleResult.data.data.role_name);
+        console.log(roleResult?.data?.data?.role_name)
+        
         const patientRes = await getPatientById(id);
         // console.log(patientRes);
         const userEmail = localStorage.getItem("email");
@@ -317,7 +319,7 @@ function UserProfile({ patient }) {
     const fetchData = async () => {
       try {
         const roleResult = await identifyRole();
-        setRole(roleResult.data.data.role_name);
+
         if (roleResult.data.data.role_name === "Admin") {
           const getDoctorsResult = await getDoctorsChat(id);
           if (getDoctorsResult.success) {
@@ -526,6 +528,20 @@ function UserProfile({ patient }) {
                       </div>
                     </div>
                   )}
+                  {role?.patients ? (
+            <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
+            <div className="navbuttons">
+              <button
+                onClick={() =>
+                  navigate(`/kfre`, {
+                    state: userData,
+                  })
+                }>
+                Kfre
+              </button>
+            </div>
+          </div>
+          ) : null}
                 </div>
               </div>
 

@@ -13,7 +13,7 @@ const CommentConatainer = ({ comments, closeModal }) => {
   const [image, setImage] = useState("");
   const [comment, setComment] = useState(null);
   const [smessage, setSmessage] = useState(false);
-
+  console.log(comments)
   const openSendMessage = () => {
     setSmessage(true);
   };
@@ -54,6 +54,7 @@ const CommentConatainer = ({ comments, closeModal }) => {
   var coms = reversedComments.filter(function(comment) {
     console.log("comment url")
     console.log(comment.url, isValidHttpUrl(comment.url));
+    
     return isValidHttpUrl(comment.url);
 });
 

@@ -114,8 +114,9 @@ export default function PatientList({ data, patientId }) {
       if (!confirmed) {
         return; // If the user cancels, exit the function
       }
-
-      await axiosInstance.put(`${server_url}/alerts/deletePatientAlert/${id}`);
+      
+      await axiosInstance.delete(`${server_url}/patient/deletePatient/${id}`);
+      
 
       // Remove the deleted patient from the UI
       setFilteredData(filteredData.filter((patient) => patient.id !== id));
