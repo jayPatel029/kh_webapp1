@@ -603,7 +603,20 @@ const createAdminPatientsTable = async () => {
     console.error("Error creating admin patients table:", error);
   }
 };
-
+const createDeletedUserTable = async()=>{
+  const query = `CREATE TABLE IF NOT EXISTS deleted_user(
+  patient_id INT NOT NULL,
+  name VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY(patient_id,name),
+  FOREIGN KEY (patient_id) REFERENCES patients(id)
+  );
+`;
+try {
+  await pool.query(query);
+  // console.log("Doctor patients table created successfully");
+} catch (error) {
+  console.error("Error creating doctor patients table:", error);
+}}
 const createDoctorPatientsTable = async () => {
   const query = `
     CREATE TABLE IF NOT EXISTS doctor_patients (
@@ -643,6 +656,7 @@ const createalertsReadingTable = async () => {
 };
 
 const createTables = async () => {
+  await createDeletedUserTable();
   await createAndAddRoles();
   await createUsertable();
   await createAlamrsTable();

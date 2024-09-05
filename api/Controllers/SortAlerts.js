@@ -768,20 +768,20 @@ const getDoctorAlerts = async (req, res) => {
         `
   );
   alerts = patientAlerts;
-  // var reading = []
-  // const readingAlertsQueryWhoseEnteryIsPresentInAlertsReadTable = `
-  //     SELECT ra.*
-  //     FROM readingalerts ra
-  //     JOIN doctor_patients dp ON ra.patientId = dp.patient_id
-  //     WHERE dp.doctor_id = ${doctor_id}
-  //     AND ra.id IN (
-  //         SELECT ar.alertId
-  //         FROM alertsread ar
-  //         WHERE ar.doctorId = ${doctor_id}
-  //     );
-  // `
-  // const readingAlerts = await pool.query(readingAlertsQueryWhoseEnteryIsPresentInAlertsReadTable);
-  // reading = readingAlerts
+  var reading = []
+  const readingAlertsQueryWhoseEnteryIsPresentInAlertsReadTable = `
+      SELECT ra.*
+      FROM readingalerts ra
+      JOIN doctor_patients dp ON ra.patientId = dp.patient_id
+      WHERE dp.doctor_id = ${doctor_id}
+      AND ra.id IN (
+          SELECT ar.alertId
+          FROM alertsread ar
+          WHERE ar.doctorId = ${doctor_id}
+      );
+  `
+  const readingAlerts = await pool.query(readingAlertsQueryWhoseEnteryIsPresentInAlertsReadTable);
+  reading = readingAlerts
 
   var finalAlerts = [];
   console.log(alerts);
@@ -804,12 +804,12 @@ const getDoctorAlerts = async (req, res) => {
     }
   }
 
-  // for (var i = 0; i < reading.length; i++) {
-  //     const ralert = await structureReadingAlert(reading[i], doctor_id);
-  //     if (ralert) {
-  //         finalAlerts.push(ralert);
-  //     }
-  // }
+  for (var i = 0; i < reading.length; i++) {
+      const ralert = await structureReadingAlert(reading[i], doctor_id);
+      if (ralert) {
+          finalAlerts.push(ralert);
+      }
+  }
   res.status(200).send(finalAlerts);
 };
 

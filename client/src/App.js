@@ -41,6 +41,8 @@ import AppLogout from "./components/logout/Logout";
 import Kfre from "./pages/kfre/Kfre"
 import AiChat from "./pages/AIChat/AiChat";
 import DoctorReport from "./pages/doctorReport/DoctorReport";
+import UniqueUserprescription from "./pages/Userprescription/UniqueUserprescription";
+import DeletePatient from "./pages/patient/DeletePatient";
 
 function App() {
   return (
@@ -154,6 +156,14 @@ function App() {
               }
             />
             <Route
+              path="Deletepatient/:id"
+              element={
+                <ProtectedRoute routeName={"Patient"}>
+                  <DeletePatient />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="manageRoles"
               element={
                 <ProtectedRoute routeName={"UserRoles"}>
@@ -198,6 +208,14 @@ function App() {
               element={
                 <ProtectedRoute routeName={"Userprescription"}>
                   <Userprescription />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Userprescription/:id/:prescriptionId"
+              element={
+                <ProtectedRoute >
+                  <UniqueUserprescription />
                 </ProtectedRoute>
               }
             />

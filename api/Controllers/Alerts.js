@@ -25,7 +25,7 @@ const getAlertbyType = async (req, res) => {
   const { type } = req.params;
   try {
     // console.log("getAlertbyType function called with type : ", type);
-    const query = `SELECT * FROM alerts WHERE type = '${type}' order by date desc`;
+    const query = `SELECT * FROM alerts WHERE type = '${type}' order by id desc`;
     const response = await pool.execute(query);
     res.status(200).json(response);
   } catch (error) {
@@ -172,7 +172,21 @@ const createNewPrescriptionAlarmAlert = async (req, res) => {
     res.status(500).json(error);
   }
 };
-
+const deletePatientAlert= async(req,res,next)=>{
+  console.log("Hii")
+  const type="patient";
+  const category="Delete patient Alert";
+  const patientId=req.params.id;
+  const date = new Date().toISOString().slice(0, 19).replace("T", " ");
+  const query = `INSERT INTO alerts (type, category,  patientId, date) VALUES ('${type}', '${category}', ${patientId},'${date}')`;
+  try {
+    const response = await pool.query(query);
+    console.log("neel",response)
+    res.status(200).json("Alert created");
+  } catch (error) {
+    res.status(500).json(error);
+  }
+}
 //doctor alert
 const createPrescriptionDisapprovedAlarmAlert = async (req, res) => {
   const type = "doctor";
@@ -479,4 +493,5 @@ module.exports = {
   createContactUsAlert,
   createNewEnrollmentAlertFunction,
   createProgramAlert,
+  deletePatientAlert,
 };

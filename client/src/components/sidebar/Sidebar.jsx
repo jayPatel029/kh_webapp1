@@ -115,14 +115,6 @@ const Sidebar = ({ mobile = false }) => {
               </li>
             </Link>
           ) : null}
-          {role?.patients ? (
-            <Link to="/kfre" style={{ textDecoration: "none" }}>
-              <li>
-                <VaccinesIcon className="icon" />
-                <span>KFRE</span>
-              </li>
-            </Link>
-          ) : null}
           {/* {role?.patients ? (
             <Link to="/aiChat" style={{ textDecoration: "none" }}>
               <li>

@@ -75,10 +75,12 @@ const UserCard = ({ user }) => {
         alert.category === "Prescription Not Viewed" ||
         alert.category === "New Prescription Alarm")
     ) {
-      navigate(`/userPrescription/${alert.patientId}`);
+      navigate(`/userPrescription/${alert.patientId}/${alert.prescriptionId}`);
+    } else if (alert.category === "Prescription Disapproved") {
+      navigate(`/showAlarms/${alert.patientId}/`);
     } else if (
       alert.type === "patient" &&
-      alert.category === "Account Deletion"
+      alert.category === "Delete patient Alert"
     ) {
       navigate(`/patient/${alert.patientId}`);
     } else if (

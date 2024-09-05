@@ -60,6 +60,9 @@ export default function DailyTable({
                 Ailment
               </th>
               <th scope="col" className="px-6 py-3">
+                Alert Text
+              </th>
+              <th scope="col" className="px-6 py-3">
                 Assign Range
               </th>
             </tr>
@@ -75,6 +78,7 @@ export default function DailyTable({
                   <tr key={index} className="bg-white border-b ">
                     <td className="px-6 py-4">{item.title}</td>
                     <td className="px-6 py-4">{displayAilment}</td>
+                    <td>{item.alertTextDoc}</td>
                     <td className="px-6 py-4 text-2xl">
                       <button
                         className="text-primary inline-block mx-2"
