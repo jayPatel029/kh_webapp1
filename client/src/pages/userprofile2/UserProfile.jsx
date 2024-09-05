@@ -35,7 +35,7 @@ import { getDoctorsChat } from "../../ApiCalls/doctorApis";
 function UserProfile({ patient }) {
   const [totalUnreadCount, settotalUnreadCount] = useState(0);
   const { pid } = useParams();
-  const [role, setRole] = useState("");
+  const role = useSelector((state) => state.permission);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [messages, setMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState("");
@@ -269,7 +269,8 @@ function UserProfile({ patient }) {
     const fetchData = async () => {
       try {
         const roleResult = await identifyRole();
-        setRole(roleResult.data.data.role_name);
+        console.log(roleResult);
+        // setRole(roleResult.data.data.role_name);
         const patientRes = await getPatientById(id);
         // console.log(patientRes);
         const userEmail = localStorage.getItem("email");
@@ -317,7 +318,7 @@ function UserProfile({ patient }) {
     const fetchData = async () => {
       try {
         const roleResult = await identifyRole();
-        setRole(roleResult.data.data.role_name);
+        // setRole(roleResult.data.data.role_name);
         if (roleResult.data.data.role_name === "Admin") {
           const getDoctorsResult = await getDoctorsChat(id);
           if (getDoctorsResult.success) {

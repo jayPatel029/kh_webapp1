@@ -58,7 +58,7 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
       getFileRes(selectedImage)
         .then(async (res) => {
           console.log("res", res);
-          if (res.data.objectUrl === undefined) {
+          if (res.data.filePath === undefined) {
             alert("failed to upload you document, please try again later");
             return;
           }
@@ -66,7 +66,7 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
             patient_id: user_id,
             date: selectedDate,
             Report_Type: selectedReportType,
-            Lab_Report: res.data.objectUrl,
+            Lab_Report: res.data.filePath,
           };
 
           await uploadLabReports(data);
@@ -175,8 +175,7 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
                 id=""
                 className="w-full border-2 py-2 px-3 rounded focus:outline-none focus:border-amber-950"
                 value={selectedReportType}
-                onChange={(e) => setSelectedReportType(e.target.value)}
-              >
+                onChange={(e) => setSelectedReportType(e.target.value)}>
                 {reportTypes.map((type) => (
                   <option key={type} value={type}>
                     {type}
@@ -200,14 +199,12 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
           <div className="flex justify-end p-4">
             <button
               onClick={handleSubmit}
-              className="bg-primary text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            >
+              className="bg-primary text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline">
               Submit
             </button>
             <button
               onClick={closeModal}
-              className="border-2 border-primary text-primary py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2"
-            >
+              className="border-2 border-primary text-primary py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2">
               Close
             </button>
           </div>

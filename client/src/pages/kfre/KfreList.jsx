@@ -198,6 +198,7 @@ function KfreList() {
     if (csvData) {
       const formattedData = formatCSVData(csvData, patientOptions);
       setPatientData(formattedData);
+      console.log("Formatted Data from KFRE List:", formattedData);
     }
   }, [success]);
 

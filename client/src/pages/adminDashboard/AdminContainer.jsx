@@ -82,6 +82,11 @@ const UserCard = ({ user }) => {
     ) {
       navigate(`/patient/${alert.patientId}`);
     } else if (
+      alert.type === "patient" &&
+      alert.category === "New Lab Report"
+    ) {
+      navigate(`/UserLabReports/${alert.patientId}`);
+    } else if (
       alert.type === "doctor" &&
       (alert.category === "Prescription Disapproved " ||
         alert.category === "Prescription Disapproved")
