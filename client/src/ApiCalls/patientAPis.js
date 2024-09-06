@@ -3,7 +3,9 @@ import { server_url } from "../constants/constants";
 
 export async function getPatients() {
   try {
-    const response = await axiosInstance.get(server_url + "/patient" + "/getPatients");
+    const response = await axiosInstance.get(
+      server_url + "/patient" + "/getPatients"
+    );
     return { success: true, data: response.data };
   } catch (error) {
     return { success: false, data: error.response.data.message };
@@ -71,13 +73,14 @@ export async function canExportPatient() {
   try {
     const token = localStorage.getItem("token"); // Fetch token from local storage
     const response = await axiosInstance.get(
-        server_url + "/patientdata/canexport",
+      server_url + "/patientdata/canexport",
       {
         headers: {
           Authorization: `Bearer ${token}`, // Send token in headers
         },
       }
     );
+    console.log("response from canExportPatient : ", response);
     if (response.status === 403) {
       return { success: false };
     } else if (response.status === 200) {

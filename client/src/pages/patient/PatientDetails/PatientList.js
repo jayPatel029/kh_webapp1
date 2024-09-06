@@ -21,6 +21,7 @@ export default function PatientList({ data, patientId }) {
     try {
       console.log("Checking export permission...");
       const response = await canExportPatient();
+      console.log(response);
       if (response.success) {
         setCanExport(true);
       }

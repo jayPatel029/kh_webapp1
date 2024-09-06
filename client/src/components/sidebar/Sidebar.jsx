@@ -8,6 +8,8 @@ import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import VaccinesIcon from "@mui/icons-material/Vaccines";
 import CoronavirusIcon from "@mui/icons-material/Coronavirus";
 import HelpIcon from "@mui/icons-material/Help";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import ArticleIcon from "@mui/icons-material/Article";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
 import SwipeIcon from "@mui/icons-material/Swipe";
@@ -18,14 +20,11 @@ import { useSelector } from "react-redux";
 
 const Sidebar = ({ mobile = false }) => {
   const [dropdown, setDropdown] = React.useState(false);
-  const role = useSelector(state => state.permission);
- 
-
+  const role = useSelector((state) => state.permission);
 
   return (
     <div
-      className={mobile ? "sidebar" : "sidebar hidden md:block min-h-[100vh]"}
-    >
+      className={mobile ? "sidebar" : "sidebar hidden md:block min-h-[100vh]"}>
       {mobile ? null : (
         <div className="top">
           <Link to="/" style={{ textDecoration: "none" }}>
@@ -53,16 +52,14 @@ const Sidebar = ({ mobile = false }) => {
 
           {/* Admin Management Dropdown */}
           {role?.createAdmin || role?.createDoctor || role?.manageRoles ? (
-
-          <li
-            className="flex"
-            onClick={() => {
-              setDropdown(!dropdown);
-            }}
-          >
-            <ManageAccountsIcon className="icon" />
-            <span className="w-full pr-10">Admin Management</span>
-          </li>
+            <li
+              className="flex"
+              onClick={() => {
+                setDropdown(!dropdown);
+              }}>
+              <ManageAccountsIcon className="icon" />
+              <span className="w-full pr-10">Admin Management</span>
+            </li>
           ) : null}
 
           {dropdown ? (
@@ -115,6 +112,20 @@ const Sidebar = ({ mobile = false }) => {
               </li>
             </Link>
           ) : null}
+
+          {role?.patients ? (
+            <Link to="/kfre" style={{ textDecoration: "none" }}>
+              <li>
+                <PictureAsPdfIcon className="icon" />
+                <span>BulkUploadPDF</span>
+              </li>
+              <li>
+                <ArticleIcon className="icon" />
+                <span>BulkUploadCSV</span>
+              </li>
+            </Link>
+          ) : null}
+
           {/* {role?.patients ? (
             <Link to="/aiChat" style={{ textDecoration: "none" }}>
               <li>

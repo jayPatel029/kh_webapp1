@@ -538,7 +538,7 @@ function UserProfile({ patient }) {
                               state: userData,
                             })
                           }>
-                          Kfre
+                          KFRE
                         </button>
                       </div>
                     </div>
