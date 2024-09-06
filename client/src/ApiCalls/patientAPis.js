@@ -63,6 +63,7 @@ export async function getPatientAdminTeam(id) {
     const response = await axiosInstance.get(
       server_url + "/patient" + "/getAdminTeam/" + id
     );
+    console.log("response from getPatientAdminTeam : ", response.data);
     return { success: true, data: response.data };
   } catch (error) {
     return { success: false, data: error.response.data.message };

@@ -7,14 +7,14 @@ import MyPDFViewer from "../../components/pdf/MyPDFViewer";
 
 function UploadedFileModal({ closeModal, user_id, file }) {
   const [newComment, setNewComment] = useState("");
-  
+
   const [prevComments, setPrevComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
-  const [successful,setSuccessful]=useState(true);
+  const [successful, setSuccessful] = useState(true);
 
   useEffect(() => {
-    console.log("in useeffect")
+    console.log("in useeffect");
     const data = {
       fileId: user_id,
       fileType: "Prescription",
@@ -62,7 +62,7 @@ function UploadedFileModal({ closeModal, user_id, file }) {
         console.log(response.message);
       }
       setNewComment("");
-      setSuccessful(!successful)
+      setSuccessful(!successful);
       // window.location.reload();
     } catch (error) {
       console.error("Error uploading comment:", error);
@@ -80,12 +80,11 @@ function UploadedFileModal({ closeModal, user_id, file }) {
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-opacity-50 bg-black">
       <div className="p-7 ml-4 mr-4 mt-4 bg-white w-3/5 h-4/5 shadow-md border-t-4 border-teal-500 rounded z-50 overflow-auto">
-        <div className="header flex justify-between items-center border-b pb-2 mb-4">
+        <div className="header flex justify-between items-center border-b pb-2 mb-4 sticky top-0">
           <h1 className="text-2xl font-bold">Uploaded File</h1>
           <button
             onClick={closeModal}
-            className="border-2 border-teal-500 text-teal-500 py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2"
-          >
+            className="border-2 border-teal-500 text-teal-500 py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2">
             Close
           </button>
         </div>
@@ -124,13 +123,11 @@ function UploadedFileModal({ closeModal, user_id, file }) {
                     key={comment.id}
                     className={`flex items-start mb-4 ${
                       comment.isDoctor ? "justify-start" : "justify-end"
-                    }`}
-                  >
+                    }`}>
                     <div
                       className={`rounded-full bg-teal-500 text-white w-8 h-8 flex items-center justify-center mr-2 ${
                         comment.isDoctor ? "order-1" : "order-2"
-                      }`}
-                    >
+                      }`}>
                       {comment.isDoctor ? "D" : "P"}
                     </div>
                     <div
@@ -138,8 +135,7 @@ function UploadedFileModal({ closeModal, user_id, file }) {
                         comment.isDoctor
                           ? "ml-2 bg-black"
                           : "mr-2 bg-teal-500 text-black"
-                      }`}
-                    >
+                      }`}>
                       <span className="font-medium text-xs text-gray-500 mr-2">
                         {comment.isDoctor ? "Doctor: " : "Patient: "}
                       </span>
@@ -172,8 +168,7 @@ function UploadedFileModal({ closeModal, user_id, file }) {
               <div className="flex justify-end mt-4">
                 <button
                   onClick={uploadComment}
-                  className="bg-teal-500 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
+                  className="bg-teal-500 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                   Submit
                 </button>
               </div>
