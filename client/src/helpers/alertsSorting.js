@@ -14,7 +14,7 @@ const getPrescriptionDissapprovalAlert = async (id,date,type0) => {
         id: id,
         name: doctorName,
         type0: type0,
-        type: `Prescription Dissapproval by ${doctorName}`,
+        type: `Prescription Dissapproved by ${doctorName}`,
         date: date,
         redirect: `/ShowAlarms/${patientID}`,
         alarmId: alarmId,

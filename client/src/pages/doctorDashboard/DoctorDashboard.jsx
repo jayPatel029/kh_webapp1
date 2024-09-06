@@ -8,8 +8,11 @@ function DoctorDashboard() {
           <DoctorSidebar />
           <div className="changePasswordContainer flex-grow">
             <DoctorNavbar/>
-            <div className="bg-gray-100 min-h-screen md:py-10 md:px-40">
+            <div className="bg-yellow-100 min-h-screen md:py-10 md:px-40">
                  Section for alerts fetch alerts here
+            </div>
+            <div>
+              
             </div>
           </div>
         </div>

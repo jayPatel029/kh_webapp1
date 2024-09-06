@@ -1,14 +1,38 @@
 import React from "react";
 import { admindashblue, admindashred, dummyadmin } from "../../assets";
 import { Link } from "react-router-dom";
- 
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { server_url } from "../../constants/constants";
 import axiosInstance from "../../helpers/axios/axiosInstance";
-import CircleIcon from '@mui/icons-material/Circle';
+import CircleIcon from "@mui/icons-material/Circle";
 
 const UserCard = ({ user }) => {
+  // console.log("from UserCard", user);
+  const navigate = useNavigate();
+  const [patientName, setPatientName] = useState("");
+
+  useEffect(() => {
+    const fetchPatientName = async () => {
+      if (user.patientId) {
+        try {
+          const response = await axiosInstance.get(
+            `${server_url}/patient/getPatient/${user.patientId}`
+          );
+          if (response.data.success) {
+            setPatientName(response.data.data.name);
+          }
+        } catch (error) {
+          console.error("Error fetching patient details:", error);
+        }
+      }
+    };
+
+    fetchPatientName();
+  }, [user.patientId]);
+
   const actionFunc = async (alert) => {
-    console.log(alert);
+    console.log("alert", alert);
     if (alert.alarmId) {
       localStorage.setItem("alarmId", alert.alarmId);
     }
@@ -19,16 +43,25 @@ const UserCard = ({ user }) => {
       localStorage.setItem("requisitionId", alert.requisitionId);
     }
     // update the isRead of the alert object
-    if(alert.missedAlertId && alert.isOpened ==0){
+    if (alert.missedAlertId && alert.isOpened == 0) {
       updateIsReadAlert(alert.missedAlertId);
       updateIsReadAlert(alert.id);
-    }else if(alert.isOpened ==0){
+    } else if (alert.isOpened == 0) {
       updateIsReadAlert(alert.id);
     }
-    
 
-    window.location.href = alert.redirect;
-
+    if (alert.type === "patient" && alert.patientId) {
+      navigate(`/patient/${alert.patientId}`);
+    } else if (
+      alert.type === "doctor" &&
+      alert.chatId &&
+      alert.category.includes("Doctor Message to Admin")
+    ) {
+      navigate(`/adminChat/${alert.patientId}`);
+      // navigate(`/adminChat/${alert.patientId}?receiver=${alert.userEmail}`);
+    } else {
+      console.error("No valid redirection path found for this alert.");
+    }
   };
   const updateIsReadAlert = async (alertId) => {
     const url = `${server_url}/alerts/updateIsRead`;
@@ -36,25 +69,29 @@ const UserCard = ({ user }) => {
       // Making the POST request to the server
       const response = await axiosInstance.put(url, { id: alertId });
     } catch (error) {
-      console.error('Error:', error.response ? error.response.data : error.message);
+      console.error(
+        "Error:",
+        error.response ? error.response.data : error.message
+      );
     }
-  }
+  };
   return (
     <div
-      className="w-full bg-white p-4 m-2 border rounded shadow flex items-center"
+      className="w-full bg-white p-3 border rounded shadow flex items-center"
       onClick={() => actionFunc(user)}
-      style={{ cursor: "pointer" }}
-    >
+      style={{ cursor: "pointer" }}>
       {/* User Card Left Content */}
-      <div className="flex items-center">
+      <div className="flex items-center flex-col md:flex-row">
         <img
           src={dummyadmin}
           alt="Sample"
           className="mr-4 h-12 w-12 rounded-full"
         />
         <div>
-          <p className="font-semibold">{user.name}</p>
-          <p>{user.type}</p>
+          <p className="font-semibold">Category : {user.category}</p>
+          <p className="font-semibold">Name : {user.name || patientName}</p>
+          {/* <p className="font-semibold">{user.name}</p> */}
+          {/* <p>{user.type}</p> */}
         </div>
       </div>
 
@@ -62,27 +99,19 @@ const UserCard = ({ user }) => {
       <div className="ml-auto flex items-center">
         <p className="mr-2">{user.date.slice(0, 10)}</p>
         <div>
-          {
-            user.isOpened===1 ?(
-              <div>
-                
+          {user.isOpened === 1 ? (
+            <div></div>
+          ) : (
+            <div>
+              <CircleIcon style={{ fontSize: "16px", color: "red" }} />
             </div>
-
-            ):(
-              <div>
-                 <CircleIcon style={{ fontSize: '16px', color: 'red' }} />
-            </div>
-
-            )
-            
-          }
+          )}
           {/* Arrow icon pointing right*/}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5 transform rotate-180"
             viewBox="0 0 20 20"
-            fill="currentColor"
-          >
+            fill="currentColor">
             <path
               fillRule="evenodd"
               d="M13.293 4.293a1 1 0 011.414 1.414L11 10l3.707 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
@@ -101,7 +130,7 @@ const AdminContainer = ({
   doctorAlerts,
   patientAlerts,
 }) => {
-  // console.log(patientAlerts)
+  console.log("from AdminContainer", doctorAlerts);
   return (
     <div className="bg-gray-100 min-h-screen md:py-10 md:px-40 overflow-y-auto">
       {/* Upper Cards Container */}
@@ -143,8 +172,7 @@ const AdminContainer = ({
         {/* Doctor Alerts Container */}
         <div
           className="bg-white p-5 rounded-md border-t-primary border-t-4 shadow-md my-10 md:w-1/2 md:mr-2"
-          style={{ maxHeight: "400px", height: "auto" }}
-        >
+          style={{ maxHeight: "400px", height: "auto" }}>
           <p className="text-lg font-semibold text-center md:sticky md:top-0 bg-white pt-2">
             Doctor Alerts
           </p>
@@ -160,8 +188,7 @@ const AdminContainer = ({
         {/* Patient Alerts Container */}
         <div
           className="bg-white p-5 rounded-md border-t-primary border-t-4 shadow-md my-10 md:w-1/2 md:ml-2 "
-          style={{ maxHeight: "400px", height: "auto" }}
-        >
+          style={{ maxHeight: "400px", height: "auto" }}>
           <p className="text-lg font-semibold text-center md:sticky md:top-0 bg-white pt-2">
             Patient Alerts
           </p>

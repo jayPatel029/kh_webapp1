@@ -5,11 +5,14 @@ import Navbar from "../../components/navbar/Navbar";
 import { useState, useEffect } from "react";
 import axiosInstance from "../../helpers/axios/axiosInstance";
 import { server_url } from "../../constants/constants";
-import { getTotalUsers, getUsersThisWeek, getAlerts } from "../../ApiCalls/adminDashApis";
+import {
+  getTotalUsers,
+  getUsersThisWeek,
+  getAlerts,
+  getDoctorAlerts,
+} from "../../ApiCalls/adminDashApis";
 import AdminContainer from "./AdminContainer";
 import DoctorContainer from "./DoctorContainer";
-
-
 
 function AdminDashboard() {
   // Separate doctor alerts and patient alerts
@@ -22,85 +25,106 @@ function AdminDashboard() {
   const [doctorAlerts, setDoctorAlerts] = useState([]);
   const [patientAlerts, setPatientAlerts] = useState([]);
 
-  useEffect(() => {
+  // Redirect to login page if token is not present or expired
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) {
+  //     window.location.href = "/login";
+  //   }
 
+  // }, []);
+
+  useEffect(() => {
     // setTimeout(() => {
     //   window.location.reload();
     // }, 300000);
     const getTotalUsersData = async () => {
       var total = await getTotalUsers();
-      if(!total) total = 0;
+      if (!total) total = 0;
       setTotalUsers(total);
     };
 
     const getNewUsersData = async () => {
       var newU = await getUsersThisWeek();
-      if(!newU) newU=0;
+      if (!newU) newU = 0;
       setNewUsers(newU);
-
-
     };
 
     const isDoctorfunc = async () => {
       try {
-        const response = await axiosInstance.get(`${server_url}/roles/isDoctor`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await axiosInstance.get(
+          `${server_url}/roles/isDoctor`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         setIsDoctor(response.data.data);
         localStorage.setItem("isDoctor", response.data.data);
-
       } catch (error) {
-        console.log("Error fetching Doctor: ", error)
-
+        console.log("Error fetching Doctor: ", error);
       }
-
     };
 
     const getPatientAlertsData = async () => {
       try {
-        const response = await axiosInstance.get(`${server_url}/alerts/byType/patient`);
-        // console.log(response.data)
+        const response = await axiosInstance.get(
+          `${server_url}/alerts/byType/patient`
+        );
         setPatientAlertsData(response.data);
       } catch (error) {
-        console.log(error)
-
+        console.log(error);
       }
+    };
 
+    const getDoctorAlertsData = async () => {
+      try {
+        const response = await axiosInstance.get(
+          `${server_url}/alerts/byType/doctor`
+        );
+        setDoctorAlerts(response.data);
+      } catch (error) {
+        console.log(error);
+      }
     };
 
     const getAllAlerts = async () => {
       if (isDoctor) {
         return;
-      }
-      else {
+      } else {
         try {
-          getAlerts().then((response) => {
-            setAllAlerts(response.data);
-            setDoctorAlerts(response.data.filter((alert) => alert.type0 === "doctor" || alert.type ==="doctor").reverse());
-            setPatientAlerts(response.data.filter((alert) => alert.type0 === "patient" || alert.type ==="patient").reverse());
-
-          }).catch((error) => {
-            console.log("Error fetching alerts: ", error)
-          });
-          
+          getAlerts()
+            .then((response) => {
+              console.log("Doctor Alerts: ", response.data);
+              setAllAlerts(response.data);
+              setPatientAlerts(
+                response.data
+                  .filter(
+                    (alert) =>
+                      alert.type0 === "patient" || alert.type === "patient"
+                  )
+                  .reverse()
+              );
+            })
+            .catch((error) => {
+              console.log("Error fetching alerts: ", error);
+            });
         } catch (error) {
-          console.log(error)
+          console.log(error);
         }
-        
       }
-
     };
 
-    const getAllData = (async () => {
+    const getAllData = async () => {
       await getTotalUsersData();
       await getNewUsersData();
       await isDoctorfunc();
       await getPatientAlertsData();
       await getAllAlerts();
-    })
-    getAllData()
+      await getDoctorAlertsData();
+    };
+    getAllData();
     // const interval = setInterval(() => {
     //   getAllData();
     // }, 300000);
@@ -113,8 +137,33 @@ function AdminDashboard() {
     }, 300000);
 
     return () => clearInterval(interval);
+  }, [totalUsers, isDoctor]);
 
-  }, [totalUsers]);
+  // useEffect(() => {
+  //   console.log("Updated patientAlertsData: ", patientAlertsData);
+  // }, [patientAlertsData]);
+
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        const response = await axiosInstance.get(`${server_url}/alerts`);
+        const alerts = response.data;
+
+        const patientAlerts = alerts.filter(
+          (alert) => alert.type === "patient"
+        );
+        const doctorAlerts = alerts.filter((alert) => alert.type === "doctor");
+
+        setPatientAlerts(patientAlerts);
+        setDoctorAlerts(doctorAlerts);
+        setAllAlerts(alerts);
+      } catch (error) {
+        console.error("Error fetching alerts:", error);
+      }
+    };
+
+    fetchAlerts();
+  }, []);
 
   return (
     <div className="md:flex block">
@@ -128,10 +177,17 @@ function AdminDashboard() {
         <div className="sticky top-0 z-10">
           <Navbar />
         </div>
-        
-        {isDoctor ? <DoctorContainer
-        /> : <AdminContainer newUsers={newUsers} totalUsers={totalUsers} doctorAlerts={doctorAlerts} patientAlerts={patientAlerts} />}
 
+        {isDoctor ? (
+          <DoctorContainer />
+        ) : (
+          <AdminContainer
+            newUsers={newUsers}
+            totalUsers={totalUsers}
+            doctorAlerts={doctorAlerts}
+            patientAlerts={patientAlertsData}
+          />
+        )}
       </div>
     </div>
   );

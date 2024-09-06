@@ -37,8 +37,7 @@ const AilmentList = ({
                 index % 2 === 0
                   ? "bg-gray-100 cursor-pointer hover:bg-slate-300"
                   : "bg-white cursor-pointer hover:bg-slate-300"
-              }
-            >
+              }>
               <td className="py-2 px-4" style={{ width: "50%" }}>
                 {/* Text input for Name column with cursor-pointer class */}
                 {item.name}
@@ -74,8 +73,7 @@ const AilmentList = ({
                         left: 0,
                         behavior: "smooth",
                       });
-                    }}
-                  >
+                    }}>
                     <BsPencilSquare />
                   </button>
                   <button
@@ -88,8 +86,7 @@ const AilmentList = ({
                         console.error("Error deleting Ailment:", error);
                       }
                       setSuccessful("Reading Deleted Successful!");
-                    }}
-                  >
+                    }}>
                     <BsTrash />
                   </button>
                 </div>

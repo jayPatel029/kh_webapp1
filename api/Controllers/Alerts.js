@@ -13,7 +13,8 @@ const getAlerts = async (req, res) => {
 const getAlertbyType = async (req, res) => {
   const { type } = req.params;
   try {
-    const query = `SELECT * FROM alerts WHERE type = '${type}'`;
+    console.log("getAlertbyType function called with type : ", type);
+    const query = `SELECT * FROM alerts WHERE type = '${type}' order by date desc`;
     const response = await pool.execute(query);
     res.status(200).json(response);
   } catch (error) {
@@ -32,6 +33,7 @@ const getAlertbyId = async (req, res) => {
   }
 };
 
+//doctor alert
 const createDoctorMessageToAdminAlert = async (req, res) => {
   const { chatId, message, pid } = req.body;
   const type = "doctor";
@@ -52,10 +54,12 @@ const createDoctorMessageToAdminAlert = async (req, res) => {
   }
 };
 
+//patient alert
 const createNewEnrollmentAlert = async (req, res) => {
   const type = "patient";
   const category = "New Enrollment";
   const { patientId } = req.body;
+  console.log("received patientId in function :", patientId);
   const date = new Date().toISOString().slice(0, 19).replace("T", " ");
   const query = `INSERT INTO alerts (type, category, patientId,date) VALUES ('${type}', '${category}', ${patientId},'${date}')`;
   try {
@@ -66,6 +70,22 @@ const createNewEnrollmentAlert = async (req, res) => {
   }
 };
 
+const createNewEnrollmentAlertFunction = async (patientId) => {
+  const type = "patient";
+  const category = "New Enrollment";
+  const date = new Date().toISOString().slice(0, 19).replace("T", " ");
+  const query = `INSERT INTO alerts (type, category, patientId, date) VALUES ('${type}', '${category}', ${patientId}, '${date}')`;
+
+  try {
+    const response = await pool.query(query);
+    console.log("New Enrollment Alert created", response.insertId);
+    return response[0];
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+//patient alert
 const createNewProgramEnrollmentAlert = async (req, res) => {
   console.log(req.body);
   const type = "patient";
@@ -84,6 +104,7 @@ const createNewProgramEnrollmentAlert = async (req, res) => {
   }
 };
 
+//patient alert
 const createNewPrescriptionAlarmAlert = async (req, res) => {
   try {
     console.log("createNewPrescriptionAlarmAlert");
@@ -107,6 +128,7 @@ const createNewPrescriptionAlarmAlert = async (req, res) => {
   }
 };
 
+//doctor alert
 const createPrescriptionDisapprovedAlarmAlert = async (req, res) => {
   const type = "doctor";
   const category = "Prescription Disapproved ";
@@ -158,6 +180,7 @@ const createNewLabReportAlert = async (req, res) => {
   }
 };
 
+//no need for alert
 const createNewRequisitionAlert = async (req, res) => {
   const type = "patient";
   const category = "New Requisition";
@@ -192,16 +215,16 @@ const createContactUsAlert = async (req, res) => {
   const category = "Contact Us";
   const { patientId } = req.body;
   const date = new Date().toISOString().slice(0, 19).replace("T", " ");
-  console.log(patientId)
+  console.log(patientId);
   const query = `INSERT INTO alerts (type, category, patientId,date) VALUES ('${type}', '${category}', '${patientId}','${date}')`;
   try {
     const response = await pool.query(query);
     res.status(200).json({
       success: true,
-      data: "Alert Added Successfully"
+      data: "Alert Added Successfully",
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).json(error);
   }
 };
@@ -357,14 +380,14 @@ const approveAllAlerts = async (req, res) => {
   }
 };
 
-const createNewPrescriptionAlert = async (prescriptionId,patientId) => {
+const createNewPrescriptionAlert = async (prescriptionId, patientId) => {
   try {
     const type = "patient";
     const category = "New Prescription";
     const date = new Date().toISOString().slice(0, 19).replace("T", " ");
     const query = `INSERT INTO alerts (type, category, prescriptionId,date,patientId) VALUES ('${type}', '${category}', ${prescriptionId},'${date}',${patientId})`;
     const response = await pool.query(query);
-    console.log("Alert added!!")
+    console.log("Alert added!!");
     // res.status(200).json("Alert created");
   } catch (error) {
     console.log(error);
@@ -382,7 +405,7 @@ const updateIsReadAlert = async (req, res) => {
     console.log(error);
     res.status(500).json(error);
   }
-}
+};
 
 module.exports = {
   getAlerts,
@@ -407,4 +430,5 @@ module.exports = {
   createNewPrescriptionAlert,
   updateIsReadAlert,
   createContactUsAlert,
+  createNewEnrollmentAlertFunction,
 };

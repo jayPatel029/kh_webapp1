@@ -43,19 +43,22 @@ function Login() {
       const response = await loginUser(payload);
       if (response.success) {
         setErrMsg([]);
-        
+
         const userResponse = await getUserByEmail(email);
         // console.log(userResponse)
-        localStorage.setItem("firstname", userResponse.data.data[0].firstname);
-        localStorage.setItem("email", userResponse.data.data[0].email);
-        localStorage.setItem("token", response.data.token);
+        localStorage.setItem(
+          "firstname",
+          userResponse?.data?.data[0]?.firstname
+        );
+        localStorage.setItem("email", userResponse?.data?.data[0]?.email);
+        localStorage.setItem("token", response?.data?.token);
         try {
           const role = await identifyRole();
           if (role.success) {
             dispatch(setPermissions(role.data.data));
           }
         } catch (error) {
-          console.log("login error!!!!!!!!!!!!!!!!!!!!")
+          console.log("login error!!!!!!!!!!!!!!!!!!!!");
           console.error(error.message);
         }
         theNavigate("/");
@@ -111,8 +114,7 @@ function Login() {
               </div>
               <button
                 onClick={handleSubmit}
-                className="bg-gradient-to-r from-primary to-highlight text-white m-0 py-2 rounded-md w-full mt-3 text-lg"
-              >
+                className="bg-gradient-to-r from-primary to-highlight text-white m-0 py-2 rounded-md w-full mt-3 text-lg">
                 <BsFillUnlockFill className="inline-block h-3.5 w-5 mb-1" />
                 Login
               </button>

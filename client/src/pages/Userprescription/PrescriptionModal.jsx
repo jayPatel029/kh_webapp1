@@ -76,10 +76,11 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
       return;
     }
     if (selectedImage) {
+      // console.log("date", selectedDate);
       getFileRes(selectedImage)
         .then((res) => {
           console.log("res", res);
-          if (res.data.objectUrl === undefined) {
+          if (res.data.filePath === undefined) {
             alert("failed to upload you document, please try again later");
             return;
           }
@@ -275,8 +276,7 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
                 id="doctorId"
                 className="w-full border-2 py-2 px-3 rounded focus:outline-none focus:border-amber-950"
                 value={selectedDoctorId}
-                onChange={handleSelectChange}
-              >
+                onChange={handleSelectChange}>
                 {Array.isArray(doctorOptions) &&
                   doctorOptions.map((doctor, index) => (
                     <option key={index} value={doctor.id}>
@@ -305,15 +305,13 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
                     height={720}
                     screenshotFormat="image/jpeg"
                     width={720}
-                    videoConstraints={videoConstraints}
-                  >
+                    videoConstraints={videoConstraints}>
                     {({ getScreenshot }) => (
                       <div>
                         <div className="flex justify-center p-4">
                           <button
                             onClick={() => capture(getScreenshot)}
-                            className="bg-primary text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                          >
+                            className="bg-primary text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                             Capture photo
                           </button>
                         </div>
@@ -338,8 +336,7 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
                 <div className="flex justify-center p-4">
                   <button
                     onClick={handleCaptureOption}
-                    className="bg-primary text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                  >
+                    className="bg-primary text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Capture Image
                   </button>
                 </div>
@@ -349,14 +346,12 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
           <div className="flex justify-end p-4">
             <button
               onClick={handleSubmit}
-              className="bg-primary text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            >
+              className="bg-primary text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline">
               Submit
             </button>
             <button
               onClick={closeModal.bind(null, false)}
-              className="border-2 border-primary text-primary py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2"
-            >
+              className="border-2 border-primary text-primary py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2">
               Close
             </button>
           </div>

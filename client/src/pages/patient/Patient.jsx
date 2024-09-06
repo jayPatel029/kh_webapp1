@@ -38,7 +38,7 @@ console.log(patientData)
         <div className="sticky top-0 z-10">
           <Navbar />
         </div>
-        <div className="container flex justify-center overflow-x-hidden bg-gray-100">
+        <div className="container flex justify-center overflow-x-hidden bg-blue-100">
           <PatientList
               data={patientData}
               patientId={id}
