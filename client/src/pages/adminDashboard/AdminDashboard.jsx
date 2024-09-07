@@ -146,27 +146,7 @@ function AdminDashboard() {
   //   console.log("Updated patientAlertsData: ", patientAlertsData);
   // }, [patientAlertsData]);
 
-  useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        const response = await axiosInstance.get(`${server_url}/alerts`);
-        const alerts = response.data;
-
-        const patientAlerts = alerts.filter(
-          (alert) => alert.type === "patient"
-        );
-        const doctorAlerts = alerts.filter((alert) => alert.type === "doctor");
-
-        setPatientAlerts(patientAlerts);
-        setDoctorAlerts(doctorAlerts);
-        setAllAlerts(alerts);
-      } catch (error) {
-        console.error("Error fetching alerts:", error);
-      }
-    };
-
-    fetchAlerts();
-  }, []);
+  
 
   return (
     <div className="md:flex block">

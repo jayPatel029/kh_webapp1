@@ -23,10 +23,16 @@ const getAlertbyCategory = async (req, res) => {
 
 const getAlertbyType = async (req, res) => {
   const { type } = req.params;
+  const userId = req.user.id;
+  console.log("alert", userId)
   try {
     // console.log("getAlertbyType function called with type : ", type);
-    const query = `SELECT * FROM alerts WHERE type = '${type}' order by id desc`;
-    const response = await pool.execute(query);
+    const query = `SELECT a.*
+      FROM alerts a
+      JOIN admin_patients ap ON a.patientId = ap.patient_id
+      WHERE ap.admin_id=? AND a.type = ?
+      ORDER BY a.id DESC`;
+    const response = await pool.execute(query,[userId,type]);
     res.status(200).json(response);
   } catch (error) {
     res.status(500).json(error);

@@ -53,14 +53,14 @@ export default function DailyTable({
         <table className=" w-full text-sm text-left rtl:text-right text-gray-800 ">
           <thead className="text-base text-gray-700 border-b-2 border-gray-800 ">
             <tr>
-              <th scope="col" className="px-6 py-3 w-2/4">
+              <th scope="col" className="px-6 py-3 w-1/3">
                 Title
               </th>
               <th scope="col" className="px-6 py-3">
-                Ailment
+                Alert Text
               </th>
               <th scope="col" className="px-6 py-3">
-                Alert Text
+                Ailment
               </th>
               <th scope="col" className="px-6 py-3">
                 Assign Range
@@ -77,8 +77,8 @@ export default function DailyTable({
                 return (
                   <tr key={index} className="bg-white border-b ">
                     <td className="px-6 py-4">{item.title}</td>
+                    <td className="font-bold">{item.alertTextDoc}</td>
                     <td className="px-6 py-4">{displayAilment}</td>
-                    <td>{item.alertTextDoc}</td>
                     <td className="px-6 py-4 text-2xl">
                       <button
                         className="text-primary inline-block mx-2"

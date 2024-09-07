@@ -784,7 +784,6 @@ const getDoctorAlerts = async (req, res) => {
   reading = readingAlerts
 
   var finalAlerts = [];
-  console.log(alerts);
 
   for (var i = 0; i < alerts.length; i++) {
     if (alerts[i].category === "New Prescription Alarm") {
