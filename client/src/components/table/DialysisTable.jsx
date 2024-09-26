@@ -33,7 +33,7 @@ const DialysisTable = ({ questionId, user_id, title, question,isPatientProfile=1
     axiosInstance
       .get(`${server_url}/dialysisReading/get`, { params })
       .then((response) => {
-        // console.log("Response data:", response.data.data);
+         console.log("Response data:", response.data.data);
 
         const formattedData = response.data.data.map((item, key) => {
           const date = new Date(item.date);
@@ -51,8 +51,8 @@ const DialysisTable = ({ questionId, user_id, title, question,isPatientProfile=1
           return dateA - dateB;
         });
 
-        // console.log("formatted data", sortedData);
-
+         console.log("formatted data", sortedData);
+        console.log(sortedData)
         setPatientData(sortedData);
       })
       .catch((error) => {
@@ -101,12 +101,7 @@ const DialysisTable = ({ questionId, user_id, title, question,isPatientProfile=1
               <tr key={index}>
                 <td className="py-3 px-4">{data.date}</td>
                 <td className="py-3 px-4">
-                {data.readings && data.readings.endsWith(".pdf") ? (
-                    <FaFilePdf
-                      className="w-20 h-16 cursor-pointer py-3 text-red-500 "
-                      onClick={() => openFileModal(data.readings)}
-                    />
-                  ) : (
+                {data.readings && (
                     <div>
                       {
                         isValidHttpUrl(data.readings) == true ? (

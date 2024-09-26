@@ -77,7 +77,7 @@ export default function DailyTable({
                 return (
                   <tr key={index} className="bg-white border-b ">
                     <td className="px-6 py-4">{item.title}</td>
-                    <td className="font-bold">{item.alertTextDoc}</td>
+                    <td className="px-6 py-4">{item.alertTextDoc}</td>
                     <td className="px-6 py-4">{displayAilment}</td>
                     <td className="px-6 py-4 text-2xl">
                       <button

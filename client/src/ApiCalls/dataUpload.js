@@ -7,6 +7,7 @@ export async function uploadFile(formData) {
         "Content-Type": "multipart/form-data",
       },
     });
+    console.log("dataRe",response.data)
     return {success: true, data: response.data};
   } catch (error) {
     console.error("Error uploading file:", error);

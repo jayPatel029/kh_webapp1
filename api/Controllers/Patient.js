@@ -6,6 +6,7 @@ const { createNewEnrollmentAlertFunction } = require("./Alerts.js");
 const getPatients = async (req, res) => {
   try {
     const { role, id } = req.user; // Assuming role and userId are available in req.user
+    
     let query;
     if (role === "Admin") {
       query = `
@@ -27,7 +28,14 @@ const getPatients = async (req, res) => {
         FROM patients p
         JOIN doctor_patients dp ON p.id = dp.patient_id and dp.doctor_id = ${doctor_id}
       `;
-    } else {
+    }else if(role==="PSadmin"){
+      query = `
+        SELECT p.*
+        FROM patients p
+        JOIN admin_patients ap ON p.id = ap.patient_id and ap.admin_id = ${id}
+      `;
+    }   
+    else {
       return res.status(404).json({
         success: false,
         message: "You are not authorized to access this route",

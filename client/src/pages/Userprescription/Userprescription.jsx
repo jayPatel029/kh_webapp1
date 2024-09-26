@@ -237,19 +237,19 @@ const Userprescription = () => {
                                   className="w-20 h-16 cursor-pointer py-3 text-red-500"
                                   onClick={() =>
                                     openFileModal(
-                                      prescriptionItem.id,
-                                      prescriptionItem.Prescription
+                                      prescriptionItem?.id,
+                                      prescriptionItem?.Prescription
                                     )
                                   }
                                 />
                               ) : (
                                 <img
                                   className=" cursor-pointer"
-                                  src={prescriptionItem.Prescription}
+                                  src={prescriptionItem?.Prescription}
                                   alt="Prescription"
                                   onClick={() =>
                                     openFileModal(
-                                      prescriptionItem.id,
+                                      prescriptionItem?.id,
                                       prescriptionItem.Prescription
                                     )
                                   }

@@ -6,6 +6,7 @@ export const getFileRes = async (file, fileName = "") => {
       let formData = new FormData();
       formData.append("file", file, fileName || file.name);
       const fileRes = await uploadFile(formData);
+      console.log("fileRes",fileRes)
       return fileRes;
     } else {
       console.log("here");

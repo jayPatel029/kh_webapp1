@@ -17,7 +17,7 @@ const PdfDataExtractor = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3001/api/text/upload",
+        "http://localhost:3000/api/text/upload",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

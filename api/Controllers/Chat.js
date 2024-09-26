@@ -76,7 +76,7 @@ const sendMessage = async (req, res) => {
       });
     }
     let chatEmail = decoded.email;
-    if (user[0].role === "Admin") {
+    if (user[0].role === "Admin" || user[0].role==="PSadmin") {
       chatEmail = process.env.ADMIN_EMAIL;
     }
 

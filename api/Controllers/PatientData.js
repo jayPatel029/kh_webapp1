@@ -324,7 +324,7 @@ const canDoctorExport = async (req, res) => {
     ]);
     console.log(users);
 
-    if (users.role === "Admin") {
+    if (users.role === "Admin" ) {
       return res.status(200).json({ message: "User is an admin" });
     } else if (users.role === "Doctor") {
       const [doctor] = await pool.execute(

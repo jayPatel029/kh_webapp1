@@ -15,18 +15,31 @@ function UserListManage() {
 
   // console.log(pid);
   useEffect(() => {
-    axiosInstance
-      .get(`${server_url}/users/byRole/Admin`)
-      .then((response) => {
-        console.log("Admins data:", response.data.data);
-        setAdmins(response.data.data);
-      })
-      .catch((error) => console.error("Error fetching admins:", error));
-
-    // Fetch admins assigned to the patient
-    getAdminOfPatient();
+    const fetchAdmins = async () => {
+      try {
+        // Fetch admins with role Admin
+        const adminResponse = await axiosInstance.get(`${server_url}/users/byRole/Admin`);
+        console.log("Admins data:", adminResponse.data.data);
+        
+        // Fetch admins with role PSadmin
+        const psAdminResponse = await axiosInstance.get(`${server_url}/users/byRole/PSadmin`);
+        console.log("PSadmin data:", psAdminResponse.data.data);
+  
+        // Combine both sets of data if needed or handle separately
+        const combinedAdmins = [...adminResponse.data.data, ...psAdminResponse.data.data];
+  
+        // Update state with combined admins or handle separately
+        setAdmins(combinedAdmins);
+  
+      } catch (error) {
+        console.error("Error fetching admins:", error);
+      }
+    };
+  
+    fetchAdmins();
+    getAdminOfPatient();  // Fetch admins assigned to the patient
   }, []);
-
+  
   const addAdminToPatientProgram = async (userId) => {
     try {
       // console.log("selected admin id:", userId);

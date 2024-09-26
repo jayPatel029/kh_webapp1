@@ -121,7 +121,7 @@ const ChatApp = () => {
         console.log(userEmail)
         setPatient(patientRes.data.data);
         setSender(userEmail);
-        if (roleResult.data.data.role_name === "Admin") {
+        if (roleResult.data.data.role_name === "Admin" || roleResult.data.data.role_name==="PSadmin") {
           const chatResult = await getAllChatsAdmin(pid);
           console.log("CHAT",chatResult.data)
           const emailArray = chatResult?.data.map((a) => a.receiverEmail);
@@ -250,7 +250,7 @@ const ChatApp = () => {
               </div>
             </div>
             <div className="flex h-[72vh]">
-              {role === "Admin" ? (
+              {role === "Admin" || role==="PSadmin"? (
                <div className="bg-white w-[35%] rounded-bl-lg h-full border-r-2 border-gray-300">
                
                {chats.map((chat, index) => {
@@ -279,7 +279,7 @@ const ChatApp = () => {
                      
                      {!isInMedicalTeam && (
                        <span className="text-sm text-red-500 ml-4">
-                         (This user is not active)
+                         (This user is not Assigned)
                        </span>
                      )}
              

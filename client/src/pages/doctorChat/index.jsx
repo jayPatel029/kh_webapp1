@@ -67,8 +67,9 @@ const ChatApp = () => {
       try {
         const roleResult = await identifyRole();
         setRole(roleResult.data.data.role_name);
-        if (roleResult.data.data.role_name === "Admin") {
+        if (roleResult.data.data.role_name === "Admin" || roleResult.data.data.role_name==="PSadmin") {
           const getDoctorsResult = await getDoctorsChat(pid);
+          console.log("doctorRes",getDoctorsResult)
           if (getDoctorsResult.success) {
             setDoctors(getDoctorsResult.data.data);
           } else {
@@ -235,7 +236,7 @@ const ChatApp = () => {
               </div>
             </div>
             <div className="flex h-[72vh]">
-              {role !== "Admin" ? (
+              {role !== "Admin" && role!=="PSadmin"? (
                 <div className="bg-white w-[35%] rounded-bl-lg h-full border-r-2 border-gray-300 overflow-y-scroll">
                   {chats.map((chat, index) => {
                     return (
@@ -317,7 +318,7 @@ const ChatApp = () => {
                 </div>
               )}
               <div className="items-center justify-center w-[65%] bg-gradient-to-br from-gray-200 to-white rounded-br-lg h-full">
-                {role === "Admin" ? (
+                {role === "Admin" || role==="PSadmin"? (
                   <>
                     <div className="w-full h-[88%] overflow-y-scroll p-2">
                       {chats.map((chat, index) => (

@@ -58,7 +58,7 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
       getFileRes(selectedImage)
         .then(async (res) => {
           console.log("res", res);
-          if (res.data.filePath === undefined) {
+          if (res.data.objectUrl === undefined) {
             alert("failed to upload you document, please try again later");
             return;
           }
@@ -66,7 +66,7 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
             patient_id: user_id,
             date: selectedDate,
             Report_Type: selectedReportType,
-            Lab_Report: res.data.filePath,
+            Lab_Report: res.data.objectUrl,
           };
 
           await uploadLabReports(data);

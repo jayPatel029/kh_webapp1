@@ -109,7 +109,7 @@ function UserProfile({ patient }) {
       setUserData(response.data.data);
       // console.log(userData);
       setAilments(response.data.data.ailments);
-      // console.log(response.data.data)
+      console.log(response.data.data.ailments)
       return response.data;
     } catch (error) {
       console.error("Error fetching questions:", error);
@@ -224,6 +224,7 @@ function UserProfile({ patient }) {
         // If responseCount is not present in both or they have equal priority, return 0
         return 0;
       });
+
       setGeneralParameters(temp);
       setLoading(false);
     });
@@ -239,6 +240,7 @@ function UserProfile({ patient }) {
           const filteredData = response.filter(
             (item) => !prevData.some((prevItem) => prevItem.id === item.id)
           );
+          console.log(filteredData)
           return [...prevData, ...filteredData];
         });
         // console.log(dialysisParameters);
@@ -256,6 +258,7 @@ function UserProfile({ patient }) {
         const response = await axiosInstance.get(
           `${server_url}/labreport/LabReadings`
         );
+        console.log("lab",response.data.data)
         setLabReadings(response.data.data); // Assuming your API response structure
       } catch (err) {
         setError(err.message);
@@ -411,7 +414,7 @@ function UserProfile({ patient }) {
                       <Link to={"/adminChat/" + id} className="text-sm">
                         ADMIN CHAT
                       </Link>
-                      {role === "Admin" &&
+                      {role === "Admin" || role==="PSadmin" &&
                       chats.length > 0 &&
                       chats.reduce(
                         (total, chat) => total + chat.unreadCount,
@@ -529,7 +532,7 @@ function UserProfile({ patient }) {
                       </div>
                     </div>
                   )}
-                  {role?.patients ? (
+                  {(role?.patients && !ailments.includes('Hemo Dialysis') && !ailments.includes('Peritoneal Dialysis') )?(
                     <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
                       <div className="navbuttons">
                         <button
@@ -543,7 +546,7 @@ function UserProfile({ patient }) {
                       </div>
                     </div>
                   ) : null}
-                </div>
+                </div> 
               </div>
 
               <div className="rightbottom">

@@ -40,7 +40,7 @@ export function checkURl(url) {
 }
 
 export function isValidHttpUrl(url) {
-  return true;
+  return /^http/i.test(url);
 }
 
 export const calculateAge = (dob) => {

@@ -176,8 +176,8 @@ const UserLabReports = () => {
                         `}>
                           <td>
                             {
-                              (labReportsItem.Date = formatDate(
-                                labReportsItem.Date
+                              (labReportsItem.date = formatDate(
+                                labReportsItem?.Date
                               ))
                             }
                           </td>

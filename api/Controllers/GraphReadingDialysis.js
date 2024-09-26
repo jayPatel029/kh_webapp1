@@ -71,9 +71,10 @@ const getReadingsByPatientAndQuestion = async (req, res, next) => {
   try {
     const checkQuery = `SELECT * FROM dialysis_readings where id= ${question_id}`;
     const result = await pool.query(checkQuery);
-
-    if (result[0].title.toLowerCase().includes("interdialytic weight")) {
+    console.log("res",result[0].title)
+    if (result[0].title.toLowerCase().includes("weight")) {
       const response = await getReadingsInterDialyticsResponse(question_id, user_id);
+      console.log("Response fromm",response)
       return res.status(200).json({
         success: true,
         data: response,
@@ -147,19 +148,37 @@ const getReadingsInterDialyticsResponse = async (question_id, user_id) => {
       pool.query(afterResponseQuery)
     ]);
 
-    // console.log("beforeResponseResult",beforeResponseResult)
-    // console.log("afterResponseResult",afterResponseResult)  
+    const interDialyticResponses = [];
 
     // Step 3: Calculate interdialytic weight gain
-    const interDialyticResponses = [];
     for (let i = 1; i < beforeResponseResult.length; i++) {
       const currentBefore = beforeResponseResult[i];
-      const previousAfter = afterResponseResult[i - 1];
+      const previousDate = beforeResponseResult[i].date;
+      
+      // Normalize the dates to compare only the date part (YYYY-MM-DD)
+      const currentBeforeDate = new Date(currentBefore.date).toISOString().split('T')[0];
+      const previousBeforeDate = new Date(beforeResponseResult[i - 1].date).toISOString().split('T')[0];
 
-      if (previousAfter && currentBefore) {
+      // Find the corresponding after dialysis reading for the previous day
+      const previousAfter = afterResponseResult.find(after => {
+        const afterDate = new Date(after.date).toISOString().split('T')[0];
+        return afterDate === previousBeforeDate;
+      });
+
+      // If there's no corresponding after dialysis weight for the previous day, handle it
+      if (!previousAfter) {
+        interDialyticResponses.push({
+          date: currentBeforeDate,
+          readings:'Readings Not found'
+        });
+        console.error(`No after dialysis weight found for ${previousBeforeDate}`);
+        continue; // Skip this day or handle accordingly
+      }
+
+      if (currentBefore && previousAfter) {
         const idwg = currentBefore.readings - previousAfter.readings;
         interDialyticResponses.push({
-          date: currentBefore.date,
+          date: currentBeforeDate,
           readings: idwg
         });
       }
