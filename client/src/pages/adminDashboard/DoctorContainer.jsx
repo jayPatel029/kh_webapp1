@@ -101,9 +101,10 @@ const UserCard = ({ title, Alerts }) => {
     setAlertAlerts(sortedByDateAlerts);
     getDoctorComments(localStorage.getItem("email"), title)
       .then((data) => {
-        console.log("Comments", data.comments);
+        console.log("Comments1", data.comments);
         var commentsCount = 0;
         for (var i = 0; i < data.comments.length; i++) {
+          data.comments[i].fileType = "Lab Report";
           if (data.comments[i].isRead === false) {
             commentsCount++;
           }

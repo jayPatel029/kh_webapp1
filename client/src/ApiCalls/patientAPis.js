@@ -14,10 +14,12 @@ export async function getPatients() {
 
 export async function AddPatient(patientData) {
   try {
+    console.log("hey")
     const response = await axiosInstance.post(
       server_url + "/patient" + "/AddPatient",
       patientData
     );
+    console.log("response from AddPatient : ", response.data);
     return { success: true, data: response.data };
   } catch (error) {
     return { success: false, data: error.response.data.message };

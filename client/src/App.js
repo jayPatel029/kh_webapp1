@@ -43,6 +43,8 @@ import AiChat from "./pages/AIChat/AiChat";
 import DoctorReport from "./pages/doctorReport/DoctorReport";
 import UniqueUserprescription from "./pages/Userprescription/UniqueUserprescription";
 import DeletePatient from "./pages/patient/DeletePatient";
+import AddPatientForm from "./pages/patient/AddPatientForm";
+
 
 function App() {
   return (
@@ -155,6 +157,12 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="Addpatient"
+              element={
+                <ProtectedRoute routeName={"Patient"}>
+                  <AddPatientForm/>
+                </ProtectedRoute>
+              } />
             <Route
               path="Deletepatient/:id"
               element={

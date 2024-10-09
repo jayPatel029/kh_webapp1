@@ -131,11 +131,11 @@ const GraphModal = ({ closeModal, patientId, questionId, dailyordia, isGraph, qu
                 try {
                     const fetchSystolicId = async () => {
                         try {
-                            // Make a GET request to your backend API endpoint
+                            
                             const response = await axiosInstance.get(`${server_url}/readings/get/dia/sysid/${questionTitle}`, {
-                    
+                                
                             });
-
+                            console.log("res",response)
                             // Extract the systolic ID from the response
                             const fetchedSystolicId = response.data;
                             // console.log("fetchedSystolicId",fetchedSystolicId)

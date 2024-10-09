@@ -192,3 +192,134 @@ export function newDoctorReducer(state, action) {
     }
   }
 }
+export function newPatientReducer(state, action) {
+  switch (action.type) {
+    case "name": {
+      return {
+        ...state,
+        name: action.payload,
+      };
+    }
+    case "aliments": {
+      return {
+        ...state,
+        aliments: action.payload,
+      };
+    }
+    case "number": {
+      return {
+        ...state,
+        number: action.payload,
+      };
+    }
+    case "gender": {
+      return {
+        ...state,
+        gender: action.payload,
+      };
+    }
+    case "email": {
+      return {
+        ...state,
+        email: action.payload,
+      };
+    }
+    case "dob": {
+      return {
+        ...state,
+        dob: action.payload,
+      };
+    }
+    case "profile_photo": {
+      return {
+        ...state,
+        profile_photo: action.payload,
+      };
+    }
+    case "registered_date": {
+      return {
+        ...state,
+        registered_date: action.payload,
+      };
+    }
+    case "program_assigned_to": {
+      return {
+        ...state,
+        program_assigned_to: action.payload,
+      };
+    }
+    case "medical_team": {
+      return {
+        ...state,
+        medical_team: action.payload,
+      };
+    }
+    case "program": {
+      return {
+        ...state,
+        program: action.payload,
+      };
+    }
+    case "eGFR": {
+      return {
+        ...state,
+        eGFR: action.payload,
+      };
+    }
+    case "GFR": {
+      return {
+        ...state,
+        GFR: action.payload,
+      };
+    }
+    case "dry_weight": {
+      return {
+        ...state,
+        dry_weight: action.payload,
+      };
+    }
+    case "kefr": {
+      return {
+        ...state,
+        kefr: action.payload,
+      };
+    }
+    case "push_notification_id": {
+      return {
+        ...state,
+        push_notification_id: action.payload,
+      };
+    }
+    case "fitbit_token": {
+      return {
+        ...state,
+        fitbit_token: action.payload,
+      };
+    }
+    case "all": {
+      return {
+        name: "",
+        aliments: [],
+        number: "",
+        gender: "",
+        email: "",
+        dob: "",
+        profile_photo: null,
+        registered_date: new Date().toISOString().split("T")[0], // Default to today's date
+        program_assigned_to: 1,
+        medical_team: 1,
+        program: "",
+        eGFR: 0,
+        GFR: 0,
+        dry_weight: 0,
+        kefr: 0,
+        push_notification_id: "",
+        fitbit_token: "",
+        ...action.payload,
+      };
+    }
+    default: {
+      return state;
+    }
+  }
+}

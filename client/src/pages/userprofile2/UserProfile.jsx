@@ -408,9 +408,9 @@ function UserProfile({ patient }) {
               </a>
 
               <div className="w-3/4 flex justify-center mx-auto">
-                <div className="flex flex-wrap justify-center">
+                <div className="flex justify-center">
                   <div className="w-1/2 md:w-1/4 mb-2 flex  justify-center">
-                    <div className="navbuttons gap-2">
+                   {(role.role_name==="Admin" || role.role_name==="PSadmin" || role.role_name==="Doctor" )&& <div className="navbuttons gap-2">
                       <Link to={"/adminChat/" + id} className="text-sm">
                         ADMIN CHAT
                       </Link>
@@ -439,9 +439,9 @@ function UserProfile({ patient }) {
                           </div>
                         )
                       )}
-                    </div>
+                    </div>}
                   </div>
-                  <div className="w-1/2 md:w-1/4 mb-2 flex gap-2 justify-center">
+                  {(role.role_name==="Doctor" || role.role_name==="Admin" || role.role_name==="PSadmin") && <div className="w-1/2 md:w-1/4 mb-2 flex gap-2 justify-center">
                     <div className="navbuttons">
                       <Link to={"/doctorChat/" + id} className="text-sm">
                         DOCTOR CHAT
@@ -464,7 +464,7 @@ function UserProfile({ patient }) {
                         </div>
                       ) : null}
                     </div>
-                  </div>
+                  </div>}
                   <div className="w-1/2 md:w-1/4 mb-2 flex justify-center ">
                     <div className="navbuttons">
                       <button
@@ -513,12 +513,12 @@ function UserProfile({ patient }) {
                       </button>
                     </div>
                   </div>
-                  <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
+                  {(role.role_name==="Doctor" || role.role_name==="PSadmin" || role.role_name==="Admin" )&&<div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
                     <div className="navbuttons">
                       <Link to={"/ShowAlarms/" + id}>ALARMS</Link>
                     </div>
-                  </div>
-                  {localStorage.getItem("isDoctor") === "false" && (
+                  </div>}
+                  {(role.role_name==="Admin" || role.role_name==="PSadmin")  && (
                     <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
                       <div className="navbuttons">
                         <button

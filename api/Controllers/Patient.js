@@ -18,7 +18,7 @@ const getPatients = async (req, res) => {
       if (id === 1) {
         query = "SELECT * FROM patients";
       }
-    } else if (role === "Doctor") {
+    } else if (role === "Doctor" || role === "Medical Staff") {
       const doctor_id_query = ` select * from doctors where email = '${req.user.email}'`;
       const result = await pool.execute(doctor_id_query);
       // console.log(result[0].id)
@@ -28,7 +28,7 @@ const getPatients = async (req, res) => {
         FROM patients p
         JOIN doctor_patients dp ON p.id = dp.patient_id and dp.doctor_id = ${doctor_id}
       `;
-    }else if(role==="PSadmin"){
+    }else if(role==="PSadmin" || role==="Dialysis Technician"){
       query = `
         SELECT p.*
         FROM patients p

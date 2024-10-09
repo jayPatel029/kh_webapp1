@@ -24,9 +24,10 @@ function UserListManage() {
         // Fetch admins with role PSadmin
         const psAdminResponse = await axiosInstance.get(`${server_url}/users/byRole/PSadmin`);
         console.log("PSadmin data:", psAdminResponse.data.data);
-  
+        const dialysisTech= await axiosInstance.get(`${server_url}/users/byRole/Dialysis Technician`);
+        console.log("Dialysis Technician data:", dialysisTech.data.data);
         // Combine both sets of data if needed or handle separately
-        const combinedAdmins = [...adminResponse.data.data, ...psAdminResponse.data.data];
+        const combinedAdmins = [...adminResponse.data.data, ...psAdminResponse.data.data, ...dialysisTech.data.data];
   
         // Update state with combined admins or handle separately
         setAdmins(combinedAdmins);
