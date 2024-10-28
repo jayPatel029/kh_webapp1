@@ -123,7 +123,7 @@ function DoctorLogin() {
         const timer = setInterval(() => {
             const currentTime = new Date().getTime();
             const elapsedTime = currentTime - otpSentTime;
-            const timeLeftInSeconds = Math.max(0, 5*60 - Math.floor(elapsedTime / 1000)); // Calculate remaining time in seconds
+            const timeLeftInSeconds = Math.max(0, 1*60 - Math.floor(elapsedTime / 1000)); // Calculate remaining time in seconds
             setTimeLeft(timeLeftInSeconds);
             if (timeLeftInSeconds === 0) {
                 setIsOtpSent(false);

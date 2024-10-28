@@ -665,7 +665,7 @@ function UserProfile({ patient }) {
                             <div className="egfr">
                               <span className="font-bold">eGFR: </span>
                               <span>{userData.eGFR}</span>
-                              {role?.canEditPatients && (
+                              {role?.role_name!=="Dialysis Technician" && (
                                 <button onClick={openEditalimentsModal}>
                                   <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
                                 </button>
@@ -675,7 +675,7 @@ function UserProfile({ patient }) {
                             <div className="gfr">
                               <span className="font-bold">GFR: </span>
                               <span>{userData.GFR}</span>
-                              {role?.canEditPatients && (
+                              {role?.role_name!=="Dialysis Technician" && (
                                 <button onClick={openEditalimentsModal}>
                                   <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
                                 </button>
@@ -688,9 +688,11 @@ function UserProfile({ patient }) {
                           <div className="dry-weight">
                             <span className="font-bold">Dry Weight: </span>
                             <span>{userData.dry_weight}</span>
-                            <button onClick={openEditalimentsModal}>
-                              <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
-                            </button>
+                            {role?.role_name!="Dialysis Technician" && (
+                                 <button onClick={openEditalimentsModal}>
+                                 <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
+                               </button>
+                              )} 
                           </div>
                         )}
                         {userData.ailments.includes("CKD") &&
@@ -756,8 +758,8 @@ function UserProfile({ patient }) {
                     </Collapsible>
                   ))}
                 </div>
-                <div className="generalParameters">
-                  {generalParameters.length > 0 && (
+                {(role?.role_name!=="Dialysis Technician") && <div className="generalParameters">
+                  {generalParameters.length > 0 &&(
                     <h1 className="sectionTitle">General Parameter</h1>
                   )}
                   {generalParameters
@@ -839,7 +841,7 @@ function UserProfile({ patient }) {
                         </Collapsible>
                       );
                     })}
-                </div>
+                </div>}
 
                 <div className="dialysisParameters">
                   {dialysisParameters.length > 0 && (

@@ -67,7 +67,7 @@ const DialysisTable = ({ questionId, user_id, title, question,isPatientProfile=1
     <div>
 
       {
-        role?.canEditPatients &&
+        role &&
         <div className="mb-4">
           <label htmlFor="">Enter Reading/ Data</label>
           <button

@@ -2,6 +2,7 @@ const { pool } = require("../databaseConn/database.js");
 // const { createNewEnrollmentAlert } = require("../Controllers/Alerts.js");
 const axios = require("axios");
 const { createNewEnrollmentAlertFunction } = require("./Alerts.js");
+const { logChange } = require("./log.js");
 
 const getPatients = async (req, res) => {
   try {
@@ -248,7 +249,16 @@ const updatePatientProgram = async (req, res, next) => {
 
 const updatePatientProfile = async (req, res, next) => {
   const { id, name, number, dob } = req.body;
+  const newDetails = req.body;
   try {
+    const [oldDetails] = await pool.execute(`SELECT * FROM patients WHERE id = ?`, [id]);
+
+        // Compare and log each field
+        for (const field in newDetails) {
+            if (newDetails[field] !== oldDetails[field]) {
+                await logChange(id, field, oldDetails[field], newDetails[field]);
+            }
+        }
     const query = `
       UPDATE patients
       SET name = '${name}', 

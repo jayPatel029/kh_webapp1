@@ -230,13 +230,42 @@ const UserCard = ({ title, Alerts }) => {
 const DoctorContainer = () => {
   const [Alerts, setAlerts] = React.useState([]);
   const [groupedAlerts, setGroupedAlerts] = useState({});
+  const [diaUpdates,setdiaUpdates]=useState(false)
+  const getDialysisUpdate = async()=>{
+    try {
+      const token = localStorage.getItem("token"); // Fetch token from local storage
+      const response = await axiosInstance.get(
+        server_url + "/patientdata/canReceive",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Send token in headers
+          },
+        }
+      );
+      console.log("response from canExportPatient : ", response);
+      if (response.status === 403) {
+        return { success: false };
+      } else if (response.status === 200) {
+        setdiaUpdates(true)
+        return { success: true };
+      } else {
+        return { success: false };
+      }
+    } catch (error) {
+      return { success: false, data: error.response.data.message };
+    }
+
+
+  }
   useEffect(() => {
+    getDialysisUpdate();
     const fetchAlerts = async () => {
       try {
         var res1 = await axiosInstance.post(`${server_url}/doctor/byEmail/id`, {
           email: localStorage.getItem("email"),
         });
         console.log("Doctor ID: ", res1);
+        localStorage.setItem("id",res1.data.data)
         // console.log("Doctor ID: ", res1.data.data);
         var res = await axiosInstance.get(
           `${server_url}/sortAlerts/doctor/${res1.data.data}`
@@ -301,7 +330,7 @@ const DoctorContainer = () => {
                   <UserCard title={name} Alerts={Alerts} />
                 </div>
               ))}
-
+            {diaUpdates && (<>hey</>)}
             {/* {typeof groupedAlerts === 'object' && Object.keys(groupedAlerts).map(patientId => (
               <div key={patientId}>
                 <UserCard

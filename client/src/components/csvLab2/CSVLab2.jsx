@@ -118,7 +118,7 @@ export default function CSVReader() {
       // Simulate backend submission (replace with actual API call)
       console.log(uploadedData)
       const result = await axiosInstance.post("http://localhost:8080/api/patientData/extractTextFromCsv",uploadedData);
-      console.log(result.data)
+      console.log(result)
       if(result.success){
         setSubmitSuccess(true);
         setSubmitError(null);

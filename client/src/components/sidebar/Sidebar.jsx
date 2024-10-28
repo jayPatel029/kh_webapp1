@@ -43,12 +43,13 @@ const Sidebar = ({ mobile = false }) => {
       <hr />
       <div className="center">
         <ul>
-          <Link to="/" style={{ textDecoration: "none" }}>
+         {(role?.role_name=="Admin" || role?.role_name=="PsAdmin" || role?.role_name=="Doctor") ? ( <Link to="/" style={{ textDecoration: "none" }}>
             <li className="">
               <DashboardIcon className="icon" />
               <span className="">DashBoard</span>
             </li>
-          </Link>
+          </Link>) : null
+         }
 
           {/* Admin Management Dropdown */}
           {role?.createAdmin || role?.createDoctor || role?.manageRoles ? (
@@ -113,7 +114,7 @@ const Sidebar = ({ mobile = false }) => {
             </Link>
           ) : null}
 
-          {role?.patients ? (
+          {(role?.role_name=="Admin" || role?.role_name=="PsAdmin" || role?.role_name=="Doctor") ? (
             <Link to="/kfre" style={{ textDecoration: "none" }}>
               <li>
                 <PictureAsPdfIcon className="icon" />

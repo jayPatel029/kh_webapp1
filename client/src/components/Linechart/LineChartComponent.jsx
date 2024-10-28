@@ -75,6 +75,7 @@ const LineChartComponent = ({
           lowRange2,
           highRange2
         );
+        
         if (isCheckedRed && isCheckedOrange) {
           return color === "red" || color === "yellow";
         } else if (isCheckedOrange) {
@@ -84,11 +85,13 @@ const LineChartComponent = ({
         }
         return true; // Return true if no checkboxes are selected
       });
+      console.log("filteredDataColor", filteredDataColor);
       const filteredDataTime = filterDataByTimeRange(filteredDataColor);
       return filteredDataTime;
     };
 
     const filteredData = filterBasedOnColorAndTime();
+    console.log("filteredData", filteredData);
     if (isCheckedRed || isCheckedOrange) {
       setNumberOfAbnormalReadings(filteredData.length);
     } else {
@@ -838,7 +841,7 @@ const LineChartComponent = ({
     axiosInstance
       .get(`${server_url}/readings/get`, { params })
       .then((response) => {
-        // console.log('Response data:', response.data.data);
+        console.log('Response data:', response.data.data);
 
         const formattedData = response.data.data.map((item, key) => {
           const date = new Date(item.date);
@@ -870,16 +873,17 @@ const LineChartComponent = ({
   };
 
   const filterDataByTimeRange = (data) => {
-    const startUTC = new Date(selectionRange.startDate.toISOString());
-    const endUTC = new Date(selectionRange.endDate.toISOString());
+    // Setting start and end date to UTC midnight for accurate comparison
+    const startUTC = new Date(selectionRange.startDate.toISOString().split('T')[0] + "T00:00:00Z");
+    const endUTC = new Date(selectionRange.endDate.toISOString().split('T')[0] + "T23:59:59Z");
 
     return data.filter((item) => {
-      const itemDate = new Date(item.date);
-      const itemUTC = new Date(itemDate.toISOString());
-      console.log(itemUTC, itemUTC >= startUTC && itemUTC <= endUTC);
+      // Parse item date and set it to midnight UTC for comparison
+      const itemUTC = new Date(item.date + "T00:00:00Z");
       return itemUTC >= startUTC && itemUTC <= endUTC;
     });
-  };
+};
+
 
   // const filterDataByTimeRange = (data, timeRange) => {
   //   const currentDate = new Date();

@@ -71,10 +71,24 @@ function UploadedFileModal({ closeModal, user_id, file }) {
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const dateObject = new Date(dateString);
-    const day = dateObject.getDate();
-    const month = dateObject.toLocaleString("default", { month: "short" });
-    const year = dateObject.getFullYear();
-    return `${day} ${month} ${year}`;
+  
+    // Converting the date to Indian Standard Time (GMT+5:30)
+    const offsetInMinutes = 330; // IST is GMT+5:30, i.e., 330 minutes ahead of GMT
+    const istDateObject = new Date(dateObject.getTime() + offsetInMinutes * 60000);
+  
+    // Extracting date
+    const day = istDateObject.getDate();
+    const month = istDateObject.toLocaleString("default", { month: "short" });
+    const year = istDateObject.getFullYear();
+  
+    // Extracting and formatting time in 12-hour format
+    let hours = istDateObject.getHours();
+    const minutes = istDateObject.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12; // Convert to 12-hour format, 0 -> 12
+    const formattedTime = `${hours}:${minutes} ${ampm}`;
+  
+    return `${day} ${month} ${year}, ${formattedTime}`;
   };
 
   return (
