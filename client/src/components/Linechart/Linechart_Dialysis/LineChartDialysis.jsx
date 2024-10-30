@@ -86,6 +86,40 @@ const LineChartDialysis = ({
         return true; // Return true if no checkboxes are selected
       });
       const filteredDataTime = filterDataByTimeRange(filteredDataColor);
+      return filteredDataColor;
+    };
+
+    const filteredData = filterBasedOnColorAndTime();
+    if (isCheckedRed || isCheckedOrange) {
+      setNumberOfAbnormalReadings(filteredData.length);
+    } else {
+      setNumberOfAbnormalReadings(0);
+    }
+
+    setPatientData(filteredData);
+  }, [isCheckedOrange, isCheckedRed]);
+  useEffect(() => {
+    const filterBasedOnColorAndTime = () => {
+      let filteredDataColor = originalData.slice();
+
+      filteredDataColor = filteredDataColor.filter((item) => {
+        const color = getAlertColor(
+          item.readings,
+          lowRange,
+          highRange,
+          lowRange2,
+          highRange2
+        );
+        if (isCheckedRed && isCheckedOrange) {
+          return color === "red" || color === "yellow";
+        } else if (isCheckedOrange) {
+          return color === "yellow";
+        } else if (isCheckedRed) {
+          return color === "red";
+        }
+        return true; // Return true if no checkboxes are selected
+      });
+      const filteredDataTime = filterDataByTimeRange(filteredDataColor);
       return filteredDataTime;
     };
 
@@ -97,8 +131,7 @@ const LineChartDialysis = ({
     }
 
     setPatientData(filteredData);
-  }, [isCheckedOrange, isCheckedRed, selectionRange]);
-
+  }, [selectionRange]);
   const CustomizedDotOld2 = (props) => {
     const { cx, cy, value } = props;
     // 16 combinations

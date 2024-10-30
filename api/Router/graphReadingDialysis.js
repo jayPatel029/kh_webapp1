@@ -11,7 +11,7 @@ const { verifyToken } = require("../Helpers/middlewares/roles.js");
 
 router.post("/add",verifyToken, AddGraphReading);
 router.post("/update",verifyToken, updateGraphReading);
-router.delete("/delete",verifyToken, DeleteGraphReading);
+router.post("/delete",verifyToken, DeleteGraphReading);
 router.get("/get",verifyToken, getReadingsByPatientAndQuestionGraph);
 router.get("/getGraph",verifyToken, getReadingsByPatientAndQuestionGraph);
 

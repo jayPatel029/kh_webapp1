@@ -801,6 +801,21 @@ const getDoctorAlerts = async (req, res) => {
         finalAlerts.push(malert);
       }
     }
+    else if(alerts[i].category==="Dialysis Alert"){
+      const data = {
+        id: alerts[i].id,
+        name: "JohnDoee",
+        
+        type: `No readings Found`,
+        date: alerts[i].date,
+        redirect: `/ShowAlarms/`,
+        alarmId: alerts[i].alarmId,
+       
+        patientId: alerts[i].patientId,
+      
+      };
+      finalAlerts.push(data)
+    }
   }
 
   for (var i = 0; i < reading.length; i++) {

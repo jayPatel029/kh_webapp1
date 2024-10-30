@@ -105,7 +105,7 @@ const Sidebar = ({ mobile = false }) => {
               </li>
             </Link>
           ) : null}
-          {role?.patients ? (
+          {(role?.role_name=="Admin" || role?.role_name=="PsAdmin" || role?.role_name=="Doctor") ? (
             <Link to="/doctorReport" style={{ textDecoration: "none" }}>
               <li>
                 <VaccinesIcon className="icon" />

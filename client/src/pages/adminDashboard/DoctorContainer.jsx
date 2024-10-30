@@ -19,6 +19,7 @@ const UserCard = ({ title, Alerts }) => {
   const [alertsCount, setAlertsCount] = React.useState();
   const [commentsCount, setCommentsCount] = React.useState(0);
   const [prescriptionAlerts, setPrescriptionAlerts] = React.useState([]);
+  const [Dialysis_updates,setDialysis_updates] = React.useState([]);
   const [alertAlerts, setAlertAlerts] = React.useState([]);
   const [showAlertModal, setShowAlertModal] = React.useState(false);
   const [patientComments, setPatientComments] = React.useState([]);
@@ -26,7 +27,33 @@ const UserCard = ({ title, Alerts }) => {
   const [comments, setComments] = React.useState([]);
   const [userid, setUserId] = React.useState();
   const navigate = useNavigate();
+  const [diaUpdates,setdiaUpdates]=useState(false)
+  const getDialysisUpdate = async()=>{
+    try {
+      const token = localStorage.getItem("token"); // Fetch token from local storage
+      const response = await axiosInstance.get(
+        server_url + "/patientdata/canReceive",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Send token in headers
+          },
+        }
+      );
+      console.log("response from canExportPatient : ", response);
+      if (response.status === 403) {
+        return { success: false };
+      } else if (response.status === 200) {
+        setdiaUpdates(true)
+        return { success: true };
+      } else {
+        return { success: false };
+      }
+    } catch (error) {
+      return { success: false, data: error.response.data.message };
+    }
 
+
+  }
   const openCommentsModal = (comments) => {
     setComments(comments);
     setCommentsModal(true);
@@ -79,11 +106,17 @@ const UserCard = ({ title, Alerts }) => {
     setAlertsCount(0);
   };
   useState(() => {
+    getDialysisUpdate();
     console.log("title:", title);
     var pAlerts = Alerts.filter((alert) => alert.name === title);
     var presAlerts = pAlerts.filter(
       (alert) => alert.type === `New Prescription Alarm for ${title}`
     );
+    var diaAlerts = pAlerts.filter(
+      (alert) => alert.type === "No readings Found"
+    );
+    console.log("Dialysis Updates:", diaAlerts);
+    setDialysis_updates(diaAlerts)
     setPrescriptionCount(presAlerts.length);
     setPrescriptionAlerts(presAlerts);
     var alerts = pAlerts.filter(
@@ -180,6 +213,21 @@ const UserCard = ({ title, Alerts }) => {
                 </button>
               </div>
             )}
+            {diaUpdates && (<>
+              {Dialysis_updates.length > 0 && (
+              <div className="mb-2 sm:mb-0">
+                {" "}
+                {/* Wrapping each button in a div */}
+                <button
+                  className="bg-violet-900 mr-2 hover:bg-violet-700 text-white p-2 rounded transition duration-300 ease-in-out transform hover:scale-105"
+                  onClick={() => navigate(`/dialysis/${title}`)}>
+                  {Dialysis_updates.length} Dialysis Update
+                </button>
+              </div>
+            )
+
+            }
+            </>)}
             {alertAlerts.length > 0 && (
               <div className="mb-2 sm:mb-0 mr-2">
                 {" "}
@@ -230,35 +278,9 @@ const UserCard = ({ title, Alerts }) => {
 const DoctorContainer = () => {
   const [Alerts, setAlerts] = React.useState([]);
   const [groupedAlerts, setGroupedAlerts] = useState({});
-  const [diaUpdates,setdiaUpdates]=useState(false)
-  const getDialysisUpdate = async()=>{
-    try {
-      const token = localStorage.getItem("token"); // Fetch token from local storage
-      const response = await axiosInstance.get(
-        server_url + "/patientdata/canReceive",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Send token in headers
-          },
-        }
-      );
-      console.log("response from canExportPatient : ", response);
-      if (response.status === 403) {
-        return { success: false };
-      } else if (response.status === 200) {
-        setdiaUpdates(true)
-        return { success: true };
-      } else {
-        return { success: false };
-      }
-    } catch (error) {
-      return { success: false, data: error.response.data.message };
-    }
-
-
-  }
+ 
   useEffect(() => {
-    getDialysisUpdate();
+
     const fetchAlerts = async () => {
       try {
         var res1 = await axiosInstance.post(`${server_url}/doctor/byEmail/id`, {
@@ -330,7 +352,7 @@ const DoctorContainer = () => {
                   <UserCard title={name} Alerts={Alerts} />
                 </div>
               ))}
-            {diaUpdates && (<>hey</>)}
+            
             {/* {typeof groupedAlerts === 'object' && Object.keys(groupedAlerts).map(patientId => (
               <div key={patientId}>
                 <UserCard

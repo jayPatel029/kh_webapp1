@@ -622,7 +622,7 @@ function UserProfile({ patient }) {
                         <div className="aliments mb-2">
                           <span className="font-bold">Ailments: </span>
                           <span>{userData.ailments.join(", ")}</span>
-                          {role?.canEditPatients && (
+                          {(role?.role_name!="Dialysis Technician" && role?.role_name!="Medical Staff") && (
                             <button onClick={openEditalimentsModal}>
                               <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
                             </button>
@@ -665,7 +665,7 @@ function UserProfile({ patient }) {
                             <div className="egfr">
                               <span className="font-bold">eGFR: </span>
                               <span>{userData.eGFR}</span>
-                              {role?.role_name!=="Dialysis Technician" && (
+                              {(role?.role_name!="Dialysis Technician" && role?.role_name!="Medical Staff") && (
                                 <button onClick={openEditalimentsModal}>
                                   <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
                                 </button>
@@ -675,7 +675,7 @@ function UserProfile({ patient }) {
                             <div className="gfr">
                               <span className="font-bold">GFR: </span>
                               <span>{userData.GFR}</span>
-                              {role?.role_name!=="Dialysis Technician" && (
+                              {(role?.role_name!="Dialysis Technician" && role?.role_name!="Medical Staff") && (
                                 <button onClick={openEditalimentsModal}>
                                   <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
                                 </button>
@@ -688,7 +688,7 @@ function UserProfile({ patient }) {
                           <div className="dry-weight">
                             <span className="font-bold">Dry Weight: </span>
                             <span>{userData.dry_weight}</span>
-                            {role?.role_name!="Dialysis Technician" && (
+                            {(role?.role_name!="Dialysis Technician" && role?.role_name!="Medical Staff") && (
                                  <button onClick={openEditalimentsModal}>
                                  <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
                                </button>

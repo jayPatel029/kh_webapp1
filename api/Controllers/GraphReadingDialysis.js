@@ -65,19 +65,14 @@ const AddGraphReading = async (req, res, next) => {
 };
 
 const updateGraphReading = async (req, res, next) => {
-  const { question_id, user_id, date, new_readings } = req.body;
+  const { id,value } = req.body;
 
   // Get the current time for updating the timestamp
-  const currentDate = new Date().toISOString().slice(0, 10); // Get current date in 'YYYY-MM-DD' format
-  const currentTime = new Date().toISOString().slice(11, 19); // Get current time in 'HH:mm:ss' format
-  const serverTimestamp = `${currentDate} ${currentTime}`;
-
+  
   // Check if the combination of question_id, user_id, and date exists
   const checkQuery = `
       SELECT * FROM graph_readings_dialysis 
-      WHERE question_id = '${question_id}' 
-      AND user_id = '${user_id}' 
-      AND date = '${date}'
+      WHERE id = '${id}'
     `;
 
   try {
@@ -94,27 +89,14 @@ const updateGraphReading = async (req, res, next) => {
     // Update the reading if the record exists
     const updateQuery = `
       UPDATE graph_readings_dialysis 
-      SET readings = '${new_readings}'
-      WHERE question_id = '${question_id}' 
-      AND user_id = '${user_id}' 
-      AND date = '${date}'
+      SET readings = '${value}'
+      WHERE id = '${id}'
     `;
 
     await pool.query(updateQuery);
 
     // Fetch the title to check for alert condition
-    const title_query = await pool.execute(`
-       SELECT title FROM dialysis_readings where id = ${question_id}
-    `);
-    const questionTitle = title_query[0].title;
-
-    const excludedTitles = ["weight before dialysis", "weight after dialysis"];
-
-    // Check if the title is not in the excluded list before creating alerts
-    if (!excludedTitles.includes(questionTitle.toLowerCase().trim())) {
-      await AddDialysisReadingsAlerts(question_id, user_id, date, new_readings);
-    }
-
+    
     // Return success response
     return res.status(200).json({
       success: true,
@@ -130,14 +112,12 @@ const updateGraphReading = async (req, res, next) => {
 };
 
 const DeleteGraphReading = async (req, res, next) => {
-  const { question_id, user_id, date } = req.body;
+  const { id} = req.body;
 
   // Check if the record exists before attempting to delete it
   const checkQuery = `
       SELECT * FROM graph_readings_dialysis 
-      WHERE question_id = '${question_id}' 
-      AND user_id = '${user_id}' 
-      AND date = '${date}'
+      where id = '${id}'
     `;
 
   try {
@@ -154,9 +134,7 @@ const DeleteGraphReading = async (req, res, next) => {
     // If the record exists, proceed to delete it
     const deleteQuery = `
       DELETE FROM graph_readings_dialysis 
-      WHERE question_id = '${question_id}' 
-      AND user_id = '${user_id}' 
-      AND date = '${date}'
+      WHERE id = '${id}'
     `;
 
     await pool.query(deleteQuery);
@@ -199,7 +177,7 @@ const getReadingsByPatientAndQuestionGraph= async(req,res,next)=>{
   }
 
   const query = `
-    SELECT date,readings FROM graph_readings_dialysis
+    SELECT date,readings,id FROM graph_readings_dialysis
     WHERE question_id = ${question_id} AND user_id = ${user_id}
   `;
 
