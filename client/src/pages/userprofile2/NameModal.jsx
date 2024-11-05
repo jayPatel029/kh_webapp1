@@ -14,7 +14,7 @@ const NameModal = ({
   const [name, setName] = useState(initialName || "");
   const [number, setNumber] = useState(initialNumber || "");
   const [dob, setDob] = useState(initialDob || "");
-
+  const changeBy = localStorage.getItem("firstname");
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const dateObject = new Date(dateString);
@@ -30,6 +30,7 @@ const NameModal = ({
       name: name,
       number: number,
       dob: dob,
+      changeBy: changeBy,
     };
     console.log(updatedUserData);
     try {

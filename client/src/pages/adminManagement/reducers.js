@@ -160,10 +160,10 @@ export function newDoctorReducer(state, action) {
         can_export: action.payload,
       };
     }
-    case "dialysis_updates": {
+    case "Dialysis_updates": {
       return {
         ...state,
-        dialysis_updates: action.payload,
+        Dialysis_updates: action.payload,
       };
     }
     case "all": {
@@ -188,7 +188,7 @@ export function newDoctorReducer(state, action) {
         dailyReadings: [],
         dialysisReadings: [],
         email_notification: "yes",
-        dialysis_updates: "yes",
+        Dialysis_updates: "yes",
         can_export: "no",
         ...action.payload,
       };

@@ -804,7 +804,7 @@ const getDoctorAlerts = async (req, res) => {
     else if(alerts[i].category==="Dialysis Alert"){
       const data = {
         id: alerts[i].id,
-        name: "JohnDoee",
+        name: "John Doe",
         
         type: `No readings Found`,
         date: alerts[i].date,

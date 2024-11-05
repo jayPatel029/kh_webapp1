@@ -38,7 +38,7 @@ export async function updatePatientProgram(patientId, programData) {
   }
 }
 
-export async function getPatientById(patientId) {
+export async function getPatientByIdad(patientId) {
   try {
     const response = await axiosInstance.get(
       server_url + "/patient" + "/getPatient/" + patientId
@@ -48,6 +48,18 @@ export async function getPatientById(patientId) {
     return { success: false, data: error.response.data.message };
   }
 }
+
+export async function getPatientById(patientId) {
+  try {
+    const response = await axiosInstance.get(
+      server_url + "/patient" + "/getName/" + patientId
+    );
+    return { success: true, data: response.data };
+  } catch (error) {
+    return { success: false, data: error.response.data.message };
+  }
+}
+
 
 export async function getPatientMedicalTeam(id) {
   try {

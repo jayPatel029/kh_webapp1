@@ -121,6 +121,7 @@ const DialysisTable = ({ questionId, user_id, title, question,isPatientProfile=1
           <tr className="border-b-2 border-black">
             <th className="py-3 px-4 text-left">Reading Type</th>
             <th className="py-3 px-4 text-left">Answer</th>
+            <th className="py-3 px-4 text-left">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -145,14 +146,9 @@ const DialysisTable = ({ questionId, user_id, title, question,isPatientProfile=1
                             onClick={() => openFileModal(data.readings)}
                           />
                         ) : (
-                          <div><span>{data.readings}
-                            </span>
-                            <button onClick={() => openModal2(data)}>
-                <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
-              </button>
-              <button onClick={()=>openModal3(data)} className="text-[#ff0000] inline-block mx-2"><BsTrash />
-              </button>
-                            </div>
+                          <div><span>{data.readings}</span>
+                          
+                          </div>
                         )
                       }
                       {showModal2 &&
@@ -180,6 +176,16 @@ const DialysisTable = ({ questionId, user_id, title, question,isPatientProfile=1
                     </div>
 
                   )}
+                </td>
+                <td className="py-3 px-4">
+                <div>
+                            <button onClick={() => openModal2(data)}>
+                            <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
+                            </button>
+                            <button onClick={()=>openModal3(data)} className="text-[#ff0000] inline-block mx-3">
+                              <BsTrash />
+                            </button>
+                          </div>
                 </td>
               </tr>
             ))

@@ -44,7 +44,7 @@ import DoctorReport from "./pages/doctorReport/DoctorReport";
 import UniqueUserprescription from "./pages/Userprescription/UniqueUserprescription";
 import DeletePatient from "./pages/patient/DeletePatient";
 import AddPatientForm from "./pages/patient/AddPatientForm";
-
+import KfreSingle from "./pages/kfre/KfreSingle";
 
 function App() {
   return (
@@ -98,6 +98,14 @@ function App() {
               element={
                 <ProtectedRoute routeName={"DialysisReadings"}>
                   <DialysisReadings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="kfre/:id"
+              element={
+                <ProtectedRoute routeName={"krfe/:id"}>
+                  <KfreSingle />
                 </ProtectedRoute>
               }
             />

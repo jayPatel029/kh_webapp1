@@ -192,7 +192,7 @@ async function createPatientLogTable() {
       \`old_value\` VARCHAR(255),
       \`new_value\` VARCHAR(255),
       \`changed_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      \`changed_by\` INT NOT NULL,
+      \`changed_by\` VARCHAR(255) NOT NULL,
       FOREIGN KEY (\`patient_id\`) REFERENCES \`patients\`(\`id\`) ON DELETE CASCADE ON UPDATE CASCADE
     ) ENGINE = InnoDB;
   `;

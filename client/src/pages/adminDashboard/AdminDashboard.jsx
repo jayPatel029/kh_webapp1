@@ -29,12 +29,21 @@ function AdminDashboard() {
 
   // Redirect to login page if token is not present or expired
   useEffect(() => {
+    getAdminid()
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
     }
   }, []);
 
+  const getAdminid = async () => {
+    const email = localStorage.getItem("email");
+    const id = await axiosInstance.post(`${server_url}/users/byEmail/id`, {
+      email: email,
+    })
+    localStorage.setItem("id",id.data.id)
+  
+  }
   useEffect(() => {
     // setTimeout(() => {
     //   window.location.reload();

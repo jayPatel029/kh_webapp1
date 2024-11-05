@@ -118,11 +118,11 @@ const EditRole = () => {
           res.data.data.can_vud_cp,
           res.data.data.can_vud_ups,
         ];
-        console.log(auth_arr);
+        console.log("at",auth_arr);
         const binaryArr = auth_arr.map((auth) =>
           auth.toString(2).padStart(3, "0")
         );
-        console.log(binaryArr);
+        console.log("bina",binaryArr);
         const permiss = {};
         Object.keys(permissions).forEach((pageName, index) => {
           permiss[pageName] = {

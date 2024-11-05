@@ -248,15 +248,15 @@ const updatePatientProgram = async (req, res, next) => {
 };
 
 const updatePatientProfile = async (req, res, next) => {
-  const { id, name, number, dob } = req.body;
+  const { id, name, number, dob, changeBy } = req.body;
   const newDetails = req.body;
   try {
     const [oldDetails] = await pool.execute(`SELECT * FROM patients WHERE id = ?`, [id]);
 
         // Compare and log each field
         for (const field in newDetails) {
-            if (newDetails[field] !== oldDetails[field]) {
-                await logChange(id, field, oldDetails[field], newDetails[field]);
+            if (newDetails[field] !== oldDetails[field] && newDetails[field] !== changeBy) {
+                await logChange(id, field, oldDetails[field], newDetails[field], changeBy);
             }
         }
     const query = `
@@ -474,10 +474,10 @@ const getNamebyId = async (req, res, next) => {
     const query = `SELECT * FROM patients where id = ${req.params.id}`;
     const reponse = await pool.query(query);
     console.log(reponse);
-    const name = reponse[0].name;
+    const data = reponse;
     res.status(200).json({
       success: true,
-      data: name,
+      data: data,
     });
   } catch (error) {
     console.log(error);

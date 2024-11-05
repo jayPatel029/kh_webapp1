@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getPatients } from "../../ApiCalls/patientAPis";
+import { getPatients,getPatientById } from "../../ApiCalls/patientAPis";
 import Select from "react-select";
 import CSVReader from "../../components/csvlab/CSVLab";
 import PdfDataExtractor from "../../components/pdfExtractor/PdfDataExtractor";
@@ -8,7 +8,8 @@ import axiosInstance from "../../helpers/axios/axiosInstance";
 import { server_url } from "../../constants/constants";
 import { calculateAge } from "../../helpers/utils";
 
-function KfreList() {
+
+function KfreSingleList() {
   const [patients, setPatients] = useState([]);
   const [viewPrescription, setViewPrescription] = useState(false);
   const [labReportData, setLabReportData] = useState([]);
@@ -34,10 +35,21 @@ function KfreList() {
   const id = useParams();
 
   useEffect(() => {
+    console.log("ID:", id.id);
     const fetchData = async () => {
       try {
-        const patientResult = await getPatients();
+        try {
+      const response = await axiosInstance.get(
+        `${server_url}/labreport/getLabReports/${id.id}`
+      );
+      setLabReportData(response.data.data);
+      console.log("Lab Report Data:", response.data.data);
+    } catch (error) {
+      console.error("Error fetching lab report data:", error);
+    }
+        const patientResult = await getPatientById(id.id);
         if (patientResult.success) {
+            console.log("Patient Data:", patientResult.data.data);
           setPatients(patientResult.data.data);
         } else {
           console.error("Failed to fetch patients:", patientResult);
@@ -137,8 +149,8 @@ function KfreList() {
         const phosphorous = parseFloat(data.phosphorous);
         const bicarbonate = parseFloat(data.bicarbonate);
         const albumin = parseFloat(data.albumin);
-        const age = data.selectedPatient.age;
-        const male = data.gender === "Male" ? 1 : 0;
+        const age = calculateAge(patients[0].dob);
+        const male = patients[0].gender === "Male" ? 1 : 0;
         const result =
           1 -
           Math.pow(
@@ -179,7 +191,7 @@ function KfreList() {
       console.log(item.patientId, patientOptions[0].value);
 
       return {
-        selectedPatient: { value: item.patientId, label: patientName },
+        selectedPatient: { value: id.id , label: patientName },
         Gfr: item.gfr,
         calcium: item.calcium,
         acr: item.acr,
@@ -248,6 +260,7 @@ function KfreList() {
       </div>
       <div>
         <CSVReader
+          patientId={id.id}
           setData={setCsvData}
           setSuccess={setSuccess}
           success={success}
@@ -261,15 +274,8 @@ function KfreList() {
             <label className="block mb-1 text-xs font-medium text-gray-500">
               Patient*
             </label>
-            <Select
-              placeholder="Name"
-              options={patientOptions}
-              onChange={(selectedOption) =>
-                handleSelectChange(0, selectedOption)
-              }
-              className="text-gray-500 text-xs rounded-lg block focus:outline-primary"
-            />
           </div>
+           <p>{patients?.[0]?.name}</p>
 
           <div className="my-1">
             <label className="text-xs font-medium text-gray-500">
@@ -431,4 +437,4 @@ function KfreList() {
   );
 }
 
-export default KfreList;
+export default KfreSingleList;

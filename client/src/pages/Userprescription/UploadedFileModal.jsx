@@ -4,6 +4,15 @@ import { server_url } from "../../constants/constants";
 import { addComment } from "../../ApiCalls/commentApi";
 import { useLocation } from "react-router-dom";
 import MyPDFViewer from "../../components/pdf/MyPDFViewer";
+import jsPDF from "jspdf";
+
+import { Document, Page, pdfjs } from 'react-pdf';
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
+
+
+
+// Ensure to set workerSrc
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 function UploadedFileModal({ closeModal, user_id, file }) {
   const [newComment, setNewComment] = useState("");
@@ -90,7 +99,97 @@ function UploadedFileModal({ closeModal, user_id, file }) {
   
     return `${day} ${month} ${year}, ${formattedTime}`;
   };
-
+  const downloadPDF = async () => {
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+  console.log("file.Prescription", file)
+    // Load the PDF
+    if (file && file.endsWith(".pdf")) {
+      console.log(
+        "file.Prescription",
+        file
+      )
+      const loadingTask = pdfjs.getDocument(file);
+      loadingTask.promise.then(async (pdfDocument) => {
+        const numPages = pdfDocument.numPages;
+  
+        // Render the PDF pages
+        for (let i = 1; i <= numPages; i++) {
+          const page = await pdfDocument.getPage(i);
+          const viewport = page.getViewport({ scale: 2 });
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+  
+          // Render PDF page to canvas
+          await page.render({ canvasContext: context, viewport: viewport }).promise;
+          const imgData = canvas.toDataURL("image/png");
+  
+          // Add the image of the PDF page to the PDF document
+          const imgHeight = (canvas.height * pageWidth) / canvas.width;
+          pdf.addImage(imgData, "PNG", 0, 10, pageWidth, imgHeight);
+  
+          // Add a new page if it's not the last page
+          if (i < numPages) {
+            pdf.addPage();
+          }
+        }
+  
+        // Create a new page for comments
+        pdf.addPage();
+  
+        // Set font for comments
+        pdf.setFontSize(12);
+        pdf.text("Comments:", 10, 20); // Title for comments section
+        let yPosition = 30; // Starting Y position for comments
+  
+        // Add comments to PDF
+        prevComments.forEach((comment) => {
+          const commentText = `${comment.isDoctor ? "Doctor" : "Patient"}: ${comment.content}`;
+          const formattedDate = formatDate(comment.date);
+          const text = `${commentText} (${formattedDate})`;
+          
+          pdf.text(text, 10, yPosition);
+          yPosition += 10; // Move down for the next line
+        });
+  
+        // Save the final PDF
+        pdf.save("report_with_comments.pdf");
+      });
+    } else {
+      const corsProxyUrl = "https://cors-anywhere.herokuapp.com/";
+      const imageUrl = `${corsProxyUrl}${file}`;
+      pdf.addImage(imageUrl, "JPEG", 0, 10, pageWidth, pageHeight * 0.5, '', 'FAST')
+      .then(() => {
+        // Add comments section at the bottom
+        pdf.setFontSize(12);
+        let yPosition = pageHeight * 0.5 + 20;
+        pdf.text("Comments:", 10, yPosition);
+        yPosition += 10;
+  
+        prevComments.forEach((comment) => {
+          const commentText = `${comment.isDoctor ? "Doctor" : "Patient"}: ${comment.content}`;
+          const formattedDate = formatDate(comment.date);
+          const text = `${commentText} (${formattedDate})`;
+          const lines = pdf.splitTextToSize(text, pageWidth - 20);
+  
+          lines.forEach((line) => {
+            if (yPosition > pageHeight - 10) {
+              pdf.addPage();
+              yPosition = 10;
+            }
+            pdf.text(line, 10, yPosition);
+            yPosition += 10;
+          });
+        });
+  
+        pdf.save("report_with_comments.pdf");
+      })
+    }
+  };
+  
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-opacity-50 bg-black">
       <div className="p-7 ml-4 mr-4 mt-4 bg-white w-3/5 h-4/5 shadow-md border-t-4 border-teal-500 rounded z-50 overflow-auto">
@@ -100,6 +199,11 @@ function UploadedFileModal({ closeModal, user_id, file }) {
             onClick={closeModal}
             className="border-2 border-teal-500 text-teal-500 py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2">
             Close
+          </button>
+          <button
+            onClick={downloadPDF}
+            className="border-2 border-teal-500 text-teal-500 py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2">
+            Download PDF  
           </button>
         </div>
 

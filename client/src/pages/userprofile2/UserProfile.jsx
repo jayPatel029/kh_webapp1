@@ -537,7 +537,7 @@ function UserProfile({ patient }) {
                       <div className="navbuttons">
                         <button
                           onClick={() =>
-                            navigate(`/kfre`, {
+                            navigate(`/kfre/${id}`, {
                               state: userData,
                             })
                           }>

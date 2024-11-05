@@ -333,7 +333,7 @@ const updateDoctor = async (req, res, next) => {
       description,
       specialities,
       email_notification,
-      dialysis_updates,
+      Dialysis_updates,
       can_export,
     } = req.body;
 
@@ -360,7 +360,7 @@ const updateDoctor = async (req, res, next) => {
       photo: photo,
       description: description,
       email_notification: email_notification,
-      dialysis_updates: dialysis_updates,
+      Dialysis_updates: Dialysis_updates,
       can_export: can_export,
     };
 
@@ -389,7 +389,7 @@ const updateDoctor = async (req, res, next) => {
       doctor.email_notification,
       doctor.can_export,
       doctor.description,
-      doctor.dialysis_updates,
+      doctor.Dialysis_updates,
       req.params.id,
     ]);
     if (result.affectedRows > 0) {

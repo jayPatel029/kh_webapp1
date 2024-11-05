@@ -92,7 +92,7 @@ function AdminManagement() {
     dailyReadings: [],
     dialysisReadings: [],
     email_notification: "yes",
-    dialysis_updates: "no",
+    Dialysis_updates: "yes",
     can_export: "no",
   });
 
@@ -189,7 +189,7 @@ function AdminManagement() {
         photo: photourl?.data?.objectUrl,
         description: newDoctor.description,
         email_notification: newDoctor.email_notification,
-        dialysis_updates: newDoctor.dialysis_updates,
+        Dialysis_updates: newDoctor.Dialysis_updates,
         can_export: newDoctor.can_export,
         specialities: newDoctor.specialities,
         dailyReadings: newDoctor.dailyReadings,
@@ -650,17 +650,17 @@ function AdminManagement() {
                     <input
                       type="checkbox"
                       className="h-4 w-4 accent-green-600  rounded cursor-pointer"
-                      checked={newDoctor.dialysis_updates == "yes"}
+                      checked={newDoctor.Dialysis_updates == "yes"}
                       onChange={(event) => {
                         console.log(event.target.checked);
                         newDoctorDispatch({
-                          type:"dialysis_updates",
+                          type:"Dialysis_updates",
                         payload: event.target.checked == true ? "yes" : "no",
                         })
                       }}
                     />
                     <label className="ms-2 text-sm font-medium text-gray-500">
-                      dialysis_updates
+                      Dialysis_updates
                     </label>
                   </div>
                   <div className="flex items-center">
@@ -796,7 +796,7 @@ function AdminManagement() {
                                       dailyReadings: u.dailyReadings,
                                       dialysisReadings: u.dialysisReadings,
                                       email_notification: u.email_notification,
-                                      dialysis_updates: u.dialysis_updates,
+                                      Dialysis_updates: u.Dialysis_updates,
                                       can_export: u.can_export,
                                     },
                                   });
