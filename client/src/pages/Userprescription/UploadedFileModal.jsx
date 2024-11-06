@@ -4,17 +4,26 @@ import { server_url } from "../../constants/constants";
 import { addComment } from "../../ApiCalls/commentApi";
 import { useLocation } from "react-router-dom";
 import MyPDFViewer from "../../components/pdf/MyPDFViewer";
+import jsPDF from "jspdf";
+
+import { Document, Page, pdfjs } from 'react-pdf';
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
+
+
+
+// Ensure to set workerSrc
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 function UploadedFileModal({ closeModal, user_id, file }) {
   const [newComment, setNewComment] = useState("");
-  
+
   const [prevComments, setPrevComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
-  const [successful,setSuccessful]=useState(true);
+  const [successful, setSuccessful] = useState(true);
 
   useEffect(() => {
-    console.log("in useeffect")
+    console.log("in useeffect");
     const data = {
       fileId: user_id,
       fileType: "Prescription",
@@ -62,7 +71,7 @@ function UploadedFileModal({ closeModal, user_id, file }) {
         console.log(response.message);
       }
       setNewComment("");
-      setSuccessful(!successful)
+      setSuccessful(!successful);
       // window.location.reload();
     } catch (error) {
       console.error("Error uploading comment:", error);
@@ -71,22 +80,130 @@ function UploadedFileModal({ closeModal, user_id, file }) {
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const dateObject = new Date(dateString);
-    const day = dateObject.getDate();
-    const month = dateObject.toLocaleString("default", { month: "short" });
-    const year = dateObject.getFullYear();
-    return `${day} ${month} ${year}`;
+  
+    // Converting the date to Indian Standard Time (GMT+5:30)
+    const offsetInMinutes = 330; // IST is GMT+5:30, i.e., 330 minutes ahead of GMT
+    const istDateObject = new Date(dateObject.getTime() + offsetInMinutes * 60000);
+  
+    // Extracting date
+    const day = istDateObject.getDate();
+    const month = istDateObject.toLocaleString("default", { month: "short" });
+    const year = istDateObject.getFullYear();
+  
+    // Extracting and formatting time in 12-hour format
+    let hours = istDateObject.getHours();
+    const minutes = istDateObject.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12; // Convert to 12-hour format, 0 -> 12
+    const formattedTime = `${hours}:${minutes} ${ampm}`;
+  
+    return `${day} ${month} ${year}, ${formattedTime}`;
   };
-
+  const downloadPDF = async () => {
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+  console.log("file.Prescription", file)
+    // Load the PDF
+    if (file && file.endsWith(".pdf")) {
+      console.log(
+        "file.Prescription",
+        file
+      )
+      const loadingTask = pdfjs.getDocument(file);
+      loadingTask.promise.then(async (pdfDocument) => {
+        const numPages = pdfDocument.numPages;
+  
+        // Render the PDF pages
+        for (let i = 1; i <= numPages; i++) {
+          const page = await pdfDocument.getPage(i);
+          const viewport = page.getViewport({ scale: 2 });
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+  
+          // Render PDF page to canvas
+          await page.render({ canvasContext: context, viewport: viewport }).promise;
+          const imgData = canvas.toDataURL("image/png");
+  
+          // Add the image of the PDF page to the PDF document
+          const imgHeight = (canvas.height * pageWidth) / canvas.width;
+          pdf.addImage(imgData, "PNG", 0, 10, pageWidth, imgHeight);
+  
+          // Add a new page if it's not the last page
+          if (i < numPages) {
+            pdf.addPage();
+          }
+        }
+  
+        // Create a new page for comments
+        pdf.addPage();
+  
+        // Set font for comments
+        pdf.setFontSize(12);
+        pdf.text("Comments:", 10, 20); // Title for comments section
+        let yPosition = 30; // Starting Y position for comments
+  
+        // Add comments to PDF
+        prevComments.forEach((comment) => {
+          const commentText = `${comment.isDoctor ? "Doctor" : "Patient"}: ${comment.content}`;
+          const formattedDate = formatDate(comment.date);
+          const text = `${commentText} (${formattedDate})`;
+          
+          pdf.text(text, 10, yPosition);
+          yPosition += 10; // Move down for the next line
+        });
+  
+        // Save the final PDF
+        pdf.save("report_with_comments.pdf");
+      });
+    } else {
+      const corsProxyUrl = "https://cors-anywhere.herokuapp.com/";
+      const imageUrl = `${corsProxyUrl}${file}`;
+      pdf.addImage(imageUrl, "JPEG", 0, 10, pageWidth, pageHeight * 0.5, '', 'FAST')
+      .then(() => {
+        // Add comments section at the bottom
+        pdf.setFontSize(12);
+        let yPosition = pageHeight * 0.5 + 20;
+        pdf.text("Comments:", 10, yPosition);
+        yPosition += 10;
+  
+        prevComments.forEach((comment) => {
+          const commentText = `${comment.isDoctor ? "Doctor" : "Patient"}: ${comment.content}`;
+          const formattedDate = formatDate(comment.date);
+          const text = `${commentText} (${formattedDate})`;
+          const lines = pdf.splitTextToSize(text, pageWidth - 20);
+  
+          lines.forEach((line) => {
+            if (yPosition > pageHeight - 10) {
+              pdf.addPage();
+              yPosition = 10;
+            }
+            pdf.text(line, 10, yPosition);
+            yPosition += 10;
+          });
+        });
+  
+        pdf.save("report_with_comments.pdf");
+      })
+    }
+  };
+  
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-opacity-50 bg-black">
       <div className="p-7 ml-4 mr-4 mt-4 bg-white w-3/5 h-4/5 shadow-md border-t-4 border-teal-500 rounded z-50 overflow-auto">
-        <div className="header flex justify-between items-center border-b pb-2 mb-4">
+        <div className="header flex justify-between items-center border-b pb-2 mb-4 sticky top-0">
           <h1 className="text-2xl font-bold">Uploaded File</h1>
           <button
             onClick={closeModal}
-            className="border-2 border-teal-500 text-teal-500 py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2"
-          >
+            className="border-2 border-teal-500 text-teal-500 py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2">
             Close
+          </button>
+          <button
+            onClick={downloadPDF}
+            className="border-2 border-teal-500 text-teal-500 py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2">
+            Download PDF  
           </button>
         </div>
 
@@ -124,13 +241,11 @@ function UploadedFileModal({ closeModal, user_id, file }) {
                     key={comment.id}
                     className={`flex items-start mb-4 ${
                       comment.isDoctor ? "justify-start" : "justify-end"
-                    }`}
-                  >
+                    }`}>
                     <div
                       className={`rounded-full bg-teal-500 text-white w-8 h-8 flex items-center justify-center mr-2 ${
                         comment.isDoctor ? "order-1" : "order-2"
-                      }`}
-                    >
+                      }`}>
                       {comment.isDoctor ? "D" : "P"}
                     </div>
                     <div
@@ -138,8 +253,7 @@ function UploadedFileModal({ closeModal, user_id, file }) {
                         comment.isDoctor
                           ? "ml-2 bg-black"
                           : "mr-2 bg-teal-500 text-black"
-                      }`}
-                    >
+                      }`}>
                       <span className="font-medium text-xs text-gray-500 mr-2">
                         {comment.isDoctor ? "Doctor: " : "Patient: "}
                       </span>
@@ -172,8 +286,7 @@ function UploadedFileModal({ closeModal, user_id, file }) {
               <div className="flex justify-end mt-4">
                 <button
                   onClick={uploadComment}
-                  className="bg-teal-500 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
+                  className="bg-teal-500 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                   Submit
                 </button>
               </div>

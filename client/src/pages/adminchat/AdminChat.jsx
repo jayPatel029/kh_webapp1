@@ -118,12 +118,17 @@ const ChatApp = () => {
         const patientRes = await getPatientById(pid);
         console.log(patientRes);
         const userEmail = localStorage.getItem("email");
+        console.log(userEmail)
         setPatient(patientRes.data.data);
         setSender(userEmail);
-        if (roleResult.data.data.role_name === "Admin") {
+        if (roleResult.data.data.role_name === "Admin" || roleResult.data.data.role_name==="PSadmin") {
           const chatResult = await getAllChatsAdmin(pid);
+          console.log("CHAT",chatResult.data)
           const emailArray = chatResult?.data.map((a) => a.receiverEmail);
+          console.log(emailArray)
           const result = await getPatientMedicalTeam(pid);
+          console.log("CHAT1",result.data.data)
+
           if (result.success && chatResult.success) {
             setChats(
               chatResult.data.filter(
@@ -133,7 +138,7 @@ const ChatApp = () => {
             setMedicalTeam(
               result.data.data.filter(
                 (user) =>
-                  user.email !== userEmail && !emailArray.includes(user.email)
+                  user.email !== userEmail && emailArray.includes(user.email)
               )
             );
           } else {
@@ -245,58 +250,50 @@ const ChatApp = () => {
               </div>
             </div>
             <div className="flex h-[72vh]">
-              {role === "Admin" ? (
-                <div className="bg-white w-[35%] rounded-bl-lg h-full border-r-2 border-gray-300">
-                  {chats.map((chat, index) => (
-                    <div
-                      key={index}
-                      className={
-                        chat.receiverEmail === activeReciever
-                          ? "w-full p-3 border-b-2  border-gray-300 bg-gray-100"
-                          : "w-full p-3 border-b-2 cursor-pointer border-gray-300 bg-white"
-                      }
-                      onClick={async () => {
-                        serActiveReciever(chat.receiverEmail);
-                        setLoading(true);
-                        loadMessages(chat.id).then((res) => {
-                          setLoading(false);
-                        });
-                      }}>
-                      <img
-                        className="inline-block h-12 w-12 mx-4"
-                        src={dummyAdmin}
-                      />
-                      {chat.firstname} {chat.lastname}
-                      {chat.unreadCount > 0 && (
-                        <span className=" rounded-full inline-flex justify-center w-6 h-6 items-center text-xs p-0 text-center ml-2 bg-primary text-white">
-                          {chat.unreadCount}
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                  {medicalTeam.map((user, index) => (
-                    <div
-                      key={index}
-                      className={
-                        user.email === activeReciever
-                          ? "w-full p-3 border-b-2  border-gray-300 bg-gray-100"
-                          : "w-full p-3 border-b-2 cursor-pointer border-gray-300 bg-white"
-                      }
-                      onClick={async () => {
-                        serActiveReciever(user.email);
-                        setLoading(true);
-                        loadChats(user.email).then((res) => {
-                          setLoading(false);
-                        });
-                      }}>
-                      <img
-                        className="inline-block h-12 w-12 mx-4"
-                        src={dummyAdmin}
-                      />
-                      {user.name}
-                    </div>
-                  ))}
-                </div>
+              {role === "Admin" || role==="PSadmin"? (
+               <div className="bg-white w-[35%] rounded-bl-lg h-full border-r-2 border-gray-300">
+               
+               {chats.map((chat, index) => {
+                 // Check if the chat's receiver email is in the medical team
+                 const isInMedicalTeam = medicalTeam.some(
+                   (member) => member.email === chat.receiverEmail
+                 );
+             
+                 return (
+                   <div
+                     key={index}
+                     className={
+                       chat.receiverEmail === activeReciever
+                         ? "w-full p-3 border-b-2 border-gray-300 bg-gray-100"
+                         : "w-full p-3 border-b-2 cursor-pointer border-gray-300 bg-white"
+                     }
+                     onClick={async () => {
+                       serActiveReciever(chat.receiverEmail);
+                       setLoading(true);
+                       loadMessages(chat.id).then((res) => {
+                         setLoading(false);
+                       });
+                     }}>
+                     <img className="inline-block h-12 w-12 mx-4" src={dummyAdmin} />
+                     {chat.firstname} {chat.lastname}
+                     
+                     {!isInMedicalTeam && (
+                       <span className="text-sm text-red-500 ml-4">
+                         (This user is not Assigned)
+                       </span>
+                     )}
+             
+                     {chat.unreadCount > 0 && (
+                       <span className="rounded-full inline-flex justify-center w-6 h-6 items-center text-xs p-0 text-center ml-2 bg-primary text-white">
+                         {chat.unreadCount}
+                       </span>
+                     )}
+                   </div>
+                 );
+               })}
+             </div>
+             
+
               ) : (
                 <div className="bg-white w-[35%] rounded-bl-lg h-full border-r-2 border-gray-300">
                   <div className="w-full p-3 border-b-2 cursor-pointer border-gray-300 bg-white text-center text-lg text-primary">

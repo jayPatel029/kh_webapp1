@@ -13,7 +13,7 @@ import {
 } from "../../ApiCalls/adminDashApis";
 import AdminContainer from "./AdminContainer";
 import DoctorContainer from "./DoctorContainer";
-
+import { useNavigate } from "react-router-dom";
 function AdminDashboard() {
   // Separate doctor alerts and patient alerts
   const [patientAlertsData, setPatientAlertsData] = useState([]);
@@ -25,15 +25,25 @@ function AdminDashboard() {
   const [doctorAlerts, setDoctorAlerts] = useState([]);
   const [patientAlerts, setPatientAlerts] = useState([]);
 
+  const navigate = useNavigate();
+
   // Redirect to login page if token is not present or expired
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-  //   if (!token) {
-  //     window.location.href = "/login";
-  //   }
+  useEffect(() => {
+    getAdminid()
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+    }
+  }, []);
 
-  // }, []);
-
+  const getAdminid = async () => {
+    const email = localStorage.getItem("email");
+    const id = await axiosInstance.post(`${server_url}/users/byEmail/id`, {
+      email: email,
+    })
+    localStorage.setItem("id",id.data.id)
+  
+  }
   useEffect(() => {
     // setTimeout(() => {
     //   window.location.reload();
@@ -73,6 +83,7 @@ function AdminDashboard() {
           `${server_url}/alerts/byType/patient`
         );
         setPatientAlertsData(response.data);
+        console.log("Patient Alerts: ", response.data);
       } catch (error) {
         console.log(error);
       }
@@ -84,6 +95,7 @@ function AdminDashboard() {
           `${server_url}/alerts/byType/doctor`
         );
         setDoctorAlerts(response.data);
+        console.log("Doctor Alerts: ", response.data);
       } catch (error) {
         console.log(error);
       }
@@ -96,7 +108,7 @@ function AdminDashboard() {
         try {
           getAlerts()
             .then((response) => {
-              console.log("Doctor Alerts: ", response.data);
+              // console.log("Doctor Alerts: ", response.data);
               setAllAlerts(response.data);
               setPatientAlerts(
                 response.data
@@ -143,27 +155,7 @@ function AdminDashboard() {
   //   console.log("Updated patientAlertsData: ", patientAlertsData);
   // }, [patientAlertsData]);
 
-  useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        const response = await axiosInstance.get(`${server_url}/alerts`);
-        const alerts = response.data;
-
-        const patientAlerts = alerts.filter(
-          (alert) => alert.type === "patient"
-        );
-        const doctorAlerts = alerts.filter((alert) => alert.type === "doctor");
-
-        setPatientAlerts(patientAlerts);
-        setDoctorAlerts(doctorAlerts);
-        setAllAlerts(alerts);
-      } catch (error) {
-        console.error("Error fetching alerts:", error);
-      }
-    };
-
-    fetchAlerts();
-  }, []);
+  
 
   return (
     <div className="md:flex block">

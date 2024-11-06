@@ -2,10 +2,12 @@ const { pool } = require("../databaseConn/database.js");
 // const { createNewEnrollmentAlert } = require("../Controllers/Alerts.js");
 const axios = require("axios");
 const { createNewEnrollmentAlertFunction } = require("./Alerts.js");
+const { logChange } = require("./log.js");
 
 const getPatients = async (req, res) => {
   try {
     const { role, id } = req.user; // Assuming role and userId are available in req.user
+    
     let query;
     if (role === "Admin") {
       query = `
@@ -17,7 +19,7 @@ const getPatients = async (req, res) => {
       if (id === 1) {
         query = "SELECT * FROM patients";
       }
-    } else if (role === "Doctor") {
+    } else if (role === "Doctor" || role === "Medical Staff") {
       const doctor_id_query = ` select * from doctors where email = '${req.user.email}'`;
       const result = await pool.execute(doctor_id_query);
       // console.log(result[0].id)
@@ -27,7 +29,14 @@ const getPatients = async (req, res) => {
         FROM patients p
         JOIN doctor_patients dp ON p.id = dp.patient_id and dp.doctor_id = ${doctor_id}
       `;
-    } else {
+    }else if(role==="PSadmin" || role==="Dialysis Technician"){
+      query = `
+        SELECT p.*
+        FROM patients p
+        JOIN admin_patients ap ON p.id = ap.patient_id and ap.admin_id = ${id}
+      `;
+    }   
+    else {
       return res.status(404).json({
         success: false,
         message: "You are not authorized to access this route",
@@ -222,9 +231,9 @@ const updatePatientProgram = async (req, res, next) => {
       SET program = '${program_id}'
       WHERE id = '${id}'
     `;
-
+    const query2 =`UPDATE  alerts SET isOpened='1' where patientId =${id} AND category ="New Program Enrollment" `
     await pool.query(query);
-
+    await pool.query(query2);
     res.status(200).json({
       success: true,
       data: "Patient Program Updated Successfully",
@@ -239,8 +248,17 @@ const updatePatientProgram = async (req, res, next) => {
 };
 
 const updatePatientProfile = async (req, res, next) => {
-  const { id, name, number, dob } = req.body;
+  const { id, name, number, dob, changeBy } = req.body;
+  const newDetails = req.body;
   try {
+    const [oldDetails] = await pool.execute(`SELECT * FROM patients WHERE id = ?`, [id]);
+
+        // Compare and log each field
+        for (const field in newDetails) {
+            if (newDetails[field] !== oldDetails[field] && newDetails[field] !== changeBy) {
+                await logChange(id, field, oldDetails[field], newDetails[field], changeBy);
+            }
+        }
     const query = `
       UPDATE patients
       SET name = '${name}', 
@@ -456,10 +474,10 @@ const getNamebyId = async (req, res, next) => {
     const query = `SELECT * FROM patients where id = ${req.params.id}`;
     const reponse = await pool.query(query);
     console.log(reponse);
-    const name = reponse[0].name;
+    const data = reponse;
     res.status(200).json({
       success: true,
-      data: name,
+      data: data,
     });
   } catch (error) {
     console.log(error);

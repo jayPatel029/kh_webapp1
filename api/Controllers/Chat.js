@@ -76,7 +76,7 @@ const sendMessage = async (req, res) => {
       });
     }
     let chatEmail = decoded.email;
-    if (user[0].role === "Admin") {
+    if (user[0].role === "Admin" || user[0].role==="PSadmin") {
       chatEmail = process.env.ADMIN_EMAIL;
     }
 
@@ -150,8 +150,10 @@ const convertBigIntToInt = (obj) => {
 const getAllChats = async (req, res) => {
   try {
     const pid = req.params.pid;
+    console.log(pid)
     const token = req.headers["authorization"].split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    console.log(decoded.email)
     const query = `
       (
         SELECT 

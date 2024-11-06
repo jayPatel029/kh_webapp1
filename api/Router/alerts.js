@@ -2,6 +2,7 @@ const router = require('express').Router();
 
 const {getAlerts,
      getAlertbyType,
+     getAlertbyCategory,
     createDoctorMessageToAdminAlert,
     createNewEnrollmentAlert,
     createNewProgramEnrollmentAlert,
@@ -19,12 +20,15 @@ const {getAlerts,
     dissapproveAllAlerts,
     createNewPrescriptionAlert,
     updateIsReadAlert,
-    createContactUsAlert
+    createContactUsAlert,
+    createProgramAlert,
+    deletePatientAlert
 } = require('../Controllers/Alerts.js');
 const { verifyToken } = require("../Helpers/middlewares/roles.js");
 
 router.get('/',verifyToken, getAlerts);
 router.get('/byType/:type',verifyToken, getAlertbyType);
+router.get('/byCategory',verifyToken, getAlertbyCategory);
 router.post('/doctorMessageToAdmin',verifyToken, createDoctorMessageToAdminAlert);
 router.post('/newEnrollment',verifyToken, createNewEnrollmentAlert);
 router.post('/newProgramEnrollment',verifyToken, createNewProgramEnrollmentAlert);
@@ -41,6 +45,7 @@ router.delete('/delete/:id',verifyToken, deleAlertbyID);
 router.put('/approveAlert',verifyToken, apporoveAlert);
 router.put('/approveAllAlerts',verifyToken, approveAllAlerts);
 router.put('/disapproveAlert',verifyToken, dissapproveAlert);
+router.put('/deletePatientAlert/:id',verifyToken, deletePatientAlert);
 router.put('/disapproveAllAlerts',verifyToken, dissapproveAllAlerts);
 router.post('/newPrescription',verifyToken, createNewPrescriptionAlert);
 router.post('/contactUs',verifyToken, createContactUsAlert);

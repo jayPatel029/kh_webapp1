@@ -33,7 +33,7 @@ const UpdateRangeModelDialysis = ({
     axiosInstance
       .post(`${server_url}/rangeDialysis/setRange`, data)
       .then((response) => {
-        // console.log(response.data);
+        console.log("Neel",response.data);
       })
       .catch((error) => {
         console.error(error);

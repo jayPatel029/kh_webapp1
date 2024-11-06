@@ -10,6 +10,7 @@ import { BsTrash } from "react-icons/bs";
 import { useParams, Link } from "react-router-dom";
 // import CommentModal from "./commentModal";
 import UploadedFileModal from "./UploadedFileModal";
+
 import { FaFilePdf } from "react-icons/fa6";
 // import UploadBulkProfile from "../labreports/uploadBulkProfileQuestions";
 
@@ -21,11 +22,12 @@ const Userprescription = () => {
   const { id } = useParams();
   const [doctorOptions, setDoctorOptions] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const location = useLocation();
+ 
   const openModal = () => {
     setShowModal(true);
   };
-
+  
   const closeModal = () => {
     setShowModal(false);
   };
@@ -38,7 +40,8 @@ const Userprescription = () => {
     setUploadedFile(null);
   };
 
-  const location = useLocation();
+  // console.log(location.pathname);
+
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const dateObject = new Date(dateString);
@@ -47,6 +50,7 @@ const Userprescription = () => {
     const year = dateObject.getFullYear();
     return `${day}-${month}-${year}`;
   };
+
   console.log(id);
   const fetchData = async () => {
     const patient_id = id;
@@ -54,6 +58,7 @@ const Userprescription = () => {
       const response = await axiosInstance.get(
         `${server_url}/prescription/getPrescription/${patient_id}`
       );
+      console.log(response.data.data)
       setUserPrescriptionData(response.data.data);
       setFilteredPrescriptionData(response.data.data);
       // console.log("data received on frontend : ", response.data.data);
@@ -155,7 +160,7 @@ const Userprescription = () => {
                   {showModal && (
                     <PrescriptionModal
                       closeModal={closeModal}
-                      user_id={location.state.id}
+                      user_id={id}
                       onSuccess={fetchData}
                     />
                   )}
@@ -232,19 +237,19 @@ const Userprescription = () => {
                                   className="w-20 h-16 cursor-pointer py-3 text-red-500"
                                   onClick={() =>
                                     openFileModal(
-                                      prescriptionItem.id,
-                                      prescriptionItem.Prescription
+                                      prescriptionItem?.id,
+                                      prescriptionItem?.Prescription
                                     )
                                   }
                                 />
                               ) : (
                                 <img
                                   className=" cursor-pointer"
-                                  src={prescriptionItem.Prescription}
+                                  src={prescriptionItem?.Prescription}
                                   alt="Prescription"
                                   onClick={() =>
                                     openFileModal(
-                                      prescriptionItem.id,
+                                      prescriptionItem?.id,
                                       prescriptionItem.Prescription
                                     )
                                   }

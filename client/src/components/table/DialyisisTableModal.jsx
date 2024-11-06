@@ -64,6 +64,21 @@ export default function DialysisTableModal({
         console.error("Error:", error.message);
       });
   };
+  const updateReadings = async (data) => {
+    axiosInstance
+      .post(`${server_url}/dialysisReading/add`, data)
+      .then((response) => {
+        if (response.data.success === false) {
+          setErrMessage(response.data.data);
+        } else {
+          onSuccess();
+          closeModal();
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error.message);
+      });
+  };
 
   const renderInputField = () => {
     switch (selectedType.toLowerCase()) {

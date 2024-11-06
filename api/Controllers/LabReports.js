@@ -2,11 +2,14 @@ const { pool } = require("../databaseConn/database.js");
 const { PdfTextFunction } = require("./PatientData.js");
 const LabReadings = require("../Models/labreadings.js");
 const { where } = require("sequelize");
+const moment = require("moment-timezone");
 
 const getLabReports = async (req, res, next) => {
   const id = req.params.id;
   const query = `SELECT * FROM labreport WHERE patient_id=${id}`;
   const labreports = await pool.query(query);
+  console.log(labreports)
+  
   res.status(200).json({
     success: true,
     data: labreports,
@@ -35,15 +38,15 @@ const getLabReportByPatient = async (req, res, next) => {
 
 const addLabReport = async (req, res, next) => {
   const { Lab_Report, patient_id, date, Report_Type } = req.body;
-
-  //   const date_2 = new Date().toISOString().slice(0, 19).replace("T", " ");
+  console.log("lab",Lab_Report)
+      // const date_2 = new Date().toISOString().slice(0, 19).replace("T", " ");
   const query = `INSERT INTO labreport (Lab_Report,Date,patient_id, Report_Type) VALUES ('${Lab_Report}','${date}','${patient_id}', '${Report_Type}')`;
   try {
     const result = await pool.query(query);
     var medicalData;
     if(Report_Type === "Lab") {
       medicalData= await PdfTextFunction(Lab_Report);
-      console.log(medicalData)
+      console.log("Data",medicalData)
       const success= await insertMedicalDataDB(medicalData,patient_id,date)
     }
 

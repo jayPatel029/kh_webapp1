@@ -237,7 +237,7 @@ const dialysisParametersByType = async (req, res)=>{
     AND dr.id IN (
         SELECT dialysisReadingId
         FROM doctor_dialysis_readings
-    );
+    ) ORDER BY dr.isGraph DESC;
     `
 
     var dialysis_readings = await pool.query(query1, [patientId]);

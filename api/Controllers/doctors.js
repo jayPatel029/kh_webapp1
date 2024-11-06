@@ -97,6 +97,7 @@ const createDoctor = async (req, res, next) => {
       specialities,
       email_notification,
       can_export,
+      dialysis_updates
     } = req.body;
     let dailyReadings = [];
     let dialysisReadings = [];
@@ -122,6 +123,7 @@ const createDoctor = async (req, res, next) => {
       description: description,
       email_notification: email_notification,
       can_export: can_export,
+      dialysis_updates: dialysis_updates,
       regdate: new Date().toISOString().slice(0, 19).replace("T", " "),
     };
 
@@ -136,7 +138,7 @@ const createDoctor = async (req, res, next) => {
       });
     } else {
       const query =
-        "INSERT INTO doctors ( name,   role,   email,   `license no`,  `practicing at`,  experience,   ref,   resume,  phoneno,`doctors code`,institute,address,photo,description, email_notification, can_export, regdate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        "INSERT INTO doctors ( name,   role,   email,   `license no`,  `practicing at`,  experience,   ref,   resume,  phoneno,`doctors code`,institute,address,photo,description, email_notification, can_export,Dialysis_updates, regdate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?);";
 
       const result = await pool.query(query, [
         doctor.name,
@@ -155,6 +157,7 @@ const createDoctor = async (req, res, next) => {
         doctor.description,
         doctor.email_notification,
         doctor.can_export,
+        doctor.dialysis_updates,
         doctor.regdate,
       ]);
 
@@ -330,6 +333,7 @@ const updateDoctor = async (req, res, next) => {
       description,
       specialities,
       email_notification,
+      Dialysis_updates,
       can_export,
     } = req.body;
 
@@ -356,6 +360,7 @@ const updateDoctor = async (req, res, next) => {
       photo: photo,
       description: description,
       email_notification: email_notification,
+      Dialysis_updates: Dialysis_updates,
       can_export: can_export,
     };
 
@@ -365,7 +370,7 @@ const updateDoctor = async (req, res, next) => {
     );
 
     const query =
-      "UPDATE doctors SET name = ?, role = ?, email = ?, `license no` = ?, `practicing at` = ?, experience = ?, ref = ?, resume = ?, phoneno = ?, `doctors code` = ?, institute = ?, address = ?, photo = ?, email_notification = ?, can_export=?, description = ? WHERE id = ?";
+      "UPDATE doctors SET name = ?, role = ?, email = ?, `license no` = ?, `practicing at` = ?, experience = ?, ref = ?, resume = ?, phoneno = ?, `doctors code` = ?, institute = ?, address = ?, photo = ?, email_notification = ?, can_export=?, description = ?, Dialysis_updates=? WHERE id = ?";
 
     const result = await pool.query(query, [
       doctor.name,
@@ -384,6 +389,7 @@ const updateDoctor = async (req, res, next) => {
       doctor.email_notification,
       doctor.can_export,
       doctor.description,
+      doctor.Dialysis_updates,
       req.params.id,
     ]);
     if (result.affectedRows > 0) {

@@ -165,7 +165,7 @@ const AlertModal = ({ closeModal }) => {
 
   const viewProfile = async () => {
     try {
-      // const patientId = alerts[0].patientId;
+      const patientId = alerts[0].patientId;
       navigate(`/userProfile/${patientId}`, {});
     } catch (error) {}
   };

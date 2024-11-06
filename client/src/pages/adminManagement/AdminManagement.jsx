@@ -133,7 +133,8 @@ function AdminManagement() {
           setSuccessful("Registration Successful!");
           newUserDispatch({ type: "all", payload: {} });
         } else {
-          setErrMsg(["Registration Error!"]);
+          console.log("errorrr", response);
+          setErrMsg(["Registration Error! " + response.data]);
         }
       } else {
         const names = newUser.name.split(" ");
@@ -278,8 +279,7 @@ function AdminManagement() {
                       payload: event.target.value,
                     });
                   }}
-                  className="border border-gray-300 text-gray-500 text-sm rounded-lg block w-full p-2.5 focus:outline-primary"
-                >
+                  className="border border-gray-300 text-gray-500 text-sm rounded-lg block w-full p-2.5 focus:outline-primary">
                   {roles.map((role, index) => {
                     return (
                       <option key={index} value={role.role_name}>
@@ -295,8 +295,7 @@ function AdminManagement() {
                 <>
                   <button
                     onClick={handleSubmit}
-                    className=" flex-1 mr-2 border md:inline-block text-white bg-primary font-semibold tracking-wide text-lg border-gray-300 w-[12vw] rounded-lg p-1.5"
-                  >
+                    className=" flex-1 mr-2 border md:inline-block text-white bg-primary font-semibold tracking-wide text-lg border-gray-300 w-[12vw] rounded-lg p-1.5">
                     UPDATE
                   </button>
                   <button
@@ -304,16 +303,14 @@ function AdminManagement() {
                       setEditMode(false);
                       newUserDispatch({ type: "all", payload: {} });
                     }}
-                    className="flex-1 border text-[#ff0000] md:inline-block bg-white font-semibold tracking-wide text-lg border-[#ff0000] w-[12vw] rounded-lg  p-1.5"
-                  >
+                    className="flex-1 border text-[#ff0000] md:inline-block bg-white font-semibold tracking-wide text-lg border-[#ff0000] w-[12vw] rounded-lg  p-1.5">
                     CANCEL
                   </button>
                 </>
               ) : (
                 <button
                   onClick={handleSubmit}
-                  className="block border text-white bg-primary font-semibold tracking-wide text-lg border-gray-300 w-full md:w-[12vw] rounded-lg p-1.5"
-                >
+                  className="block border text-white bg-primary font-semibold tracking-wide text-lg border-gray-300 w-full md:w-[12vw] rounded-lg p-1.5">
                   SUBMIT
                 </button>
               )}
@@ -407,8 +404,7 @@ function AdminManagement() {
                                       left: 0,
                                       behavior: "smooth",
                                     });
-                                  }}
-                                >
+                                  }}>
                                   <BsKey />
                                 </button>
                                 <button
@@ -432,8 +428,7 @@ function AdminManagement() {
                                       left: 0,
                                       behavior: "smooth",
                                     });
-                                  }}
-                                >
+                                  }}>
                                   <BsPencilSquare />
                                 </button>
                               </>
@@ -442,8 +437,7 @@ function AdminManagement() {
                             myRole.createAdmin >= 4 ? (
                               <button
                                 onClick={() => deleteUser(u.email)}
-                                className="text-[#ff0000] inline-block mx-2"
-                              >
+                                className="text-[#ff0000] inline-block mx-2">
                                 <BsTrash />
                               </button>
                             ) : (

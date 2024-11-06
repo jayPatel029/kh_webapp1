@@ -183,6 +183,28 @@ async function createDoctorDailyReadingTable() {
     console.log(error);
   }
 }
+async function createPatientLogTable() {
+  const query = `
+    CREATE TABLE IF NOT EXISTS \`patient_log\` (
+      \`log_id\` INT AUTO_INCREMENT PRIMARY KEY,
+      \`patient_id\` INT NOT NULL,
+      \`changed_field\` VARCHAR(255) NOT NULL,
+      \`old_value\` VARCHAR(255),
+      \`new_value\` VARCHAR(255),
+      \`changed_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      \`changed_by\` VARCHAR(255) NOT NULL,
+      FOREIGN KEY (\`patient_id\`) REFERENCES \`patients\`(\`id\`) ON DELETE CASCADE ON UPDATE CASCADE
+    ) ENGINE = InnoDB;
+  `;
+
+  try {
+    await pool.query(query);
+    console.log("patient_log table created successfully.");
+  } catch (error) {
+    console.error("Error creating patient_log table:", error);
+  }
+}
+
 
 async function createDoctorDialysisReadingTable() {
   const query =
@@ -603,7 +625,20 @@ const createAdminPatientsTable = async () => {
     console.error("Error creating admin patients table:", error);
   }
 };
-
+const createDeletedUserTable = async()=>{
+  const query = `CREATE TABLE IF NOT EXISTS deleted_user(
+  patient_id INT NOT NULL,
+  name VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY(patient_id,name),
+  FOREIGN KEY (patient_id) REFERENCES patients(id)
+  );
+`;
+try {
+  await pool.query(query);
+  // console.log("Doctor patients table created successfully");
+} catch (error) {
+  console.error("Error creating doctor patients table:", error);
+}}
 const createDoctorPatientsTable = async () => {
   const query = `
     CREATE TABLE IF NOT EXISTS doctor_patients (
@@ -643,6 +678,8 @@ const createalertsReadingTable = async () => {
 };
 
 const createTables = async () => {
+  await createDeletedUserTable();
+  await createPatientLogTable();
   await createAndAddRoles();
   await createUsertable();
   await createAlamrsTable();

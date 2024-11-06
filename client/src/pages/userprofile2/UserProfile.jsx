@@ -31,11 +31,12 @@ import {
 import { getAllChats, getAllChatsAdmin } from "../../ApiCalls/chatApis";
 import { dummyadmin } from "../../assets";
 import { getDoctorsChat } from "../../ApiCalls/doctorApis";
+import Vaccines from "@mui/icons-material/Vaccines";
 
 function UserProfile({ patient }) {
   const [totalUnreadCount, settotalUnreadCount] = useState(0);
   const { pid } = useParams();
-  const [role, setRole] = useState("");
+  const role = useSelector((state) => state.permission);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [messages, setMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState("");
@@ -108,7 +109,7 @@ function UserProfile({ patient }) {
       setUserData(response.data.data);
       // console.log(userData);
       setAilments(response.data.data.ailments);
-      // console.log(response.data.data)
+      console.log(response.data.data.ailments)
       return response.data;
     } catch (error) {
       console.error("Error fetching questions:", error);
@@ -223,6 +224,7 @@ function UserProfile({ patient }) {
         // If responseCount is not present in both or they have equal priority, return 0
         return 0;
       });
+
       setGeneralParameters(temp);
       setLoading(false);
     });
@@ -238,6 +240,7 @@ function UserProfile({ patient }) {
           const filteredData = response.filter(
             (item) => !prevData.some((prevItem) => prevItem.id === item.id)
           );
+          console.log(filteredData)
           return [...prevData, ...filteredData];
         });
         // console.log(dialysisParameters);
@@ -255,6 +258,7 @@ function UserProfile({ patient }) {
         const response = await axiosInstance.get(
           `${server_url}/labreport/LabReadings`
         );
+        console.log("lab",response.data.data)
         setLabReadings(response.data.data); // Assuming your API response structure
       } catch (err) {
         setError(err.message);
@@ -269,7 +273,8 @@ function UserProfile({ patient }) {
     const fetchData = async () => {
       try {
         const roleResult = await identifyRole();
-        setRole(roleResult.data.data.role_name);
+        console.log(roleResult?.data?.data?.role_name);
+
         const patientRes = await getPatientById(id);
         // console.log(patientRes);
         const userEmail = localStorage.getItem("email");
@@ -304,15 +309,21 @@ function UserProfile({ patient }) {
     fetchData();
   }, [messages]);
 
-  const formatDate = (date) => {
-    const newDate = new Date(date);
-    return newDate.toDateString();
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const dateObject = new Date(dateString);
+    const day = String(dateObject.getDate()).padStart(2, "0");
+    const month = String(dateObject.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const year = dateObject.getFullYear();
+    return `${day}-${month}-${year}`;
   };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const roleResult = await identifyRole();
-        setRole(roleResult.data.data.role_name);
+        // setRole(roleResult.data.data.role_name);
+
         if (roleResult.data.data.role_name === "Admin") {
           const getDoctorsResult = await getDoctorsChat(id);
           if (getDoctorsResult.success) {
@@ -397,17 +408,25 @@ function UserProfile({ patient }) {
               </a>
 
               <div className="w-3/4 flex justify-center mx-auto">
-                <div className="flex flex-wrap justify-center">
+                <div className="flex justify-center">
                   <div className="w-1/2 md:w-1/4 mb-2 flex  justify-center">
-                    <div className="navbuttons gap-2">
+                   {(role.role_name==="Admin" || role.role_name==="PSadmin" || role.role_name==="Doctor" )&& <div className="navbuttons gap-2">
                       <Link to={"/adminChat/" + id} className="text-sm">
                         ADMIN CHAT
                       </Link>
-                      {role === "Admin" && chats.length > 0 && chats.reduce((total, chat) => total + chat.unreadCount, 0) > 0 ? (
+                      {role === "Admin" || role==="PSadmin" &&
+                      chats.length > 0 &&
+                      chats.reduce(
+                        (total, chat) => total + chat.unreadCount,
+                        0
+                      ) > 0 ? (
                         <div className="h-full">
                           <div>
                             <span className="rounded-full inline-flex justify-center w-6 h-6 items-center text-xs p-0 text-center bg-red-700 text-white">
-                              {chats.reduce((total, chat) => total + chat.unreadCount, 0)}
+                              {chats.reduce(
+                                (total, chat) => total + chat.unreadCount,
+                                0
+                              )}
                             </span>
                           </div>
                         </div>
@@ -420,24 +439,32 @@ function UserProfile({ patient }) {
                           </div>
                         )
                       )}
-                    </div>
+                    </div>}
                   </div>
-                  <div className="w-1/2 md:w-1/4 mb-2 flex gap-2 justify-center">
+                  {(role.role_name==="Doctor" || role.role_name==="Admin" || role.role_name==="PSadmin") && <div className="w-1/2 md:w-1/4 mb-2 flex gap-2 justify-center">
                     <div className="navbuttons">
                       <Link to={"/doctorChat/" + id} className="text-sm">
                         DOCTOR CHAT
                       </Link>
-                      {role === "Doctor" && chats1.length > 0 && chats1.reduce((total, chat) => total + chat.unreadCount, 0) > 0 ? (
+                      {role === "Doctor" &&
+                      chats1.length > 0 &&
+                      chats1.reduce(
+                        (total, chat) => total + chat.unreadCount,
+                        0
+                      ) > 0 ? (
                         <div className="h-full">
                           <div>
                             <span className="rounded-full inline-flex justify-center w-6 h-6 mx-2 items-center text-xs p-0 text-center bg-red-700 text-white">
-                              {chats1.reduce((total, chat) => total + chat.unreadCount, 0)}
+                              {chats1.reduce(
+                                (total, chat) => total + chat.unreadCount,
+                                0
+                              )}
                             </span>
                           </div>
                         </div>
                       ) : null}
                     </div>
-                  </div>
+                  </div>}
                   <div className="w-1/2 md:w-1/4 mb-2 flex justify-center ">
                     <div className="navbuttons">
                       <button
@@ -486,24 +513,40 @@ function UserProfile({ patient }) {
                       </button>
                     </div>
                   </div>
-                  <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
+                  {(role.role_name==="Doctor" || role.role_name==="PSadmin" || role.role_name==="Admin" )&&<div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
                     <div className="navbuttons">
                       <Link to={"/ShowAlarms/" + id}>ALARMS</Link>
                     </div>
-                  </div>
-                  <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
-                    <div className="navbuttons">
-                      <button
-                        onClick={() =>
-                          navigate(`/manageparameters/${id}`, {
-                            state: userData,
-                          })
-                        }>
-                        MANAGE PARAMETERS
-                      </button>
+                  </div>}
+                  {(role.role_name==="Admin" || role.role_name==="PSadmin")  && (
+                    <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
+                      <div className="navbuttons">
+                        <button
+                          onClick={() =>
+                            navigate(`/manageparameters/${id}`, {
+                              state: userData,
+                            })
+                          }>
+                          MANAGE PARAMETERS
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  )}
+                  {(role?.patients && !ailments.includes('Hemo Dialysis') && !ailments.includes('Peritoneal Dialysis') )?(
+                    <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
+                      <div className="navbuttons">
+                        <button
+                          onClick={() =>
+                            navigate(`/kfre/${id}`, {
+                              state: userData,
+                            })
+                          }>
+                          KFRE
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+                </div> 
               </div>
 
               <div className="rightbottom">
@@ -579,7 +622,7 @@ function UserProfile({ patient }) {
                         <div className="aliments mb-2">
                           <span className="font-bold">Ailments: </span>
                           <span>{userData.ailments.join(", ")}</span>
-                          {role?.canEditPatients && (
+                          {(role?.role_name!="Dialysis Technician" && role?.role_name!="Medical Staff") && (
                             <button onClick={openEditalimentsModal}>
                               <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
                             </button>
@@ -596,7 +639,7 @@ function UserProfile({ patient }) {
                         </div>
                         <div className="Dob">
                           <span className="font-bold"> DOB: </span>
-                          <span>{userData.dob}</span>
+                          <span>{formatDate(userData.dob)}</span>
                           {role?.canEditPatients && (
                             <button onClick={openEditModal}>
                               <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
@@ -622,7 +665,7 @@ function UserProfile({ patient }) {
                             <div className="egfr">
                               <span className="font-bold">eGFR: </span>
                               <span>{userData.eGFR}</span>
-                              {role?.canEditPatients && (
+                              {(role?.role_name!="Dialysis Technician" && role?.role_name!="Medical Staff") && (
                                 <button onClick={openEditalimentsModal}>
                                   <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
                                 </button>
@@ -632,7 +675,7 @@ function UserProfile({ patient }) {
                             <div className="gfr">
                               <span className="font-bold">GFR: </span>
                               <span>{userData.GFR}</span>
-                              {role?.canEditPatients && (
+                              {(role?.role_name!="Dialysis Technician" && role?.role_name!="Medical Staff") && (
                                 <button onClick={openEditalimentsModal}>
                                   <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
                                 </button>
@@ -645,9 +688,11 @@ function UserProfile({ patient }) {
                           <div className="dry-weight">
                             <span className="font-bold">Dry Weight: </span>
                             <span>{userData.dry_weight}</span>
-                            <button onClick={openEditalimentsModal}>
-                              <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
-                            </button>
+                            {(role?.role_name!="Dialysis Technician" && role?.role_name!="Medical Staff") && (
+                                 <button onClick={openEditalimentsModal}>
+                                 <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
+                               </button>
+                              )} 
                           </div>
                         )}
                         {userData.ailments.includes("CKD") &&
@@ -713,8 +758,8 @@ function UserProfile({ patient }) {
                     </Collapsible>
                   ))}
                 </div>
-                <div className="generalParameters">
-                  {generalParameters.length > 0 && (
+                {(role?.role_name!=="Dialysis Technician") && <div className="generalParameters">
+                  {generalParameters.length > 0 &&(
                     <h1 className="sectionTitle">General Parameter</h1>
                   )}
                   {generalParameters
@@ -796,7 +841,7 @@ function UserProfile({ patient }) {
                         </Collapsible>
                       );
                     })}
-                </div>
+                </div>}
 
                 <div className="dialysisParameters">
                   {dialysisParameters.length > 0 && (

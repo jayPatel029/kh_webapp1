@@ -62,7 +62,11 @@ const insertReadings = async () => {
     await sequelize.sync(); // Ensure the database is in sync
 
     for (const reading of readingsData) {
-      await LabReadings.create(reading);
+      // Check if the reading already exists based on the title (or any unique identifier)
+      await LabReadings.findOrCreate({
+        where: { title: reading.title }, // Assuming 'title' should be unique
+        defaults: reading, // Insert the data if it does not exist
+      });
     }
 
     console.log("Readings data inserted successfully!");
@@ -71,8 +75,9 @@ const insertReadings = async () => {
   }
 };
 
+
 // Run the insert function
-// insertReadings();
+//  insertReadings();
 
 
 // Define the graphReadingsLab model

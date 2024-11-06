@@ -9,6 +9,7 @@ import Patient from "./pages/patient/Patient";
 import ProfileQuestions from "./pages/profileQuestion/ProfileQuestions";
 import UserProgramSelection from "./pages/userProgramSelection/UserProgramSelection";
 import Login from "./pages/login/Login";
+import UniqueUserProgramSelection from "./pages/userProgramSelection/UniqueUserProgramSelection"
 // import UserProfile from './pages/userProfile/UserProfile'
 import UserRoles from "./pages/adminManagement/UserRoles";
 import AddRole from "./pages/adminManagement/AddRole";
@@ -40,6 +41,10 @@ import AppLogout from "./components/logout/Logout";
 import Kfre from "./pages/kfre/Kfre"
 import AiChat from "./pages/AIChat/AiChat";
 import DoctorReport from "./pages/doctorReport/DoctorReport";
+import UniqueUserprescription from "./pages/Userprescription/UniqueUserprescription";
+import DeletePatient from "./pages/patient/DeletePatient";
+import AddPatientForm from "./pages/patient/AddPatientForm";
+import KfreSingle from "./pages/kfre/KfreSingle";
 
 function App() {
   return (
@@ -97,6 +102,14 @@ function App() {
               }
             />
             <Route
+              path="kfre/:id"
+              element={
+                <ProtectedRoute routeName={"krfe/:id"}>
+                  <KfreSingle />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="profileQuestions"
               element={
                 <ProtectedRoute routeName={"ProfileQuestions"}>
@@ -109,6 +122,14 @@ function App() {
               element={
                 <ProtectedRoute routeName={"UserProgramSelection"}>
                   <UserProgramSelection />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="userProgramSelection/:id"
+              element={
+                <ProtectedRoute routeName={"UserProgramSelection"}>
+                  <UniqueUserProgramSelection />
                 </ProtectedRoute>
               }
             />
@@ -141,6 +162,20 @@ function App() {
               element={
                 <ProtectedRoute routeName={"Patient"}>
                   <Patient />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="Addpatient"
+              element={
+                <ProtectedRoute routeName={"Patient"}>
+                  <AddPatientForm/>
+                </ProtectedRoute>
+              } />
+            <Route
+              path="Deletepatient/:id"
+              element={
+                <ProtectedRoute routeName={"Patient"}>
+                  <DeletePatient />
                 </ProtectedRoute>
               }
             />
@@ -189,6 +224,14 @@ function App() {
               element={
                 <ProtectedRoute routeName={"Userprescription"}>
                   <Userprescription />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Userprescription/:id/:prescriptionId"
+              element={
+                <ProtectedRoute >
+                  <UniqueUserprescription />
                 </ProtectedRoute>
               }
             />
