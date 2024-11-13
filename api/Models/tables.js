@@ -51,6 +51,34 @@ async function createLabReportTable() {
   }
 }
 
+async function createKfreDetailsTable() {
+  const createTableQuery = `
+  CREATE TABLE IF NOT EXISTS kfre_details (
+    id INT(11) NOT NULL AUTO_INCREMENT,
+    patient_id INT(11) NOT NULL,
+    GFR DECIMAL(5, 2) NULL DEFAULT NULL,
+    Phosphorous DECIMAL(5, 2) NULL DEFAULT NULL,
+    Bicarbonate DECIMAL(5, 2) NULL DEFAULT NULL,
+    Albumin DECIMAL(5, 2) NULL DEFAULT NULL,
+    Calcium DECIMAL(5, 2) NULL DEFAULT NULL,
+    Albumin_to_Creatinine_Ratio DECIMAL(5, 2) NULL DEFAULT NULL,
+    lab_id INT(11) NOT NULL,
+    kfre DECIMAL(5, 2) NULL DEFAULT NULL,
+    date DATE NULL DEFAULT NULL,
+    PRIMARY KEY (id) USING BTREE,
+    FOREIGN KEY (lab_id) REFERENCES labreport(id) ON DELETE CASCADE
+  )
+  COLLATE='utf8mb4_general_ci'
+  ENGINE=InnoDB;
+`;
+
+  try {
+    await pool.query(createTableQuery);
+  } catch (error) {
+    console.error("Error creating kfre_details table:", error);
+  }
+}
+
 async function addSuperUser() {
   const superUserData = {
     firstname: "Kifayti",
@@ -702,6 +730,7 @@ const createTables = async () => {
   await createUserParameterRanges();
   await createPrescriptionstable();
   await createAltertsTable();
+  await createKfreDetailsTable();
   await createChatTable();
   await createMessagesTable();
   await createMailOtpTable();

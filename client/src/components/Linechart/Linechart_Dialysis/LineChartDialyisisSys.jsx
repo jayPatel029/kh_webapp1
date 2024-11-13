@@ -11,11 +11,13 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
-import EnterReadingsModel from "./EnterReadingModalDialysisSys";
+
 import UpdateRangeModel from "./UpdateRangeModalDialysisSys";
 import axiosInstance from "../../../helpers/axios/axiosInstance"; 
 import { server_url } from "../../../constants/constants";
 import { useSelector } from "react-redux";
+import EnterReadingsModelDialysis from "./EnterReadingModelDialysis";
+import EnterReadingModalDialysisSys from "./EnterReadingModalDialysisSys";
 
 
 const LineChartDialysisSys = ({ aspect, title, questionId, user_id, unit, isPatientProfile = 0 }) => {
@@ -1543,7 +1545,7 @@ const LineChartDialysisSys = ({ aspect, title, questionId, user_id, unit, isPati
             Enter Readings
           </button>}
         {showModalEnterReadings && (
-          <EnterReadingsModel
+          <EnterReadingModalDialysisSys
             closeModal={closeModalEnterReadings}
             title={title}
             question_id={questionId}

@@ -994,12 +994,16 @@ const LineChartComponent = ({
           />
         )}
 
-        <button
+        {
+          role?.canEditPatients && (
+            <button
           className="block rounded-lg text-primary border-2 border-primary w-40 py-2"
           onClick={() => openModalUpdateRange()}
         >
           Update Range
         </button>
+          )
+        }
         {showModalUpdateRange && (
           <UpdateRangeModel
             closeModal={closeModalUpdateRange}

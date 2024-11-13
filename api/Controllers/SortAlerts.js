@@ -158,7 +158,7 @@ const generateMissedPrescriptionAlarmAlert = async (obj) => {
       patientId: patientId,
       patientProfilePhoto: patientProfilePhoto,
       type0: obj.type,
-      type: `Missed Prescription Alarm for ${patientName}`,
+      type: `Doctor You have Missed Prescription approval alert for ${patientName}`,
       date: obj.date,
       redirect: `/ShowAlarms/${patientID}`,
       alarmId: alarmId,
@@ -167,6 +167,51 @@ const generateMissedPrescriptionAlarmAlert = async (obj) => {
 
     // console.log(data);
 
+    return data;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+const generateMissedAlarmAlertByPatient = async (obj, did) => {
+  try {
+    const alarmId = obj.alarmId;
+    const patientId = obj.patientId;
+    const getPatientNameQuery = `SELECT name FROM patients WHERE id = '${patientId}'`;
+    if (!getPatientNameQuery) return;
+    var patientNameResult = await pool.query(getPatientNameQuery);
+
+    var patientName = patientNameResult[0].name;
+    var patientProfilePhoto = patientNameResult[0].profile_photo;
+    const getIsreadquery = `SELECT * FROM alertsread WHERE alertId = ${obj.id} AND doctorId = ${did} AND dailyordia = 'Missed Alarm' `;
+    let isRead;
+    try {
+      isRead = await pool.query(getIsreadquery);
+      // isRead = isRead[0].isRead;
+      // console.log("isRead",isRead)
+    } catch (error) {
+      return null;
+    }
+    let realisRead = 1;
+    if (isRead.length > 0) {
+      realisRead = isRead[0].isRead;
+    }
+    const data = {
+      id: obj.id,
+      name: patientName,
+      patientId: patientId,
+      patientProfilePhoto: patientProfilePhoto,
+      type0: obj.type,
+      type: obj.category,
+      date: obj.date,
+      redirect: `/ShowAlarms/${patientId}`,
+      alarmId: alarmId,
+      color: "red",
+      dailyordia: "Missed Alarm",
+      patientId: patientId,
+      isRead: realisRead,
+      isOpened: obj.isOpened,
+    };
     return data;
   } catch (error) {
     console.log(error);
@@ -203,7 +248,7 @@ const generateMissedAlarmAlert = async (obj, did) => {
       patientId: patientId,
       patientProfilePhoto: patientProfilePhoto,
       type0: obj.type,
-      type: `Doctor Please Check Digital Prescription its been more than 3 days for ${patientName}`,
+      type: `Doctor Please Check Prescription Approval alert its more than a day  since it has been genrated  for ${patientName}`,
       date: obj.date,
       redirect: `/ShowAlarms/${patientId}`,
       alarmId: alarmId,
@@ -795,23 +840,31 @@ const getDoctorAlerts = async (req, res) => {
         console.log(palert);
         finalAlerts.push(palert);
       }
-    } else if (alerts[i].category === "Missed Alarm") {
+    } else if (alerts[i].category === "Missed Prescription Alarm") {
       const malert = await generateMissedAlarmAlert(alerts[i], doctor_id);
       if (malert) {
         finalAlerts.push(malert);
       }
+      
     }
-    else if(alerts[i].category==="Dialysis Alert"){
+    else if(alerts[i].category==="Patient has not answered medicine alarm for 3 or more days")
+      { console.log("Patient has not answered medicine alarm for 3 or more days")
+        const malert= await generateMissedAlarmAlertByPatient(alerts[i], doctor_id);
+        if(malert){
+          finalAlerts.push(malert);
+        }
+      }
+    else if((alerts[i].category).includes("Dialysis Tech")){
+      const name=  `select name from patients where id = ${alerts[i].patientId}`;
+      const patientNameResult = await pool.query(name);
       const data = {
         id: alerts[i].id,
-        name: "John Doe",
+        name: patientNameResult[0].name,
         
-        type: `No readings Found`,
+        type: alerts[i].category,
         date: alerts[i].date,
-        redirect: `/ShowAlarms/`,
         alarmId: alerts[i].alarmId,
-       
-        patientId: alerts[i].patientId,
+       patientId: alerts[i].patientId,
       
       };
       finalAlerts.push(data)

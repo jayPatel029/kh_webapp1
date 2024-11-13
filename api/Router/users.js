@@ -12,6 +12,7 @@ const {
   getDoctorsAssignedToPatient,
   getidbyEmail,
   getUserbyEmailDoctor,
+  getTotalUsersThisWeekPSadmin,
 } = require("../Controllers/Users.js");
 const { verifyToken } = require("../Helpers/middlewares/roles.js");
 
@@ -19,6 +20,7 @@ router.get("/",verifyToken, getUsers);
 router.get("/byRole/:role",verifyToken, getUsersbyRole);
 router.get("/total",verifyToken, getTotalUsers);
 router.get("/totalThisWeek",verifyToken, getTotalUsersThisWeek);
+router.get("/totalThisWeekSub",verifyToken, getTotalUsersThisWeekPSadmin);
 router.get("/email/:email", getUserbyEmail);
 router.put("/:email", updateUser);
 router.delete("/:email", deleteUser);

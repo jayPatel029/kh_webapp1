@@ -78,9 +78,10 @@ async function addDailyReading(req, res) {
       isGraph,
       alertTextDoc,
       readingsTranslations,
+      unit
     } = req.body;
 
-    console.log(title, type, assign_range, low_range, high_range,isGraph, alertTextDoc, readingsTranslations)
+    console.log(title, type, assign_range, low_range, high_range,isGraph,unit, alertTextDoc, readingsTranslations)
 
     console.log("ailments",ailments);
 
@@ -92,6 +93,7 @@ async function addDailyReading(req, res) {
       low_range,
       high_range,
       isGraph,
+      unit,
       alertTextDoc,
     });
 
@@ -158,6 +160,7 @@ async function updateDailyReading(req, res) {
       high_range,
       isGraph,
       alertTextDoc,
+      unit,
       readingsTranslations,
     } = req.body;
 
@@ -170,6 +173,7 @@ async function updateDailyReading(req, res) {
         low_range,
         high_range,
         isGraph,
+        unit,
         alertTextDoc,
       },
       {

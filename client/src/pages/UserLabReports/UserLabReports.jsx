@@ -11,16 +11,47 @@ import { useParams, Link } from "react-router-dom";
 import UploadedFileModal from "./UploadedFileModal";
 import { FaFilePdf } from "react-icons/fa6";
 import CSVLab2 from "../../components/csvLab2/CSVLab2";
+import CSVReader from "../../components/csvlab/CSVLab";
 
 const UserLabReports = () => {
   const [showModal, setShowModal] = useState(false);
   const [labReportData, setLabReportData] = useState([]);
   const [uploadedFile, setUploadedFile] = useState(null);
+  const [csvData, setCsvData] = useState();
+  const [success, setSuccess] = useState(false);
   const { id } = useParams();
+  const [patients, setPatients] = useState([]);
+  const [viewPrescription, setViewPrescription] = useState(false);
+  
+  
+  const [patientData, setPatientData] = useState([
+    {
+      selectedPatient: null,
+      Gfr: "",
+      acr: "",
+      calcium: "",
+      phosphorous: "",
+      bicarbonate: "",
+      albumin: "",
+      gender: "",
+    },
+  ]);
   // const { name } = useParams();
   const openModal = () => {
     setShowModal(true);
   };
+  
+
+  useEffect(() => {
+    // console.log('================================');
+    // console.log(patientOptions)
+    // console.log(patientData)
+    if (csvData) {
+      const formattedData = csvData
+      setPatientData(formattedData);
+      console.log("Formatted Data from KFRE List:", formattedData);
+    }
+  }, [success]);
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -131,7 +162,9 @@ const UserLabReports = () => {
                     onClick={() => openModal()}>
                     Upload Lab Report
                   </button>
-                  <CSVLab2 />
+                  
+                  
+                  
                   {showModal && (
                     <MyModal
                       closeModal={closeModal}
@@ -148,8 +181,14 @@ const UserLabReports = () => {
                     />
                   )}
                 </div>
+                
               </div>
-
+              <CSVLab2
+                  patientId={id}
+                  setData={setCsvData}
+                  setSuccess={setSuccess}
+                  success={success}
+                />
               <div className=" overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead className="bg-white text-gray-700">

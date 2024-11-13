@@ -38,7 +38,7 @@ const getLabReportByPatient = async (req, res, next) => {
 
 const addLabReport = async (req, res, next) => {
   const { Lab_Report, patient_id, date, Report_Type } = req.body;
-  console.log("lab",Lab_Report)
+  console.log("lab",req.body)
       // const date_2 = new Date().toISOString().slice(0, 19).replace("T", " ");
   const query = `INSERT INTO labreport (Lab_Report,Date,patient_id, Report_Type) VALUES ('${Lab_Report}','${date}','${patient_id}', '${Report_Type}')`;
   try {
@@ -272,9 +272,33 @@ const insertMedicalDataDB = async (extractedData,user_id,date)=>{
 
 
 const uploadBulkLabReportIndividual = async(req,res)=>{
-  console.log(req.body)
+  console.log("req",req.body)
+  const {data,patient_id,Report_Type, Lab_Report, date} = req.body
+
+  const query = `INSERT INTO labreport (Date,patient_id, Report_Type, Lab_Report) VALUES ('${date}','${patient_id}', '${Report_Type}','${Lab_Report}')`;
+  try {
+    const result = await pool.query(query);
+   
+    if(Report_Type === "Lab") {
+     
+      const success= await insertMedicalDataDB(data,patient_id,date)
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Lab Report added successfully",
+      data: Number(result.insertId),
+    });
+  } catch (error) {
+    console.error("Error adding lab report:", error);
+    res.status(400).json({
+      success: false,
+      message: "Something went wrong",
+    });
     
-  res.status(200).json("okk")
+  }
+
+
 }
 
 module.exports = {

@@ -57,7 +57,7 @@ const DialysisTable = ({ questionId, user_id, title, question,isPatientProfile=1
     axiosInstance
       .get(`${server_url}/dialysisReading/get`, { params })
       .then((response) => {
-         console.log("Response data:", response.data.data);
+         console.log("Response data di:", response.data.data);
 
         const formattedData = response.data.data.map((item, key) => {
           const date = new Date(item.date);

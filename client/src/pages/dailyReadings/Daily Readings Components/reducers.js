@@ -50,7 +50,12 @@ export function newQuestionReducer(state, action) {
         isGraph: action.payload,
       };
     }
-
+    case "unit" : {
+      return {
+        ...state,
+        unit: action.payload,
+      };
+    }
     case "type": {
       return {
         ...state,

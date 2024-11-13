@@ -20,6 +20,7 @@ import { getAlertColor } from "../utils";
 import EditIcon from "@mui/icons-material/Edit";
 import { DateRangePicker } from "react-date-range";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import EnterReadingsModelDialysis from "./EnterReadingModelDialysis";
 
 
 const LineChartDialysis = ({
@@ -870,7 +871,7 @@ const LineChartDialysis = ({
       user_id: user_id,
     };
     axiosInstance
-      .get(`${server_url}/dialysisReading/get`, { params })
+      .get(`${server_url}/dialysisReading/getGraph`, { params })
       .then((response) => {
         console.log('Response data:', response.data.data);
 
@@ -964,7 +965,7 @@ const LineChartDialysis = ({
   return (
     <div className="line" ref={dateRangeRef}>
       <div className="flex flex-row justify-evenly">
-        {role?.canEditPatients && (
+        {(role?.canEditPatients ) && (
           <button
             className="block rounded-lg text-primary border-2 border-primary w-40 py-2"
             onClick={() => {
@@ -976,7 +977,7 @@ const LineChartDialysis = ({
           </button>
         )}
         {showModalEnterReadings && (
-          <EnterReadingsModel
+          <EnterReadingsModelDialysis
             closeModal={closeModalEnterReadings}
             title={title}
             question_id={questionId}
@@ -986,12 +987,14 @@ const LineChartDialysis = ({
           />
         )}
 
-        <button
+        {role?.canEditPatients && (
+          <button
           className="block rounded-lg text-primary border-2 border-primary w-40 py-2"
           onClick={() => openModalUpdateRange()}
         >
           Update Range
-        </button>
+        </button>)
+        }
         {showModalUpdateRange && (
           <UpdateRangeModel
             closeModal={closeModalUpdateRange}

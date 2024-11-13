@@ -10,6 +10,17 @@ const getTotalUsers = async () => {
   }
 };
 
+const getUsersThisWeekSub = async () => {
+  try {
+    const response = await axiosInstance.get(
+      `${server_url}/users/totalThisWeekSub`
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching new users:", error);
+  }
+};
+
 const getUsersThisWeek = async () => {
   try {
     const response = await axiosInstance.get(
@@ -52,4 +63,4 @@ const getDoctorAlerts = async () => {
   return alertData;
 };
 
-export { getTotalUsers, getUsersThisWeek, getAlerts, getDoctorAlerts };
+export { getTotalUsers, getUsersThisWeek, getAlerts, getDoctorAlerts ,getUsersThisWeekSub};

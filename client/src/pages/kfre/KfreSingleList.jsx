@@ -3,7 +3,7 @@ import { getPatients,getPatientById } from "../../ApiCalls/patientAPis";
 import Select from "react-select";
 import CSVReader from "../../components/csvlab/CSVLab";
 import PdfDataExtractor from "../../components/pdfExtractor/PdfDataExtractor";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import axiosInstance from "../../helpers/axios/axiosInstance";
 import { server_url } from "../../constants/constants";
 import { calculateAge } from "../../helpers/utils";
@@ -16,7 +16,7 @@ function KfreSingleList() {
   const [patientData, setPatientData] = useState([
     {
       selectedPatient: null,
-      Gfr: "",
+      eGFR: "",
       acr: "",
       calcium: "",
       phosphorous: "",
@@ -31,7 +31,7 @@ function KfreSingleList() {
   const [success, setSuccess] = useState(false);
   const [reportimage, setReportimage] = useState("");
   const [kfre, setKfre] = useState();
-
+  const [lab_id,setLab_id]=useState();
   const id = useParams();
 
   useEffect(() => {
@@ -93,6 +93,31 @@ function KfreSingleList() {
     }
   };
 
+  const uploadData = async (result,data) => {
+    try {
+      const response = axiosInstance.post(server_url+"/patientdata/kfredetails", {
+        patient_id: id.id,  // Assuming selectedPatient has 'value' property for patient ID
+        eGFR: data.eGFR,
+        Phosphorous: data.phosphorous,
+        Bicarbonate: data.bicarbonate,
+        Albumin: data.albumin,
+        Calcium: data.calcium,
+        Albumin_to_Creatinine_Ratio: data.acr,
+        lab_id: lab_id>0?lab_id:null,  // Assuming lab_id exists in the data
+        kfre: result,
+      });
+
+      if (response) {
+        console.log("KFRE details successfully updated");
+      } else {
+        console.error("Error updating KFRE details", response.data.error);
+      }
+    } catch (error) {
+      console.error("Error while submitting KFRE details to backend:", error);
+    }
+  
+  }
+
   const handlePatientChange = (index, field) => (event) => {
     const updatedData = [...patientData];
     updatedData[index][field] = event.target.value;
@@ -119,31 +144,18 @@ function KfreSingleList() {
     }
   };
 
-  const calculate = () => {
-    // const result = 1 - Math.pow(0.929, Math.exp(
-    //   -0.49360 * ((30 / 5) - 7.22) +
-    //   0.16117 * (1 - 0.56) +
-    //   0.35066 * (Math.log(50) - 5.2775) -
-    //   0.19883 * ((50 / 10) - 7.04) -
-    //   0.33867 * (4 - 3.99) +
-    //   0.24197 * (3.8 - 3.93) -
-    //   0.07429 * (26 - 25.54) -
-    //   0.22129 * (9.8 - 9.35)
-    // ));
-
-    // console.log("KFRE:",result)
-
-    patientData.forEach((data) => {
+  const calculate = async () => {
+    for (const data of patientData) { // Use for...of instead of forEach
       if (
-        data.selectedPatient &&
-        data.Gfr &&
+        
+        data.eGFR &&
         data.acr &&
         data.calcium &&
         data.phosphorous &&
         data.bicarbonate &&
         data.albumin
       ) {
-        const Gfr = parseFloat(data.Gfr);
+        const eGFR = parseFloat(data.eGFR);
         const acr = parseFloat(data.acr);
         const calcium = parseFloat(data.calcium);
         const phosphorous = parseFloat(data.phosphorous);
@@ -156,7 +168,7 @@ function KfreSingleList() {
           Math.pow(
             0.929,
             Math.exp(
-              -0.4936 * (Gfr / 5 - 7.22) +
+              -0.4936 * (eGFR/ 5 - 7.22) +
                 0.16117 * (male - 0.56) +
                 0.35066 * (Math.log(acr) - 5.2775) -
                 0.19883 * (age / 10 - 7.04) -
@@ -166,14 +178,19 @@ function KfreSingleList() {
                 0.22129 * (calcium - 9.35)
             )
           );
-        setKfre(result);
+        setKfre(result); // Update KFRE state
+  
+        // Await uploadData as it's an async function
+        await uploadData(result,data);
+        
+        // Optional logging
         // console.log(`Patient ID: ${data.selectedPatient.label}, KFRE Result: ${result}`);
       } else {
         console.error("All fields are required for calculation.");
       }
-    });
+    }
   };
-
+  
   const formatCSVData = (csvData, patientOptions) => {
     // Filter out empty objects and remove patientId field
 
@@ -246,7 +263,12 @@ function KfreSingleList() {
   }, [extractedPdfData]);
 
   return (
-    <div className="bg-white md:p-6 border p-2 rounded-md border-t-primary border-t-4 shadow-md">
+    <div className="bg-white md:p-6 border p-28 ml-4 mr-4 mt-4 rounded-md border-t-primary border-t-4 shadow-md">
+      <Link
+                to={`/userProfile/${id.id}`}
+                className="text-primary border-b-2 border-primary">
+                go back
+              </Link>
       <div className="border-b-gray border-b-2 p-2 pt-4 md:pb-4 font-semibold text-primary tracking-wide text-xl">
         KFRE Calculation
       </div>
@@ -314,6 +336,7 @@ function KfreSingleList() {
                         name="prescription"
                         onChange={() => {
                           setViewPrescription(true);
+                          setLab_id(report.id)
                           setReportimage(report.Lab_Report);
                         }}
                       />
@@ -327,14 +350,14 @@ function KfreSingleList() {
           <div className="block md:flex flex-wrap p-2 space-x-3  mb-1 space-y-2  md:space-y-0 md:space-x-1">
             <div className="w-full md:w-1/3">
               <label className="block mb-1 text-xs font-medium text-gray-500">
-                GFR
+                eGFR
               </label>
               <input
                 type="number"
-                placeholder="GFR"
+                placeholder="eGFR"
                 className="border border-gray-300 text-gray-500 text-xs rounded-lg block w-full p-1.5 focus:outline-primary"
-                value={patientData[0].Gfr}
-                onChange={handlePatientChange(0, "Gfr")}
+                value={patientData[0].eGFR}
+                onChange={handlePatientChange(0, "eGFR")}
               />
             </div>
             <div className="w-full md:w-1/3">

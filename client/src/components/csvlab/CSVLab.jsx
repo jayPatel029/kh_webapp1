@@ -129,7 +129,7 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
     setSuccess(!success);
 
     let data = { data: trimmedMappedData };
-
+      console.log("Data:", data);
     axiosInstance
       .post(`${server_url}/labreport/addBulkIndividual`, data)
       .then((response) => {

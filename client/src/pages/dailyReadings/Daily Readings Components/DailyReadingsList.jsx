@@ -31,6 +31,7 @@ function DailyForm() {
     lower_assign_range: null,
     upper_assign_range: null,
     isGraph: 0,
+    unit:"",
     alertTextDoc: "",
   });
 
@@ -93,6 +94,7 @@ function DailyForm() {
       low_range: newReading.lower_assign_range,
       high_range: newReading.upper_assign_range,
       isGraph: newReading.isGraph,
+      unit: newReading.unit,
       readingsTranslations: translations,
       alertTextDoc: newReading.alertTextDoc,
     };
@@ -229,7 +231,23 @@ function DailyForm() {
               className=" border border-gray-300 text-gray-500 text-sm rounded-lg block md:w-3/4 w-full p-2.5 focus:outline-primary"
             />
           </div>
-
+          <div>
+            <label className="block mb-2 text-sm font-medium text-gray-500 pt-6">
+              Unit
+            </label>
+            <input
+              type="text"
+              placeholder="Unit"
+              value={newReading.unit}
+              onChange={(event) => {
+                newReadingDsipatch({
+                  type: "unit",
+                  payload: event.target.value,
+                });
+              }}
+              className=" border border-gray-300 text-gray-500 text-sm rounded-lg block w-full p-2.5 focus:outline-primary"
+            />
+          </div>
           <label className="block mb-2 text-sm font-medium text-gray-500 pt-6">
             Type*
           </label>

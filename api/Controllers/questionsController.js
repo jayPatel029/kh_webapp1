@@ -275,8 +275,7 @@ const generalParametersByTypeWithResponse = async (req, res) => {
   try {
     // Fetch questions for the specified user
     const questionsQuery = `
-      SELECT * FROM questions 
-      WHERE ailment_name_en='${ailment}';
+      SELECT * FROM questions;
     `;
     const questionsRows = await pool.execute(questionsQuery);
     // console.log(questionsRows)

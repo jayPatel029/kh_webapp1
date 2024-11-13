@@ -26,6 +26,7 @@ const getRequisition = async (req, res, next) => {
 
 const addRequisition = async (req, res, next) => {
   const { Requisition, Patient_id, Date } = req.body;
+  console.log("requi",req.body);
   // const date = new Date().toISOString().slice(0, 19).replace("T", " ");
 
   const query = `INSERT INTO requisition (Requisition,Patient_id,Date) VALUES ('${Requisition}',${Patient_id},'${Date}')`;

@@ -20,37 +20,52 @@ const AddGraphReading = async (req, res, next) => {
   let result;
   try {
     result = await pool.query(checkQuery);
-    // console.log(result.length)
     if (result.length > 0) {
-      // If the combination already exists, return error response
       return res.status(201).json({
         success: false,
         data: "Readings for this date already exist",
       });
     }
 
-    // If the combination doesn't exist, proceed with inserting the data
+    // Proceed with fetching the title of the question
+    const titleQuery = await pool.execute(
+      `SELECT title FROM dialysis_readings WHERE id = ${question_id}`
+    );
+    const questionTitle = titleQuery[0].title;
+
+    // If title is 'weight after dialysis', check if 'weight before dialysis' is recorded for the same date
+    if (questionTitle.toLowerCase().trim() === "weight after dialysis") {
+      const beforeWeightQuery = `
+        SELECT * FROM graph_readings_dialysis 
+        WHERE user_id = '${user_id}' 
+        AND date = '${date} ${currentTime}' 
+        AND question_id IN (
+          SELECT id FROM dialysis_readings 
+          WHERE title = 'weight before dialysis'
+        )
+      `;
+      const beforeWeightResult = await pool.query(beforeWeightQuery);
+
+      // Log if "weight before dialysis" is missing
+      if (beforeWeightResult.length === 0) {
+        const missingBeforeWeightQuery = `insert into alerts(patientId,category,type,date) values('${user_id}','Weight before dialysis is not entered by Dialysis Tech for the ${date}.','doctor','${serverTimestamp}')`;
+        await pool.query(missingBeforeWeightQuery);
+        console.log("Warning: 'Weight before dialysis' is missing for the same date.");
+      }
+    }
+
+    // Insert the reading into the database
     const insertQuery = `
         INSERT INTO graph_readings_dialysis (question_id, user_id, date, readings)
-        VALUES ('${question_id}','${user_id}','${date} ${currentTime}' ,'${readings}')
+        VALUES ('${question_id}', '${user_id}', '${date} ${currentTime}', '${readings}')
       `;
     await pool.query(insertQuery);
 
-    const title_query = await pool.execute(
-      `
-       SELECT title FROM dialysis_readings where id = ${question_id}
-      `
-    )
-    const questionTitle = title_query[0].title;
-
     const excludedTitles = ["weight before dialysis", "weight after dialysis"];
-
-    // Check if the title is not in the excluded list before creating alerts
     if (!excludedTitles.includes(questionTitle.toLowerCase().trim())) {
       await AddDialysisReadingsAlerts(question_id, user_id, date, readings);
     }
 
-    // Return success response
     return res.status(200).json({
       success: true,
       data: "Readings Added Successfully",

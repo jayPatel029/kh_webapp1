@@ -83,7 +83,7 @@ const updateReadTable = async (req, res) => {
 
 const addComment = async (req, res, next) => {
     const { content, fileId, fileType, userId, iSDoctor } = req.body;
-    console.log(req.body);
+    console.log("doctors",req.body);
     const date = new Date().toISOString().slice(0, 19).replace('T', ' ');
     var uid = userId;
     if (iSDoctor === 1) {
@@ -282,7 +282,7 @@ const getDoctorComments = async (req, res, next) => {
             const query2 = `SELECT c.*
                         FROM comments c
                         JOIN commentsread cr ON c.id = cr.commentId
-                        WHERE c.userId = ${patientId} AND c.isDoctor = 0;`;
+                        WHERE c.userId = ${patientId} AND c.isDoctor = 0 AND cr.doctorId = ${doctorId};`
             const comments1 = await pool.query(query2);
             comments = comments.concat(comments1);
         }

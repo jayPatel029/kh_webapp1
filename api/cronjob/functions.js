@@ -28,9 +28,30 @@ async function createNewAlertForPatientDoctors() {
         const category = "Missed Prescription Alarm";
         const alarmId = alert.alarmId;
         const patientId = alert.patientId;
+      
         const query = `INSERT INTO alerts (date, type, isOpened, category, alarmId, patientId) VALUES ('${date}', '${type}', ${isOpened}, '${category}', ${alarmId}, ${patientId})`;
         try {
           const response = await pool.query(query);
+          const alertId= Number(response.insertId);
+          const getDoctorsQuery = "SELECT * FROM `doctor_patients` WHERE `patient_id` = ?;";
+          const doctors = await pool.execute(getDoctorsQuery, [
+            patientId,
+          ]);
+          doctors.forEach(async (doctor) => {
+            const doctorId = doctor.doctor_id;
+            
+            const isRead = 0;
+            const dailyordia = "Missed Alarm";
+            const insertQuery = `INSERT INTO alertsread (alertId,isRead,doctorId,dailyordia) VALUES (${alertId},${isRead},${doctorId},'${dailyordia}') `
+            try {
+              await pool.query(insertQuery)
+
+            } catch (error) {
+              console.log(error)
+
+            }
+
+          });
           console.log(
             "New Alert Created for Doctor for Missed Prescription Alarm"
           );
@@ -471,14 +492,26 @@ async function checkMissedAlarms() {
           missedAlarms.forEach(async (alarm) => {
             const missedAlertQuery =
               "INSERT INTO `alerts` (`date`, `type`, `isOpened`, `category`, `alarmId`, `patientId`) VALUES (?, ?, ?, ?, ?, ?);";
-            const res = await pool.execute(missedAlertQuery, [
-              d,
-              "patient",
-              0,
-              "Missed Alarm",
-              alarm.id,
-              alarm.patientid,
-            ]);
+            let res;
+              if(alarm?.type === "Prescription"){
+              res= await pool.execute(missedAlertQuery, [
+                d,
+                "patient",
+                0,
+                "Patient has not answered medicine alarm for 3 or more days",
+                alarm.id,
+                alarm.patientid,
+              ]);
+            }
+            else if(alarm?.type === "Dialysis"){
+              res= await pool.execute(missedAlertQuery, [
+                d,
+                "patient",
+                0,
+                "Patient has not answered dialysis alarm for 3 or more days",
+                alarm.id,
+                alarm.patientid,]);
+            }
             const alertId = Number(res.insertId);
             const getDoctorsQuery = "SELECT * FROM `doctor_patients` WHERE `patient_id` = ?;";
             const doctors = await pool.execute(getDoctorsQuery, [

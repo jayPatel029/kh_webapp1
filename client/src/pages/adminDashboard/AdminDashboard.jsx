@@ -10,16 +10,19 @@ import {
   getUsersThisWeek,
   getAlerts,
   getDoctorAlerts,
+  getUsersThisWeekSub,
 } from "../../ApiCalls/adminDashApis";
 import AdminContainer from "./AdminContainer";
 import DoctorContainer from "./DoctorContainer";
 import { useNavigate } from "react-router-dom";
+
 function AdminDashboard() {
   // Separate doctor alerts and patient alerts
   const [patientAlertsData, setPatientAlertsData] = useState([]);
   // Placeholder data for new users and total users
   const [newUsers, setNewUsers] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
+  const [NewUsersSub, setNewUsersSub] = useState(0);
   const [isDoctor, setIsDoctor] = useState(false);
   const [allAlerts, setAllAlerts] = useState([]);
   const [doctorAlerts, setDoctorAlerts] = useState([]);
@@ -59,7 +62,7 @@ function AdminDashboard() {
       if (!newU) newU = 0;
       setNewUsers(newU);
     };
-
+    
     const isDoctorfunc = async () => {
       try {
         const response = await axiosInstance.get(
@@ -127,7 +130,12 @@ function AdminDashboard() {
         }
       }
     };
-
+    const getNewUsersDataSub = async () => {
+      var newU = await getUsersThisWeekSub();
+      console.log("New Users Sub: ", newU);
+      if (!newU) newU = 0;
+      setNewUsersSub(newU);
+    };
     const getAllData = async () => {
       await getTotalUsersData();
       await getNewUsersData();
@@ -135,22 +143,26 @@ function AdminDashboard() {
       await getPatientAlertsData();
       await getAllAlerts();
       await getDoctorAlertsData();
+      await getNewUsersDataSub();
     };
     getAllData();
     // const interval = setInterval(() => {
-    //   getAllData();
-    // }, 300000);
-    // return () => clearInterval(interval);
-
-    // call getallData() every 5 minutes
-
-    const interval = setInterval(() => {
-      getAllData();
-    }, 300000);
-
-    return () => clearInterval(interval);
-  }, [totalUsers, isDoctor]);
-
+      //   getAllData();
+      // }, 300000);
+      // return () => clearInterval(interval);
+      
+      // call getallData() every 5 minutes
+      
+      const interval = setInterval(() => {
+        getAllData();
+      }, 300000);
+      
+      return () => clearInterval(interval);
+    }, [totalUsers, isDoctor]);
+    
+   
+    
+    
   // useEffect(() => {
   //   console.log("Updated patientAlertsData: ", patientAlertsData);
   // }, [patientAlertsData]);
@@ -173,12 +185,18 @@ function AdminDashboard() {
         {isDoctor ? (
           <DoctorContainer />
         ) : (
-          <AdminContainer
+          localStorage.getItem("id")==1?(
+            <AdminContainer
             newUsers={newUsers}
             totalUsers={totalUsers}
             doctorAlerts={doctorAlerts}
             patientAlerts={patientAlertsData}
           />
+          ):(<AdminContainer
+            newUsers={NewUsersSub}
+            totalUsers={totalUsers}
+            doctorAlerts={doctorAlerts}
+            patientAlerts={patientAlerts}/>)
         )}
       </div>
     </div>

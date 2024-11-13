@@ -32,6 +32,7 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
     // console.log("Image Selected:", file);
     const files = Array.from(e.target.files);
     if (files.length === 1) {
+      console.log("Single File",files[0]);
       setSelectedImage(files[0]);
     } else {
       const newImages = [];

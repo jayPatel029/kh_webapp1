@@ -243,7 +243,7 @@ function UserProfile({ patient }) {
           console.log(filteredData)
           return [...prevData, ...filteredData];
         });
-        // console.log(dialysisParameters);
+        console.log(dialysisParameters);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -619,6 +619,11 @@ function UserProfile({ patient }) {
                             />
                           )}
                         </div>
+                        <div className="number">
+                          <span className="font-bold">Program: </span>
+                          <span>{userData.program}</span>
+                          
+                        </div>
                         <div className="aliments mb-2">
                           <span className="font-bold">Ailments: </span>
                           <span>{userData.ailments.join(", ")}</span>
@@ -702,7 +707,7 @@ function UserProfile({ patient }) {
                           ) && (
                             <div className="kefr">
                               <span className="font-bold">KFRE: </span>
-                              <span>{userData.kefr}</span>
+                              <span>{(userData.kefr*100).toFixed(2)}%</span>
                               {role?.canEditPatients && (
                                 <button onClick={openEditalimentsModal}>
                                   <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />

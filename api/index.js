@@ -77,14 +77,14 @@ io.on("connection", (socket) => {
 });
 
 // 9 PM cron job
-cron.schedule("0 21 * * *", async () => {
+cron.schedule("37 18 * * *", async () => {
   createNewAlertForPatientDoctors();
   await check_missed_dr_readings();
   await check_missed_readings();
 });
 
 // 12 AM cron job
-cron.schedule("17 15 * * *", () => {
+cron.schedule("39 18 * * *", () => {
   checkMissedAlarms();
   deleteExpiredOTPs();
 });
