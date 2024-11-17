@@ -89,6 +89,7 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
   );
   const [headData, setHeadData] = useState([]);
   const [columnMappings, setColumnMappings] = useState({
+    date: "",
     Hemoglobin: "",
     MCV: "",
   });
@@ -105,6 +106,10 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
         MCV: columnMappings.MCV
           ? row[columnOptions.indexOf(columnMappings.MCV)]
           : undefined,
+        date: columnMappings.date
+          ? row[columnOptions.indexOf(columnMappings.date)]
+          : undefined,
+
       }))
       .filter((item) => Object.values(item).some((value) => value !== undefined));
 
@@ -120,7 +125,7 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
             return;
           }
           
-          let data = { data: trimmedMappedData[0], patient_id: patientId, Report_Type: "Lab" ,Lab_Report: res.data.objectUrl, date: selectedDate};
+          let data = { data: trimmedMappedData, patient_id: patientId, Report_Type: "Lab" ,Lab_Report: res.data.objectUrl};
           console.log("Data:", data);
           axiosInstance
           .post(`${server_url}/labreport/addBulkIndividual`, data)
@@ -241,14 +246,7 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
                 ))}
               </ul>
               <div className="mt-4">
-              <input
-                type="date"
-                id="Date"
-                className="w-full border-2 py-2 px-3 rounded focus:outline-none focus:border-amber-950"
-                value={selectedDate}
-                max={getCurrentDate()}
-                onChange={(e) => setSelectedDate(e.target.value)}
-              />
+            
                 <button
                   onClick={handleSubmit}
                   className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"

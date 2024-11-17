@@ -229,9 +229,9 @@ const getReadingsByPatientAndQuestion = async (req, res, next) => {
   } catch (error) {
     console.log(error);
   }
-
+  console.log()
   const query = `
-    SELECT date,readings FROM graph_readings_dialysis
+    SELECT date,readings,id FROM graph_readings_dialysis
     WHERE question_id = ${question_id} AND user_id = ${user_id}
   `;
 
@@ -328,14 +328,20 @@ const getReadingsInterDialyticsResponseGraph = async (question_id, user_id) => {
       FROM dialysis_readings
       WHERE LOWER(title) = 'weight after dialysis'
     `;
-
-    const [beforeResult, afterResult] = await Promise.all([
+    const interId=`
+    SELECT id
+    FROM dialysis_readings
+    WHERE LOWER(title) = 'interDialysisGraph'
+    `
+    const [beforeResult, afterResult,inter] = await Promise.all([
       pool.query(beforeDialysisQuery),
-      pool.query(afterDialysisQuery)
+      pool.query(afterDialysisQuery),
+      pool.query(interId)
     ]);
 
     const beforeReadingId = beforeResult[0].id;
     const afterReadingId = afterResult[0].id;
+    const interReadingId=inter[0].id
 
     // Step 2: Get the responses for 'weight before dialysis' and 'weight after dialysis'
     const beforeResponseQuery = `
@@ -350,10 +356,13 @@ const getReadingsInterDialyticsResponseGraph = async (question_id, user_id) => {
       WHERE question_id = ${afterReadingId} AND user_id = ${user_id}
       ORDER BY date
     `;
+    const otherDates =`
+    select date from graph_readings_dialysis where  user_id = ${user_id} AND question_id!=${interReadingId} AND  question_id != ${beforeReadingId} AND  question_id != ${afterReadingId} group by date`
 
-    const [beforeResponseResult, afterResponseResult] = await Promise.all([
+    const [beforeResponseResult, afterResponseResult, remaining] = await Promise.all([
       pool.query(beforeResponseQuery),
-      pool.query(afterResponseQuery)
+      pool.query(afterResponseQuery),
+      pool.query(otherDates)
     ]);
 
     // Step 3: Create a map of dates and their corresponding before/after readings
@@ -374,7 +383,10 @@ const getReadingsInterDialyticsResponseGraph = async (question_id, user_id) => {
         dateMap[date] = { before: null, after: after.readings };  // Initialize 'before' as null
       }
     });
-
+    for(let i=0;i<remaining.length;i++){
+      const date = new Date(remaining[i].date).toISOString().split('T')[0];
+      dateMap[date] = { before: null, after: null };  // Initialize 'before' as null
+    }
     const interDialyticResponses = [];
     let previousDate = null;
 

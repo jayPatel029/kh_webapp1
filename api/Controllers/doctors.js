@@ -413,7 +413,7 @@ const updateDoctor = async (req, res, next) => {
     
     console.log("Changed fields:", changedFields);
     changedFields.forEach((field) => {
-      doclogChange(doctorid, field, formattedOldDoctor[field], doctor[field], changeby);
+      doclogChange(doctorid ,name, email, field, formattedOldDoctor[field], doctor[field], changeby);
       console.log(`Field: ${field}, Old Value: ${formattedOldDoctor[field]}, New Value: ${doctor[field]}`);
     });
     const query =

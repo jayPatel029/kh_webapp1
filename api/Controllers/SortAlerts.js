@@ -866,6 +866,7 @@ const getDoctorAlerts = async (req, res) => {
         date: alerts[i].date,
         alarmId: alerts[i].alarmId||null,
        patientId: alerts[i].patientId,
+       isOpened: alerts[i].isOpened,
       
       };
       finalAlerts.push(data)

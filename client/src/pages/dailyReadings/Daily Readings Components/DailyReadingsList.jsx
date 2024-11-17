@@ -10,6 +10,7 @@ import { readingTypes } from "../../../constants/ReadingConstants";
 import { getLanguages } from "../../../ApiCalls/languageApis";
 import TranslationModal from "../../../components/modals/TranslationModel";
 import Select from "react-select";
+import { Link } from "react-router-dom";
 
 function DailyForm() {
   const [editMode, setEditMode] = useState(false);
@@ -156,6 +157,7 @@ function DailyForm() {
       <div className=" bg-white md:p-6 border p-2 rounded-md border-t-primary border-t-4 shadow-md">
         <div className="border-b-gray border-b-2 p-2 pt-4 md:pb-4 font-semibold text-primary tracking-wide text-xl">
           Readings Master
+          <Link to="/dailyReadingsCsv" className="mx-5">Or BulkUpload Question</Link>
         </div>
         <div className="p-5">
           {modelOpen && (

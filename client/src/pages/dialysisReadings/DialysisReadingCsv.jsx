@@ -5,6 +5,7 @@ import Navbar from "../../components/navbar/Navbar";
 
 
 import DialysisReadingCsvList from "./DialysisReadingCsvList";
+import { Link } from "react-router-dom";
 
 function DialysisReadingCsv() {
   return (
@@ -17,6 +18,11 @@ function DialysisReadingCsv() {
           <Navbar />
         </div>
         <div className="p-7 ml-4 max-w-5xl mr-4 mt-4 bg-white shadow-md border-t-4">
+        <Link
+            to={`/DailyReadings`}
+            className="text-primary border-b-2 border-primary">
+            go back
+          </Link>
           <DialysisReadingCsvList/>
         </div>
       </div>

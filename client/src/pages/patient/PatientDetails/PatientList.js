@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../../../helpers/axios/axiosInstance";
 import { server_url } from "../../../constants/constants";
 import profileImg from "../../../assets/pp.png";
@@ -179,6 +179,8 @@ export default function PatientList({ data, patientId }) {
     <div className="w-5/6 p-7 ml-4 mr-4 mt-10 mb-4 bg-white shadow-md border-t-4 border-primary ">
       <div className="flex justify-between items-center mb-4 space-x-4">
         <div className="flex flex-wrap justify-between items-center">
+          <Link to="/DeletedPatient" className="mt-2 sm:mt-0 ml-0 mx-2 sm:ml-2 px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:bg-indigo-600 w-full sm:w-auto" >DeletedPatient 
+          </Link>
           <input
             type="text"
             placeholder="Search by Name"

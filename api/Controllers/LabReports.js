@@ -270,36 +270,45 @@ const insertMedicalDataDB = async (extractedData,user_id,date)=>{
 
 
 
+const uploadBulkLabReportIndividual = async (req, res) => {
+  console.log("req", req.body);
+  const { data, patient_id, Report_Type, Lab_Report } = req.body;
 
-const uploadBulkLabReportIndividual = async(req,res)=>{
-  console.log("req",req.body)
-  const {data,patient_id,Report_Type, Lab_Report, date} = req.body
-
-  const query = `INSERT INTO labreport (Date,patient_id, Report_Type, Lab_Report) VALUES ('${date}','${patient_id}', '${Report_Type}','${Lab_Report}')`;
   try {
-    const result = await pool.query(query);
-   
-    if(Report_Type === "Lab") {
-     
-      const success= await insertMedicalDataDB(data,patient_id,date)
+    const results = [];
+
+    for (const record of data) {
+      let { date } = record;
+
+      // Convert date from DD-MM-YYYY to YYYY-MM-DD
+      const [day, month, year] = date.split("-");
+      date = `${year}-${month}-${day}`;
+
+      const query = `INSERT INTO labreport (Date, patient_id, Report_Type, Lab_Report) 
+                     VALUES ('${date}', '${patient_id}', '${Report_Type}', '${Lab_Report}')`;
+
+      const result = await pool.query(query);
+      results.push(result.insertId);
+
+      // If the report type is "Lab", insert medical data
+      if (Report_Type === "Lab") {
+        await insertMedicalDataDB(record, patient_id, date);
+      }
     }
 
     res.status(200).json({
       success: true,
-      message: "Lab Report added successfully",
-      data: Number(result.insertId),
+      message: "Lab Reports added successfully",
+      data: results, // Return all inserted IDs
     });
   } catch (error) {
-    console.error("Error adding lab report:", error);
+    console.error("Error adding lab reports:", error);
     res.status(400).json({
       success: false,
       message: "Something went wrong",
     });
-    
   }
-
-
-}
+};
 
 module.exports = {
   getLabReports,

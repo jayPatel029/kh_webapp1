@@ -170,7 +170,7 @@ function UploadedFileModal({ closeModal, user_id, file }) {
         yPosition += 10;
   
         prevComments.forEach((comment) => {
-          const commentText = `${comment.isDoctor ? "Doctor" : "Patient"}: ${comment.content}`;
+          const commentText = `${comment.isDoctor ? `Doctor ${comment.doctorName}` : "Patient"}: ${comment.content}`;
           const formattedDate = formatDate(comment.date);
           const text = `${commentText} (${formattedDate})`;
           const lines = pdf.splitTextToSize(text, pageWidth - 20);
@@ -255,7 +255,7 @@ function UploadedFileModal({ closeModal, user_id, file }) {
                           : "mr-2 bg-teal-500 text-black"
                       }`}>
                       <span className="font-medium text-xs text-gray-500 mr-2">
-                        {comment.isDoctor ? "Doctor: " : "Patient: "}
+                        {comment.isDoctor ? `Doctor ${comment.doctorName} : ` : "Patient: "}
                       </span>
                       <span className="flex-grow text-sm text-black font-bold">
                         {comment.content}

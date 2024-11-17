@@ -914,7 +914,7 @@ function UserProfile({ patient }) {
                               <span className="text-[#19b9d4] font-bold text-xl ">
                                 {questionTitle}
                               </span>
-                              {question.responseCount === 0 ? (
+                              {questionTitle!="interDialysisGraph"&& question.responseCount === 0 ? (
                                 <span className="inline-block rounded-lg px-4 py-2 bg-gray-200 text-gray-800 font-semibold text-sm">
                                   no response
                                 </span>

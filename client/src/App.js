@@ -49,6 +49,7 @@ import DailyReadingsCsv1 from "./pages/dailyReadings/DailyReadingCsv1";
 import DialysisReadingCsv from "./pages/dialysisReadings/DialysisReadingCsv";
 import LogsPage from "./pages/logs/patientLog";
 import DocLogPage from "./pages/logs/DoctorLog";
+import DelPatient from "./pages/patient/delPatient";
 
 function App() {
   return (
@@ -105,6 +106,13 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/DeletedPatient"
+              element={
+                <ProtectedRoute routeName={"DelPatient"}>
+                  <DelPatient />
+                </ProtectedRoute>
+              } />
             <Route
               path="kfre/:id"
               element={

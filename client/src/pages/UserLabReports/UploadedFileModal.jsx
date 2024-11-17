@@ -124,7 +124,7 @@ function UploadedFileModal({ closeModal, file, user_id, file_id }) {
   
         // Add comments to PDF
         prevComments.forEach((comment) => {
-          const commentText = `${comment.isDoctor ? "Doctor" : "Patient"}: ${comment.content}`;
+          const commentText = `${comment.isDoctor ? `Doctor ${comment.doctorName}` : "Patient"}: ${comment.content}`;
           const formattedDate = formatDate(comment.date);
           const text = `${commentText} (${formattedDate})`;
           
@@ -177,7 +177,7 @@ function UploadedFileModal({ closeModal, file, user_id, file_id }) {
                     {comment.isDoctor ? "D" : "P"}
                   </div>
                   <div className={`bg-white text-black p-2 text-sm rounded-lg shadow-md max-w-3/4 ${comment.isDoctor ? "ml-2 bg-black" : "mr-2 bg-teal-500 text-black"}`}>
-                    <span className="font-medium text-xs text-gray-500 mr-2">{comment.isDoctor ? "Doctor: " : "Patient: "}</span>
+                    <span className="font-medium text-xs text-gray-500 mr-2">{comment.isDoctor ? `Doctor:${comment.doctorName} ` : "Patient: "}</span>
                     <span className="flex-grow text-sm text-black font-bold">{comment.content}</span>
                     <p className="flex justify-end text-gray-600 italic text-xs">{formatDate(comment.date)}</p>
                   </div>
