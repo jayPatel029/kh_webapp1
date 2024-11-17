@@ -7,8 +7,15 @@ import { getDoctorAlerts } from "../../ApiCalls/adminDashApis";
 import { Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
 import PrescriptionModal from "./ApprovePrescriptionModal";
 import AlertModal from "./AlertModal";
+
 import { getDoctorComments } from "../../ApiCalls/GetComments";
 import CommentConatainer from "./CommentConatainer";
+import { set } from "date-fns";
+import { tr } from "date-fns/locale";
+import { se } from "date-fns/locale";
+import { FaS } from "react-icons/fa6";
+import axios from "axios";
+import DiaAlertModal from "./DialysisTechModal";
 
 const UserCard = ({ title, Alerts }) => {
   const [modal, setModal] = React.useState(false);
@@ -19,15 +26,18 @@ const UserCard = ({ title, Alerts }) => {
   const [alertsCount, setAlertsCount] = React.useState();
   const [commentsCount, setCommentsCount] = React.useState(0);
   const [prescriptionAlerts, setPrescriptionAlerts] = React.useState([]);
+  const [prescriptionAlarm, setPrescriptionAlarm] = React.useState([]);
   const [Dialysis_updates,setDialysis_updates] = React.useState([]);
   const [alertAlerts, setAlertAlerts] = React.useState([]);
   const [showAlertModal, setShowAlertModal] = React.useState(false);
+  const [showDialysisModal, setDialysisModal] = React.useState(false);
   const [patientComments, setPatientComments] = React.useState([]);
   const [commentsModal, setCommentsModal] = React.useState(false);
   const [comments, setComments] = React.useState([]);
   const [userid, setUserId] = React.useState();
   const navigate = useNavigate();
   const [diaUpdates,setdiaUpdates]=useState(false)
+  const [DailyAlerts,setDailyAlerts]=useState(false)
   const getDialysisUpdate = async()=>{
     try {
       const token = localStorage.getItem("token"); // Fetch token from local storage
@@ -54,6 +64,30 @@ const UserCard = ({ title, Alerts }) => {
 
 
   }
+  const getDailyAlerts = async () => {
+    try {
+      const token = localStorage.getItem("token"); // Fetch token from local storage
+      const response = await axiosInstance.get(
+        server_url + "/alerts/dailyAlerts",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Send token in headers
+          },
+        }
+      );
+      console.log("response from daily alerts : ", response);
+      if (response.status === 403) {
+        return { success: false };
+      } else if (response.status === 200) {
+        setDailyAlerts(true)
+        
+      } else {
+        return { success: false };
+      }
+    } catch (error) {
+      return { success: false, data: error.response.data.message };
+    }
+  };
   const openCommentsModal = (comments) => {
     setComments(comments);
     setCommentsModal(true);
@@ -61,8 +95,7 @@ const UserCard = ({ title, Alerts }) => {
 
   const closeCommentsModal = async (comments) => {
     const email = localStorage.getItem("email");
-    console.log("Comments:", comments);
-    console.log("marking as read comments");
+  
 
     try {
       var unreadComments = comments.filter(
@@ -74,7 +107,7 @@ const UserCard = ({ title, Alerts }) => {
         email: email,
         commentIds: commentIds,
       };
-      console.log("Data:", data);
+      
       await axiosInstance.post(`${server_url}/comments/updateReadTable`, data);
     } catch (error) {
       console.error("Error updating read table:", error);
@@ -96,6 +129,10 @@ const UserCard = ({ title, Alerts }) => {
     localStorage.setItem("alertAlerts", JSON.stringify(alertAlerts));
     setShowAlertModal(true);
   };
+  const openDiaModal = () => {
+    localStorage.setItem("Dialysis_updates", JSON.stringify(Dialysis_updates));
+    setDialysisModal(true);
+  };
 
   const closeModalPrescription = () => {
     setShowModalPrescription(false);
@@ -105,26 +142,39 @@ const UserCard = ({ title, Alerts }) => {
     setShowAlertModal(false);
     setAlertsCount(0);
   };
+  const closeDiaModal = () => {
+    setDialysisModal(false);
+  };
   useState(() => {
     getDialysisUpdate();
-    console.log("title:", title);
+
+    
+    
     var pAlerts = Alerts.filter((alert) => alert.name === title);
     var presAlerts = pAlerts.filter(
-      (alert) => alert.type === `New Prescription Alarm for ${title}`
+      (alert) => alert.type === `New Prescription Alarm for ${title}` 
     );
+    var notApprovedPrescriptions = presAlerts.filter(
+      (alert)=>alert.type ===`Doctor Please Check Digital Prescription its been more than 3 days for ${title}`);
     var diaAlerts = pAlerts.filter(
-      (alert) => alert.type === "No readings Found"
+      (alert) => alert.type.includes("Dialysis Tech")
     );
-    console.log("Dialysis Updates:", diaAlerts);
+    setPrescriptionAlarm(notApprovedPrescriptions);
+    
     setDialysis_updates(diaAlerts)
     setPrescriptionCount(presAlerts.length);
     setPrescriptionAlerts(presAlerts);
     var alerts = pAlerts.filter(
-      (alert) => alert.type !== `New Prescription Alarm for ${title}`
+      (alert) => alert.type !== `New Prescription Alarm for ${title} `
     );
+    var alerts= alerts.filter(
+      (alert) => !alert.type.includes("Dialysis Tech")
+
+    )
     var calerts = alerts.filter((alert) => alert.isRead === 0) || [];
-    console.log("Alerts:", alerts);
+   
     var sortedByDateAlerts = [];
+    console.log("thi",alerts)
     sortedByDateAlerts = alerts.sort(
       (a, b) => new Date(b.date) - new Date(a.date)
     );
@@ -134,7 +184,7 @@ const UserCard = ({ title, Alerts }) => {
     setAlertAlerts(sortedByDateAlerts);
     getDoctorComments(localStorage.getItem("email"), title)
       .then((data) => {
-        console.log("Comments1", data.comments);
+        
         var commentsCount = 0;
         for (var i = 0; i < data.comments.length; i++) {
           data.comments[i].fileType = "Lab Report";
@@ -164,16 +214,14 @@ const UserCard = ({ title, Alerts }) => {
   );
   // get the type of the most recent alert
   subtext = recentAlert.type;
-  console.log("in user Card");
-  console.log("title", title);
-  console.log("alert", Alerts);
+  
   function getValidImageUrl(url) {
     const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
     const isValidUrl = urlRegex.test(url);
     const profilePhotoUrl = isValidUrl ? url : dummyadmin;
     return profilePhotoUrl;
   }
-  console.log("patientAlerts", patientAlerts);
+ 
   const viewProfile = async () => {
     try {
       const patientId = patientAlerts[0].patientId;
@@ -182,7 +230,7 @@ const UserCard = ({ title, Alerts }) => {
   };
   return (
     <>
-      <div className="w-full bg-white p-4 m-2 border rounded shadow flex flex-col sm:flex-row items-center">
+      <div className="w-full bg-white p-4 m-2 border rounded shadow flex  sm:flex-row items-center">
         {/* User Card Left Content */}
         <div className="flex items-center mb-2 sm:mb-0">
           <img
@@ -198,7 +246,7 @@ const UserCard = ({ title, Alerts }) => {
         </div>
 
         {/* User Card Right Content */}
-        <div className="ml-auto flex items-center">
+        <div className="ml-2 flex items-center">
           <div className="flex flex-wrap sm:flex-nowrap items-center justify-center mt-2 sm:mt-0">
             {" "}
             {/* This is the new container */}
@@ -219,8 +267,8 @@ const UserCard = ({ title, Alerts }) => {
                 {" "}
                 {/* Wrapping each button in a div */}
                 <button
-                  className="bg-violet-900 mr-2 hover:bg-violet-700 text-white p-2 rounded transition duration-300 ease-in-out transform hover:scale-105"
-                  onClick={() => navigate(`/dialysis/${title}`)}>
+                className="bg-violet-900 mr-2 hover:bg-violet-700 text-white p-2 rounded transition duration-300 ease-in-out transform hover:scale-105"
+                  onClick={()=>openDiaModal()}>
                   {Dialysis_updates.length} Dialysis Update
                 </button>
               </div>
@@ -271,6 +319,7 @@ const UserCard = ({ title, Alerts }) => {
         />
       )}
       {showAlertModal && <AlertModal closeModal={closeAlertModal} />}
+      {showDialysisModal && <DiaAlertModal closeModal={closeDiaModal}/>}
     </>
   );
 };
@@ -278,22 +327,60 @@ const UserCard = ({ title, Alerts }) => {
 const DoctorContainer = () => {
   const [Alerts, setAlerts] = React.useState([]);
   const [groupedAlerts, setGroupedAlerts] = useState({});
- 
-  useEffect(() => {
+  const [DailyAlerts, setDailyAlerts] = useState(0);
 
+  const getDailyAlerts = async () => {
+    try {
+      console.log("in daily alerts");
+      const token = localStorage.getItem("token"); // Fetch token from local storage
+
+      const response = await axiosInstance.get(
+        "http://localhost:8080/api/alerts/dailyAlerts",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Send token in headers
+          },
+        }
+      );
+      console.log("response from daily alerts : ", response);
+
+      if (response.status === 403) {
+        return 0; // No daily alerts
+      } else if (response.status === 200) {
+        return 1; // Daily alerts exist
+      } else {
+        return 0; // Default to 0 on unexpected response
+      }
+    } catch (error) {
+      console.log("error in daily alerts", error);
+      return 0; // Default to 0 on error
+    }
+  };
+
+  useEffect(() => {
     const fetchAlerts = async () => {
+      const dailyAlertsStatus = await getDailyAlerts();
+      setDailyAlerts(dailyAlertsStatus); // Update the state here
+
       try {
-        var res1 = await axiosInstance.post(`${server_url}/doctor/byEmail/id`, {
+        const res1 = await axiosInstance.post(`${server_url}/doctor/byEmail/id`, {
           email: localStorage.getItem("email"),
         });
-        console.log("Doctor ID: ", res1);
-        localStorage.setItem("id",res1.data.data)
-        // console.log("Doctor ID: ", res1.data.data);
-        var res = await axiosInstance.get(
+        
+        localStorage.setItem("id", res1.data.data);
+        const res = await axiosInstance.get(
           `${server_url}/sortAlerts/doctor/${res1.data.data}`
         );
-        setAlerts(res.data);
-        console.log("ALERTS", res.data);
+
+        let alerts = res.data;
+        if (dailyAlertsStatus === 0) {
+          // Filter alerts only if there are no daily alerts
+          alerts = alerts.filter((alert) => alert.dailyordia !== "daily" &&  alert.dailyordia !== "dialysis" );
+        }
+
+        setAlerts(alerts);
+        console.log("ALERTS", alerts);
+
       } catch (error) {
         console.error("Error fetching alerts:", error);
       }
@@ -301,7 +388,7 @@ const DoctorContainer = () => {
     fetchAlerts();
   }, []);
 
-  // get all unique patients names from alerts
+  // Get unique patient names from alerts
   let names;
   try {
     names = [
@@ -330,7 +417,6 @@ const DoctorContainer = () => {
       return accumulator;
     }, {});
 
-    // Updating the state with grouped alerts
     setGroupedAlerts(grouped);
   }, [Alerts]);
 
@@ -338,35 +424,24 @@ const DoctorContainer = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen lg:py-10 lg:px-40 overflow-y-auto">
-      {/* Alerts Container */}
       <div className="flex flex-col lg:flex-row lg:justify-center">
-        {/* Doctor Alerts Container */}
         <div className="bg-white p-5 rounded-lg border-t-primary border-t-4 shadow-lg my-10 lg:w-2/3">
           <p className="text-lg font-semibold text-center lg:sticky lg:top-0 bg-white pt-2">
             Important Alerts
           </p>
-          <div className="flex justify-center overflow-hidden  flex-col sm:overflow-auto max-h-screen sm:max-h-[calc(100%-2rem)]">
+          <div className="flex justify-center overflow-hidden flex-col sm:overflow-auto max-h-screen sm:max-h-[calc(100%-2rem)]">
             {Array.isArray(names) &&
               names.map((name) => (
                 <div key={name} className="mb-5 text-center sm:mb-2">
                   <UserCard title={name} Alerts={Alerts} />
                 </div>
               ))}
-            
-            {/* {typeof groupedAlerts === 'object' && Object.keys(groupedAlerts).map(patientId => (
-              <div key={patientId}>
-                <UserCard
-                  title={groupedAlerts[patientId][0].name} 
-                  Alerts={groupedAlerts[patientId]} 
-                  key={groupedAlerts[patientId][0].name} 
-                />
-              </div>
-            ))} */}
           </div>
         </div>
       </div>
     </div>
   );
 };
+
 
 export default DoctorContainer;

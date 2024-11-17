@@ -51,6 +51,12 @@ export function newQuestionReducer(state, action) {
         type: action.payload,
       };
     }
+    case "sendAlert": {
+      return {
+        ...state,
+        sendAlert: action.payload,
+      };
+    }
     case "alertTextDoc": {
       return {
         ...state,

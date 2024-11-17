@@ -22,7 +22,9 @@ async function insertAlarm(req, res) {
     message,
     doses,
   } = req.body;
-
+  if(type === "Prescription" ) {
+    status=status
+  }else{status="Approved";}
   if (frequency === "Daily/Weekly" && !weekdays) {
     weekdays = "Mon,Tues,Wed,Thurs,Fri,Sat,Sun";
   }

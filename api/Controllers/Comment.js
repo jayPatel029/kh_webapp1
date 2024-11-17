@@ -3,23 +3,36 @@ const { isDoctor } = require("./Users.js");
 
 const getComments = async (req, res, next) => {
     const { fileId, fileType } = req.body;
-    const query = `SELECT * FROM comments WHERE typeId=${fileId} AND type = '${fileType}'`;
+
+    // SQL query to join comments with doctor table and get doctor name
+    const query = `
+          SELECT 
+            comments.*,
+            doctors.name AS doctorName
+        FROM 
+            comments
+        LEFT JOIN 
+            doctors ON comments.doctorId = doctors.id
+        WHERE 
+            comments.typeId = ? AND comments.type = ?`;
+
     try {
-        const comments = await pool.query(query);
+        // Execute the query with parameterized inputs for security
+        const comments = await pool.query(query, [fileId, fileType]);
+
         res.status(200).json({
             success: true,
             data: comments,
         });
-
     } catch (error) {
         console.error("Error getting comments:", error);
         res.status(400).json({
             success: false,
             message: "Something went wrong",
         });
-
     }
 };
+
 
 const addToReadTable = async (doctorId, commentId) => {
     const query = `INSERT INTO commentsread (commentId,isRead,doctorId) VALUES ('${commentId}',0,'${doctorId}')`;
@@ -82,12 +95,12 @@ const updateReadTable = async (req, res) => {
 }
 
 const addComment = async (req, res, next) => {
-    const { content, fileId, fileType, userId, iSDoctor } = req.body;
-    console.log(req.body);
+    const { content, fileId, fileType, userId, iSDoctor, docId } = req.body;
+    console.log("doctors",req.body);
     const date = new Date().toISOString().slice(0, 19).replace('T', ' ');
-    var uid = userId;
+    var uid = 0;
     if (iSDoctor === 1) {
-        const query = `SELECT * FROM doctors WHERE email='${userId}'`;
+        const query = `SELECT * FROM doctors WHERE email='${docId}'`;
         try {
             const doctor = await pool.query(query);
             uid = doctor[0].id;
@@ -101,7 +114,7 @@ const addComment = async (req, res, next) => {
         }
 
     }
-    const query = `INSERT INTO comments (content,userId,typeId,isDoctor,date,type) VALUES ('${content}','${uid}','${fileId}','${iSDoctor}','${date}','${fileType}')`;
+    const query = `INSERT INTO comments (content,userId,typeId,isDoctor,date,type,doctorId) VALUES ('${content}','${userId}','${fileId}','${iSDoctor}','${date}','${fileType}','${uid}')`;
 
     try {
         const result = await pool.query(query);
@@ -282,7 +295,7 @@ const getDoctorComments = async (req, res, next) => {
             const query2 = `SELECT c.*
                         FROM comments c
                         JOIN commentsread cr ON c.id = cr.commentId
-                        WHERE c.userId = ${patientId} AND c.isDoctor = 0;`;
+                        WHERE c.userId = ${patientId} AND c.isDoctor = 0 AND cr.doctorId = ${doctorId};`
             const comments1 = await pool.query(query2);
             comments = comments.concat(comments1);
         }

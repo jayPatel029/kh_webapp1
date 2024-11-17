@@ -38,7 +38,7 @@ const getLabReportByPatient = async (req, res, next) => {
 
 const addLabReport = async (req, res, next) => {
   const { Lab_Report, patient_id, date, Report_Type } = req.body;
-  console.log("lab",Lab_Report)
+  console.log("lab",req.body)
       // const date_2 = new Date().toISOString().slice(0, 19).replace("T", " ");
   const query = `INSERT INTO labreport (Lab_Report,Date,patient_id, Report_Type) VALUES ('${Lab_Report}','${date}','${patient_id}', '${Report_Type}')`;
   try {
@@ -47,7 +47,7 @@ const addLabReport = async (req, res, next) => {
     if(Report_Type === "Lab") {
       medicalData= await PdfTextFunction(Lab_Report);
       console.log("Data",medicalData)
-      const success= await insertMedicalDataDB(medicalData,patient_id,date)
+      // const success= await insertMedicalDataDB(medicalData,patient_id,date)
     }
 
     res.status(200).json({
@@ -270,12 +270,45 @@ const insertMedicalDataDB = async (extractedData,user_id,date)=>{
 
 
 
+const uploadBulkLabReportIndividual = async (req, res) => {
+  console.log("req", req.body);
+  const { data, patient_id, Report_Type, Lab_Report } = req.body;
 
-const uploadBulkLabReportIndividual = async(req,res)=>{
-  console.log(req.body)
-    
-  res.status(200).json("okk")
-}
+  try {
+    const results = [];
+
+    for (const record of data) {
+      let { date } = record;
+
+      // Convert date from DD-MM-YYYY to YYYY-MM-DD
+      const [day, month, year] = date.split("-");
+      date = `${year}-${month}-${day}`;
+
+      const query = `INSERT INTO labreport (Date, patient_id, Report_Type, Lab_Report) 
+                     VALUES ('${date}', '${patient_id}', '${Report_Type}', '${Lab_Report}')`;
+
+      const result = await pool.query(query);
+      results.push(result.insertId);
+
+      // If the report type is "Lab", insert medical data
+      if (Report_Type === "Lab") {
+        await insertMedicalDataDB(record, patient_id, date);
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Lab Reports added successfully",
+      data: results, // Return all inserted IDs
+    });
+  } catch (error) {
+    console.error("Error adding lab reports:", error);
+    res.status(400).json({
+      success: false,
+      message: "Something went wrong",
+    });
+  }
+};
 
 module.exports = {
   getLabReports,

@@ -168,6 +168,54 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
+
+const getTotalUsersThisWeekPSadmin = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    console.log("User ID:", userId);
+
+    let query = `
+      SELECT * FROM patients
+    `;
+    let queryParams = [];
+
+    // If the user is not an admin, modify the query to filter based on the user's role
+    if (userId !== 1) {
+      query = `
+        SELECT p.*
+        FROM patients p
+        JOIN admin_patients ap ON p.id = ap.patient_id
+        WHERE ap.admin_id = ? 
+          AND ap.date > DATE_SUB(NOW(), INTERVAL 1 WEEK)
+      `;
+      queryParams = [userId];
+    }
+
+    // Execute the query
+    const users = [];
+    const response = await pool.query(query, queryParams);
+    // console.log("Response:", response);
+    users.push(...response);
+    // console.log("Users:", users);
+    const total = users.length;
+    // console.log("Total:", total);
+
+    // Send the response with the total number of users
+    return res.status(200).json({
+      success: true,
+      data: total,
+    });
+  } catch (error) {
+    // Handle any errors that occur during the process
+    console.error("Error fetching users by role:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+
 const getTotalUsersThisWeek = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -329,6 +377,7 @@ module.exports = {
   isDoctor,
   getUsersAssignedToPatient,
   getDoctorsAssignedToPatient,
+  getTotalUsersThisWeekPSadmin,
   getidbyEmail,
   getUserbyEmailDoctor,
 };

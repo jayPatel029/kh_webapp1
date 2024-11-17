@@ -8,7 +8,7 @@ export function newQuestionReducer(state, action) {
         id: action.payload,
       };
     }
-
+    
     case "title": {
       return {
         ...state,
@@ -50,11 +50,22 @@ export function newQuestionReducer(state, action) {
         isGraph: action.payload,
       };
     }
-
+    case "unit" : {
+      return {
+        ...state,
+        unit: action.payload,
+      };
+    }
     case "type": {
       return {
         ...state,
         type: action.payload,
+      };
+    }
+    case "sendAlert"  : {
+      return {
+        ...state,
+        sendAlert: action.payload,
       };
     }
     case "alertTextDoc": {

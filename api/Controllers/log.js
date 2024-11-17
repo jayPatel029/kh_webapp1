@@ -3,18 +3,82 @@ const { pool } = require("../databaseConn/database.js");
 // const { createNewEnrollmentAlert } = require("../Controllers/Alerts.js");
 const axios = require("axios");
 
-async function logChange(userId, field, oldValue, newValue, changedBy) {
+async function logChange(userId, field, patientName, number, oldValue, newValue, changedBy) {
     const query = `
-        INSERT INTO patient_log (patient_id, changed_field, old_value, new_value, changed_by)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO patient_log (patient_id, patientName , number ,changed_field, old_value, new_value, changed_by)
+        VALUES (?, ?, ?, ?, ?,?,?)
     `;
     try {
-        await pool.query(query, [userId, field, oldValue, newValue, changedBy]);
+        await pool.query(query, [userId, patientName,number, field, oldValue, newValue, changedBy]);
     } catch (error) {
         console.error("Error logging change:", error);
     }
 }
 
+async function doclogChange(userId,doctorName,doctorEmail, field, oldValue, newValue, changedBy) {
+    const query = `
+        INSERT INTO doctor_log (doctor_id, doctorName, doctorEmail, changed_field, old_value, new_value, changed_by)
+        VALUES (?, ?, ?, ?, ?,?,?)
+    `;
+    try {
+        await pool.query(query, [userId, doctorName,doctorEmail, field, oldValue, newValue, changedBy]);
+    } catch (error) {
+        console.error("Error logging change:", error);
+    }
+}   
+
+async function downloadLog(req, res) {
+    try {
+        const query = "SELECT * FROM patient_log ORDER BY changed_at DESC";
+        const results = await pool.query(query);
+    console.log("results", results);
+        // Format data for response
+        const formattedLogs = results.map((log) => ({
+          patientId: log.patient_id,
+            patientName: log.patientName,
+            number: log.number,
+          field: log.changed_field,
+          oldValue: log.old_value || "null",
+          newValue: log.new_value || "null",
+          changedAt: log.changed_at,
+          changedBy: log.changed_by,
+        }));
+    
+        res.status(200).json({ logs: formattedLogs });
+      } catch (error) {
+        console.error("Error fetching logs:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+      }
+}
+
+
+async function DocdownloadLog(req, res) {
+    try {
+        const query = "SELECT * FROM doctor_log ORDER BY changed_at DESC";
+        const results = await pool.query(query);
+    console.log("results", results);
+        // Format data for response
+        const formattedLogs = results.map((log) => ({
+          doctor_id: log.doctor_id,
+          field: log.changed_field,
+          doctorName:log.doctorName,
+            doctorEmail:log.doctorEmail,
+          oldValue: log.old_value || "null",
+          newValue: log.new_value || "null",
+          changedAt: log.changed_at,
+          changedBy: log.changed_by,
+        }));
+    
+        res.status(200).json({ logs: formattedLogs });
+      } catch (error) {
+        console.error("Error fetching logs:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+      }
+}
+
 module.exports= {
-    logChange
+    logChange,
+    doclogChange,
+    downloadLog,
+    DocdownloadLog
 };

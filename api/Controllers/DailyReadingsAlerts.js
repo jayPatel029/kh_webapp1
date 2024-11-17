@@ -247,6 +247,16 @@ const getAlertColor = (value,lowRange,highRange,lowRange2,highRange2) => {
 const AddDailyReadingsAlerts = async (question_id,user_id,date,readings) => {
   console.log("adding daily readings",question_id,user_id,date,readings);
     const checkQuery = `SELECT * FROM daily_readings WHERE id = '${question_id}'`
+    const query = `select sendAlert from daily_readings where id = '${question_id}'`
+    let sendAlert = await pool.execute(query);
+    console.log("sendAlert",sendAlert);
+    sendAlert = sendAlert[0].sendAlert;
+    if(sendAlert == 0){
+      return {
+        success: true,
+        data: "Alerts are not enabled for this reading",
+    };
+    }
     try {
         var dr = await pool.query(checkQuery);
         dr = dr[0];
@@ -391,6 +401,16 @@ const AddDailyReadingsAlerts = async (question_id,user_id,date,readings) => {
 
 const AddDialysisReadingsAlerts = async (question_id,user_id,date,readings) => {
     const checkQuery = `SELECT * FROM dialysis_readings WHERE id = '${question_id}'`
+    const query = `select sendAlert from dialysis_readings where id = '${question_id}'`
+        let sendAlert = await pool.query(query);
+        console.log("sendAlert",sendAlert);
+        sendAlert = sendAlert[0].sendAlert;
+        if(sendAlert == 0){
+        return res.status(200).json({
+            success: true,
+            data: "Alerts are not enabled for this reading",
+        });
+        }
     try {
         var dr = await pool.query(checkQuery);
         dr = dr[0];
@@ -540,6 +560,17 @@ const AddDialysisReadingsAlerts = async (question_id,user_id,date,readings) => {
 const AddDailyReadingsAlertsAPI = async (req, res, next) => {
     const { question_id, user_id, date, readings } = req.body;
     try {
+      console.log("Adding daily readings",question_id,user_id,date,readings);
+        const query = `select sendAlert from daily_readings where id = '${question_id}'`
+        let sendAlert = await pool.query(query);
+        console.log("sendAlert",sendAlert);
+        sendAlert = sendAlert[0].sendAlert;
+        if(sendAlert == 0){
+        return res.status(200).json({
+            success: true,
+            data: "Alerts are not enabled for this reading",
+        });
+        }
         await AddDailyReadingsAlerts(question_id,user_id,date,readings);
         return res.status(200).json({
             success: true,
@@ -558,6 +589,16 @@ const AddDailyReadingsAlertsAPI = async (req, res, next) => {
 
 const AddDialysisReadingsAlertsAPI = async (req, res, next) => {
     const { question_id, user_id, date, readings } = req.body;
+    const query = `select sendAlert from dialysis_readings where id = '${question_id}'`
+        let sendAlert = await pool.query(query);
+        console.log("sendAlert",sendAlert);
+        sendAlert = sendAlert[0].sendAlert;
+        if(sendAlert == 0){
+        return res.status(200).json({
+            success: true,
+            data: "Alerts are not enabled for this reading",
+        });
+        }
     try {
         await AddDialysisReadingsAlerts(question_id,user_id,date,readings);
         return res.status(200).json({

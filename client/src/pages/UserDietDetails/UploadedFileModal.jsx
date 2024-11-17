@@ -164,7 +164,7 @@ function UploadedFileModal({ closeModal, file, user_id, file_id }) {
                       }`}
                     >
                       <span className="font-medium text-xs text-gray-500 mr-2">
-                        {comment.isDoctor ? "Doctor: " : "Patient: "}
+                        {comment.isDoctor ? `Doctor:${comment.doctorName} ` : "Patient: "}
                       </span>
                       <span className="flex-grow text-sm text-black font-bold">
                         {comment.content}

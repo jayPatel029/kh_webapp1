@@ -14,7 +14,7 @@ const NameModal = ({
   const [name, setName] = useState(initialName || "");
   const [number, setNumber] = useState(initialNumber || "");
   const [dob, setDob] = useState(initialDob || "");
-  const changeBy = localStorage.getItem("firstname");
+  const changeBy = localStorage.getItem("email");
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const dateObject = new Date(dateString);

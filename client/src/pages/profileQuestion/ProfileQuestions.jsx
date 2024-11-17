@@ -38,6 +38,7 @@ function ProfileQuestions() {
       try {
         const result = await getQuestions();
         if (result.success) {
+          console.log(result.data);
           setQuestionsList(result.data);
           setQuestions(result.data);
         } else {
@@ -104,7 +105,7 @@ function ProfileQuestions() {
   }
 
   const [newQuestion, newQuestionDispatch] = useReducer(newQuestionReducer, {
-    id: null,
+    
     ailment: [],
     type: questionTypes[0].value,
     name: "",
@@ -158,12 +159,14 @@ function ProfileQuestions() {
         }
       } else {
         const payload = {
+          id: newQuestion.id,
           ailment: newQuestion.ailment,
           type: newQuestion.type,
           name: newQuestion.name,
           options: newQuestion.options,
           translations: translations,
         };
+        console.log(newQuestion.id);
         const response = await updateQuestion(newQuestion.id, payload);
         if (response.success) {
           setErrMsg("");

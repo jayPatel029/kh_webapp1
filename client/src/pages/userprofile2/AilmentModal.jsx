@@ -86,6 +86,7 @@ const AilmentModal = ({
       .map((ailment) => ailment.id);
 
     const updatedUserData = {
+      changeBy:localStorage.getItem("email"),
       id: user_id,
       aliments: selectedAilments,
       eGFR: egfr,

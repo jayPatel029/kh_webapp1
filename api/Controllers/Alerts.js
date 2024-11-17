@@ -1,6 +1,6 @@
 const { Json } = require("sequelize/lib/utils");
 const { pool } = require("../databaseConn/database.js");
-
+const jwt = require("jsonwebtoken");
 const getAlerts = async (req, res) => {
   try {
     const response = await pool.query("SELECT * FROM alerts");
@@ -33,7 +33,9 @@ const getAlertbyType = async (req, res) => {
       WHERE ap.admin_id=? AND a.type = ?
       ORDER BY a.id DESC`;
     const response = await pool.execute(query,[userId,type]);
-    res.status(200).json(response);
+    console.log("res",response);
+    const alert= response.filter((alert) => alert.category != 'New Prescription Alarm' );
+    res.status(200).json(alert);
   } catch (error) {
     res.status(500).json(error);
   }
@@ -109,7 +111,7 @@ const createNewProgramEnrollmentAlert = async (req, res) => {
   const type = "patient";
   const category = "New Program Enrollment";
   const { patientId, programName } = req.body;
-
+  console.log("received patientId in function :", patientId);
   const date = new Date().toISOString().slice(0, 19).replace("T", " ");
   const selectQuery = `SELECT programName  from alerts where patientId = ${patientId} AND category ="New Program Enrollment" AND isOpened=0 `;
   const ans = await pool.execute(selectQuery);
@@ -473,6 +475,45 @@ const updateIsReadAlert = async (req, res) => {
   }
 };
 
+const canRecieveUpdates = async (req, res) => {
+  try {
+    console.log("canRecieveUpdates function called");
+    const token = req.headers["authorization"].split(" ")[1];
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    
+    if (!decoded) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+    const [users] = await pool.execute("SELECT * FROM users WHERE email = ?", [
+      decoded.email,
+    ]);
+    
+    if (users.role == "Doctor") {
+      const [doctor] = await pool.execute(
+        "SELECT * FROM doctors WHERE email = ?",
+        [decoded.email]
+      );
+      console.log("Doctor", doctor);
+      if (doctor && doctor.daily_update=== "yes") {
+        console.log("User is a doctor and can recieve updates");
+        return res.status(200).json({ message: "User is a doctor" });
+      } else {
+        return res
+          .status(403)
+          .json({ message: "User is not allowed to export" });
+      }
+    } else {
+      return res
+        .status(403)
+        .json({ message: "User is not an admin or doctor" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+}
+
 module.exports = {
   getAlerts,
   getAlertbyType,
@@ -500,4 +541,5 @@ module.exports = {
   createNewEnrollmentAlertFunction,
   createProgramAlert,
   deletePatientAlert,
+  canRecieveUpdates,
 };

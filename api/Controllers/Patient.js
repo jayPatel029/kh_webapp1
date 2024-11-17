@@ -250,13 +250,17 @@ const updatePatientProgram = async (req, res, next) => {
 const updatePatientProfile = async (req, res, next) => {
   const { id, name, number, dob, changeBy } = req.body;
   const newDetails = req.body;
+  const pName =`select name from patients where id = ${id}`
+  const patientName = await pool.execute(pName);
+  const numberQ =`select number from patients where id = ${id}`
+  const patientNumber = await pool.execute(numberQ);
   try {
     const [oldDetails] = await pool.execute(`SELECT * FROM patients WHERE id = ?`, [id]);
 
         // Compare and log each field
         for (const field in newDetails) {
             if (newDetails[field] !== oldDetails[field] && newDetails[field] !== changeBy) {
-                await logChange(id, field, oldDetails[field], newDetails[field], changeBy);
+                await logChange(id, field,patientName[0].name,patientNumber[0].number ,oldDetails[field], newDetails[field], changeBy);
             }
         }
     const query = `
@@ -336,12 +340,21 @@ const updateDryWeight = async (req, res, next) => {
 
 const updatePatientAilment = async (req, res, next) => {
   const { id, aliments } = req.body;
-
+  const { changeBy } = req.body;
   try {
     // Delete existing entries for the patient
-    await pool.query(`DELETE FROM ailment_patient WHERE patient_id = '${id}'`);
-
+    
     // Create new entries for selected ailments
+    const oldDetails = await pool.execute(`SELECT * from ailment_patient where patient_id = ?`, [id]);
+    const oldAilments = oldDetails.map((item) => item.ailment_id);
+    const newAilments = aliments.map(Number);
+    if(oldAilments.length !== newAilments.length || oldAilments.some((ailment) => !newAilments.includes(ailment))) {
+      await logChange(id, "ailments", oldAilments.join(", "), newAilments.join(", "), changeBy);
+    }
+
+   
+    console.log(oldAilments, newAilments);
+    await pool.query(`DELETE FROM ailment_patient WHERE patient_id = '${id}'`);
     const ailmentIds = aliments.map(Number); // Convert ailment IDs to numbers
     const insertQuery = `
       INSERT INTO ailment_patient (patient_id, ailment_id)
@@ -350,7 +363,6 @@ const updatePatientAilment = async (req, res, next) => {
         .join(",")}
     `;
     await pool.query(insertQuery);
-
     res.status(200).json({
       success: true,
       data: "Patient Profile Updated Successfully",

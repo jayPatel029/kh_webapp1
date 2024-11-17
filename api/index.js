@@ -14,6 +14,9 @@ const {
   check_missed_readings,
   checkMissedAlarms,
   deleteExpiredOTPs,
+  checkMissedAlarmsForDoctors,
+  checkDialysisEntries,
+  checkDialysisEntriesForAdmin,
 } = require("./cronjob/functions.js");
 
 const { sendEmails } = require("./cronjob/AlertEmail.js");
@@ -77,22 +80,25 @@ io.on("connection", (socket) => {
 });
 
 // 9 PM cron job
-cron.schedule("0 21 * * *", async () => {
-  createNewAlertForPatientDoctors();
-  await check_missed_dr_readings();
-  await check_missed_readings();
-});
+// cron.schedule("31 15 * * *", async () => {
+//   //createNewAlertForPatientDoctors();
+//   //await checkMissedAlarmsForDoctors();
+//   //await check_missed_dr_readings();
+//   //await check_missed_readings();
+//   //checkDialysisEntries();
+//   checkDialysisEntriesForAdmin();
+// });
 
 // 12 AM cron job
-cron.schedule("17 15 * * *", () => {
-  checkMissedAlarms();
-  deleteExpiredOTPs();
-});
+// cron.schedule("04 21 * * *", () => {
+//   checkMissedAlarms();
+//   deleteExpiredOTPs();
+// });
 
-// 12 AM cron job
-cron.schedule("0 0 * * *", () => {
-  sendEmails()
-});
+// // 12 AM cron job
+// cron.schedule("0 0 * * *", () => {
+//   sendEmails()
+// });
 
 server.listen(8080, () => {
   console.log("Server is running on port 8080");

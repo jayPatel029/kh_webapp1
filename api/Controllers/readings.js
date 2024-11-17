@@ -68,7 +68,7 @@ async function getDailyReadingsTranslations(req, res) {
 
 async function addDailyReading(req, res) {
   try {
-    const {
+    let {
       title,
       ailments,
       type,
@@ -78,12 +78,16 @@ async function addDailyReading(req, res) {
       isGraph,
       alertTextDoc,
       readingsTranslations,
+      sendAlert,
+      unit
     } = req.body;
-
-    console.log(title, type, assign_range, low_range, high_range,isGraph, alertTextDoc, readingsTranslations)
+    
+    console.log(title, type, assign_range, low_range, high_range,isGraph,unit, alertTextDoc)
 
     console.log("ailments",ailments);
-
+    const query=`select id from ailments where name in (${ailments.map((ailment)=>`'${ailment}'`).join(",")})`;
+    const ailmentIds=await pool.query(query );
+    console.log("ailmentIds",ailmentIds.map((ailment) => ailment.id));
     // Insert a new record into the daily_readings table
     const newReading = await DailyReadings.create({
       title,
@@ -92,16 +96,20 @@ async function addDailyReading(req, res) {
       low_range,
       high_range,
       isGraph,
+      unit,
       alertTextDoc,
+      sendAlert,
     });
+  
 
-    const ailmentsInserted = await ailments.map(async (ailment) => {
+    const ailmentsInserted = await ailmentIds.map(async (ailment) => {
       await DailyReadingAilments.create({
         dr_id: newReading.id,
-        ailmentID: ailment,
+        ailmentID: ailment.id,
       });
     });
     // Insert translations for the new reading
+   if(readingsTranslations && readingsTranslations!==undefined){
     const translations = Object.entries(readingsTranslations).map(
       ([language, translation]) => ({
         dr_id: newReading.id,
@@ -109,7 +117,7 @@ async function addDailyReading(req, res) {
         title: translation,
       })
     );
-    await DailyReadingsTranslations.bulkCreate(translations);
+    await DailyReadingsTranslations.bulkCreate(translations);}
 
     res.status(201).send("Daily reading added successfully");
   } catch (error) {
@@ -158,7 +166,9 @@ async function updateDailyReading(req, res) {
       high_range,
       isGraph,
       alertTextDoc,
+      unit,
       readingsTranslations,
+      sendAlert,
     } = req.body;
 
     // Update the daily reading with the new values
@@ -170,12 +180,15 @@ async function updateDailyReading(req, res) {
         low_range,
         high_range,
         isGraph,
+        unit,
         alertTextDoc,
       },
       {
         where: { id },
       }
     );
+    const query =`update daily_readings set sendAlert=${sendAlert} where id=${id}`;
+    await pool.query(query);
     await DailyReadingAilments.destroy({
       where: {
         dr_id: id,
@@ -286,6 +299,7 @@ async function addDialysisReading(req, res) {
       isGraph,
       alertTextDoc,
       readingsTranslations,
+      sendAlert,
     } = req.body;
 
     console.log("ailments",ailments);
@@ -299,6 +313,7 @@ async function addDialysisReading(req, res) {
       high_range,
       isGraph,
       alertTextDoc,
+      sendAlert,
     });
 
     const ailmentsInserted = await ailments.map(async (ailment) => {
@@ -365,6 +380,8 @@ async function updateDialysisReading(req, res) {
       isGraph,
       alertTextDoc,
       readingsTranslations,
+      sendAlert,
+
     } = req.body;
 
     console.log(type, assign_range, low_range, high_range, isGraph, alertTextDoc, readingsTranslations)
@@ -389,6 +406,9 @@ async function updateDialysisReading(req, res) {
         dr_id: id,
       },
     });
+    const query =`update dialysis_readings set sendAlert=${sendAlert} where id=${id}`;
+    await pool.query(query  );
+    
     const ailmentsInserted = await ailments.map(async (ailment) => {
       await DialysisReadingAilments.create({
         dr_id: id,

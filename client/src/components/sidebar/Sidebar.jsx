@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./sidebar.scss";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import { Link } from "react-router-dom";
@@ -21,7 +21,9 @@ import { useSelector } from "react-redux";
 const Sidebar = ({ mobile = false }) => {
   const [dropdown, setDropdown] = React.useState(false);
   const role = useSelector((state) => state.permission);
-
+  useEffect(() => {
+    console.log("role", role);
+  }, []);
   return (
     <div
       className={mobile ? "sidebar" : "sidebar hidden md:block min-h-[100vh]"}>
@@ -43,7 +45,7 @@ const Sidebar = ({ mobile = false }) => {
       <hr />
       <div className="center">
         <ul>
-         {(role?.role_name=="Admin" || role?.role_name=="PsAdmin" || role?.role_name=="Doctor") ? ( <Link to="/" style={{ textDecoration: "none" }}>
+         {(role?.role_name=="Admin" || role?.role_name=="PSadmin" || role?.role_name=="Doctor") ? ( <Link to="/" style={{ textDecoration: "none" }}>
             <li className="">
               <DashboardIcon className="icon" />
               <span className="">DashBoard</span>
@@ -114,7 +116,7 @@ const Sidebar = ({ mobile = false }) => {
             </Link>
           ) : null}
 
-          {(role?.role_name=="Admin" || role?.role_name=="PsAdmin" || role?.role_name=="Doctor") ? (
+          {/* {(role?.role_name=="Admin" || role?.role_name=="PsAdmin" || role?.role_name=="Doctor") ? (
             <Link to="/kfre" style={{ textDecoration: "none" }}>
               <li>
                 <PictureAsPdfIcon className="icon" />
@@ -125,7 +127,7 @@ const Sidebar = ({ mobile = false }) => {
                 <span>BulkUploadCSV</span>
               </li>
             </Link>
-          ) : null}
+          ) : null} */}
 
           {/* {role?.patients ? (
             <Link to="/aiChat" style={{ textDecoration: "none" }}>

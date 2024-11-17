@@ -22,7 +22,8 @@ const {getAlerts,
     updateIsReadAlert,
     createContactUsAlert,
     createProgramAlert,
-    deletePatientAlert
+    deletePatientAlert,
+    canRecieveUpdates
 } = require('../Controllers/Alerts.js');
 const { verifyToken } = require("../Helpers/middlewares/roles.js");
 
@@ -50,6 +51,7 @@ router.put('/disapproveAllAlerts',verifyToken, dissapproveAllAlerts);
 router.post('/newPrescription',verifyToken, createNewPrescriptionAlert);
 router.post('/contactUs',verifyToken, createContactUsAlert);
 router.put('/updateIsRead',verifyToken, updateIsReadAlert);
+router.get('/dailyAlerts',verifyToken, canRecieveUpdates);
 
 
 

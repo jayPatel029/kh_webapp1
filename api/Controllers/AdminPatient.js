@@ -1,3 +1,4 @@
+const { da } = require("date-fns/locale");
 const { pool } = require("../databaseConn/database.js");
 
 const getAdminData = async (req, res, next) => {
@@ -49,12 +50,12 @@ const addAdminToPatient = async (req, res, next) => {
         message: "Admin is already assigned to this patient",
       });
     }
-
+    const date = new Date().toISOString().slice(0, 19).replace("T", " ");
     // Insert the admin_id and patient_id into the admin_patients table
     const insertQuery = `
-      INSERT INTO admin_patients (admin_id, patient_id) VALUES (?, ?)
+      INSERT INTO admin_patients (admin_id, patient_id,date) VALUES (?, ?,?)
     `;
-    await pool.query(insertQuery, [admin_id, patient_id]);
+    await pool.query(insertQuery, [admin_id, patient_id, date]);
 
     res.status(201).json({
       success: true,

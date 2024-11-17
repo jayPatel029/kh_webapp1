@@ -6,8 +6,7 @@ import {
 } from "react-papaparse";
 import axiosInstance from "../../helpers/axios/axiosInstance";
 import { server_url } from "../../constants/constants";
-import { getFileRes } from "../../helpers/fileuploadHelper";
-import getCurrentDate from "../../helpers/formatDate";
+import { is } from "date-fns/locale";
 
 const GREY = "#CCC";
 const GREY_LIGHT = "rgba(255, 255, 255, 0.4)";
@@ -18,70 +17,7 @@ const REMOVE_HOVER_COLOR_LIGHT = lightenDarkenColor(
 );
 const GREY_DIM = "#686868";
 
-const styles = {
-  zone: {
-    alignItems: "center",
-    border: `2px dashed ${GREY}`,
-    borderRadius: 20,
-    display: "flex",
-    flexDirection: "column",
-    height: "100%",
-    justifyContent: "center",
-    padding: 20,
-  },
-  file: {
-    background: "linear-gradient(to bottom, #EEE, #DDD)",
-    borderRadius: 20,
-    display: "flex",
-    height: 120,
-    width: 120,
-    position: "relative",
-    zIndex: 10,
-    flexDirection: "column",
-    justifyContent: "center",
-  },
-  info: {
-    alignItems: "center",
-    display: "flex",
-    flexDirection: "column",
-    paddingLeft: 10,
-    paddingRight: 10,
-  },
-  size: {
-    backgroundColor: GREY_LIGHT,
-    borderRadius: 3,
-    marginBottom: "0.5em",
-    justifyContent: "center",
-    display: "flex",
-  },
-  name: {
-    backgroundColor: GREY_LIGHT,
-    borderRadius: 3,
-    fontSize: 12,
-    marginBottom: "0.5em",
-  },
-  progressBar: {
-    bottom: 14,
-    position: "absolute",
-    width: "100%",
-    paddingLeft: 10,
-    paddingRight: 10,
-  },
-  zoneHover: {
-    borderColor: GREY_DIM,
-  },
-  default: {
-    borderColor: GREY,
-  },
-  remove: {
-    height: 23,
-    position: "absolute",
-    right: 6,
-    top: 6,
-    width: 23,
-  },
-};
-export default function CSVReader({ setData, setSuccess, success, patientId }) {
+export default function CSVReader({ setData, setSuccess, success }) {
   const { CSVReader } = useCSVReader();
   const [zoneHover, setZoneHover] = useState(false);
   const [removeHoverColor, setRemoveHoverColor] = useState(
@@ -89,26 +25,53 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
   );
   const [headData, setHeadData] = useState([]);
   const [columnMappings, setColumnMappings] = useState({
-    date: "",
-    Hemoglobin: "",
-    MCV: "",
+    title: "",
+    type: "",
+    assign_range: "",
+    ailments:[],
+    low_range: "",
+    high_range: "",
+    isGraph:"",
+    unit:"",
+    alertTextDoc:"",
+
   });
+
   const [csvData, setCsvData] = useState([]);
   const [columnOptions, setColumnOptions] = useState([]);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [selectedDate, setSelectedDate] = useState("");
+
   const handleSubmit = () => {
     const mappedData = csvData
       .map((row) => ({
-        Hemoglobin: columnMappings.Hemoglobin
-          ? row[columnOptions.indexOf(columnMappings.Hemoglobin)]
+          // Directly using the provided patientId
+        title: columnMappings.title
+          ? row[columnOptions.indexOf(columnMappings.title)]
           : undefined,
-        MCV: columnMappings.MCV
-          ? row[columnOptions.indexOf(columnMappings.MCV)]
+        type: columnMappings.type
+          ? row[columnOptions.indexOf(columnMappings.type)]
           : undefined,
-        date: columnMappings.date
-          ? row[columnOptions.indexOf(columnMappings.date)]
+        assign_range: columnMappings.assign_range
+          ? row[columnOptions.indexOf(columnMappings.assign_range)]
           : undefined,
+        ailments: columnMappings.ailments
+          ? row[columnOptions.indexOf(columnMappings.ailments)]
+          : undefined,
+        low_range: columnMappings.low_range
+          ? row[columnOptions.indexOf(columnMappings.low_range)]
+          : undefined,
+        high_range: columnMappings.high_range
+          ? row[columnOptions.indexOf(columnMappings.high_range)]
+          : undefined,
+        isGraph: columnMappings.isGraph
+          ? row[columnOptions.indexOf(columnMappings.isGraph)]
+          : undefined,
+        unit: columnMappings.unit
+          ? row[columnOptions.indexOf(columnMappings.unit)]
+          : undefined,
+        alertTextDoc: columnMappings.alertTextDoc
+          ? row[columnOptions.indexOf(columnMappings.alertTextDoc)]
+          : undefined,
+
 
       }))
       .filter((item) => Object.values(item).some((value) => value !== undefined));
@@ -116,38 +79,17 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
     const trimmedMappedData = mappedData.slice(1);
     setData(trimmedMappedData);
     setSuccess(!success);
-    if (selectedFile) {
-      getFileRes(selectedFile)
-        .then(async (res) => {
-          console.log("res", res);
-          if (res.data.objectUrl === undefined) {
-            alert("failed to upload you document, please try again later");
-            return;
-          }
-          
-          let data = { data: trimmedMappedData, patient_id: patientId, Report_Type: "Lab" ,Lab_Report: res.data.objectUrl};
-          console.log("Data:", data);
-          axiosInstance
-          .post(`${server_url}/labreport/addBulkIndividual`, data)
-          .then((response) => {
-            console.log("Response:", response.data);
-            setCsvData([]);
-            setHeadData([]);
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-          });
-        })
-      }
-  };
 
+    let data = { data: trimmedMappedData };
+      console.log("Data:", data);
+    console.log("typeof",typeof(data.data[0].low_range))
+  };
 
   return (
     <CSVReader
-      onUploadAccepted={(results, acceptedFile) => {
+      onUploadAccepted={(results) => {
         setZoneHover(false);
         if (results.data.length > 0) {
-          setSelectedFile(acceptedFile);
           setCsvData(results.data);
           setHeadData(results.data.slice(0, 5)); // Get the first five entries
           setColumnOptions(results.data[0]);
@@ -162,7 +104,7 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
         setZoneHover(false);
       }}
     >
-      {({ getRootProps, acceptedFile, ProgressBar, getRemoveFileProps, Remove }) => (
+       {({ getRootProps, acceptedFile, ProgressBar, getRemoveFileProps, Remove }) => (
         <div className="flex flex-col space-y-6">
           <div
             {...getRootProps()}
@@ -246,7 +188,7 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
                 ))}
               </ul>
               <div className="mt-4">
-            
+              
                 <button
                   onClick={handleSubmit}
                   className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
@@ -261,4 +203,3 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
     </CSVReader>
   );
 }
-

@@ -227,9 +227,7 @@ const getAlertData = async (id,date,type0,type1) => {
     else if (type1 === "New Program Enrollment"){
         return newProgramEnrollmentAlert(id,date,type0);
     }
-    else if (type1 === "Missed Prescription Alarm"){
-        return MissedPrescriptionAlert(id,date,type0);
-    }
+    
     else{
         return null;
     }

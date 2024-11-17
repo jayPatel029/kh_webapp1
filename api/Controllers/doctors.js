@@ -1,4 +1,5 @@
 const { pool } = require("../databaseConn/database.js");
+const { logChange, doclogChange } = require("./log.js");
 
 const insertSpecialities = async (doctorId, specialities) => {
   try {
@@ -97,7 +98,8 @@ const createDoctor = async (req, res, next) => {
       specialities,
       email_notification,
       can_export,
-      dialysis_updates
+      dialysis_updates,
+      dailyReadingsAlerts,
     } = req.body;
     let dailyReadings = [];
     let dialysisReadings = [];
@@ -124,6 +126,7 @@ const createDoctor = async (req, res, next) => {
       email_notification: email_notification,
       can_export: can_export,
       dialysis_updates: dialysis_updates,
+      dailyReadingsAlerts: dailyReadingsAlerts,
       regdate: new Date().toISOString().slice(0, 19).replace("T", " "),
     };
 
@@ -138,7 +141,7 @@ const createDoctor = async (req, res, next) => {
       });
     } else {
       const query =
-        "INSERT INTO doctors ( name,   role,   email,   `license no`,  `practicing at`,  experience,   ref,   resume,  phoneno,`doctors code`,institute,address,photo,description, email_notification, can_export,Dialysis_updates, regdate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?);";
+        "INSERT INTO doctors ( name,   role,   email,   `license no`,  `practicing at`,  experience,   ref,   resume,  phoneno,`doctors code`,institute,address,photo,description, email_notification, can_export,Dialysis_updates,daily_update, regdate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?, ?);";
 
       const result = await pool.query(query, [
         doctor.name,
@@ -158,6 +161,7 @@ const createDoctor = async (req, res, next) => {
         doctor.email_notification,
         doctor.can_export,
         doctor.dialysis_updates,
+        doctor.dailyReadingsAlerts,
         doctor.regdate,
       ]);
 
@@ -335,8 +339,10 @@ const updateDoctor = async (req, res, next) => {
       email_notification,
       Dialysis_updates,
       can_export,
+      dailyReadingsAlerts,
     } = req.body;
-
+    const {changeby}=req.body;
+    const {doctorid}=req.body;
     let dailyReadings = [];
     let dialysisReadings = [];
     if (role === "Doctor") {
@@ -361,16 +367,57 @@ const updateDoctor = async (req, res, next) => {
       description: description,
       email_notification: email_notification,
       Dialysis_updates: Dialysis_updates,
+      dailyReadingsAlerts: dailyReadingsAlerts,
       can_export: can_export,
     };
 
     const doctor_old_details = await pool.query(
-      `SELECT email, photo, resume FROM doctors WHERE id = ?`,
+      `SELECT * FROM doctors WHERE id = ?`,
       [req.params.id]
     );
 
+    const formattedOldDoctor = {
+      name: doctor_old_details[0].name,
+      role: doctor_old_details[0].role,
+      email: doctor_old_details[0].email,
+      license_no: doctor_old_details[0]["license no"],
+      practicing_at: doctor_old_details[0]["practicing at"],
+      experience: doctor_old_details[0].experience,
+      ref: doctor_old_details[0].ref,
+      resume: doctor_old_details[0].resume,
+      phoneno: doctor_old_details[0].phoneno,
+      doctors_code: doctor_old_details[0]["doctors code"],
+      institute: doctor_old_details[0].institute,
+      address: doctor_old_details[0].address,
+      photo: doctor_old_details[0].photo,
+      description: doctor_old_details[0].description,
+      email_notification: doctor_old_details[0].email_notification,
+      Dialysis_updates: doctor_old_details[0].Dialysis_updates,
+      dailyReadingsAlerts: doctor_old_details[0].daily_update, // Match the key to `dailyReadingsAlerts`
+      can_export: doctor_old_details[0].can_export,
+    };
+    
+    // Compare the two objects and log changes
+    const changedFields = Object.keys(doctor).filter((key) => {
+      const oldValue = formattedOldDoctor[key];
+      const newValue = doctor[key];
+    
+      // Normalize null/undefined and date comparisons
+      if (oldValue == null && (newValue == null )) return false;
+      if (oldValue instanceof Date && newValue instanceof Date) {
+        return oldValue.getTime() !== newValue.getTime();
+      }
+    
+      return oldValue !== newValue;
+    });
+    
+    console.log("Changed fields:", changedFields);
+    changedFields.forEach((field) => {
+      doclogChange(doctorid ,name, email, field, formattedOldDoctor[field], doctor[field], changeby);
+      console.log(`Field: ${field}, Old Value: ${formattedOldDoctor[field]}, New Value: ${doctor[field]}`);
+    });
     const query =
-      "UPDATE doctors SET name = ?, role = ?, email = ?, `license no` = ?, `practicing at` = ?, experience = ?, ref = ?, resume = ?, phoneno = ?, `doctors code` = ?, institute = ?, address = ?, photo = ?, email_notification = ?, can_export=?, description = ?, Dialysis_updates=? WHERE id = ?";
+      "UPDATE doctors SET name = ?, role = ?, email = ?, `license no` = ?, `practicing at` = ?, experience = ?, ref = ?, resume = ?, phoneno = ?, `doctors code` = ?, institute = ?, address = ?, photo = ?, email_notification = ?, can_export=?, description = ?, Dialysis_updates=?, daily_update=? WHERE id = ?";
 
     const result = await pool.query(query, [
       doctor.name,
@@ -390,6 +437,7 @@ const updateDoctor = async (req, res, next) => {
       doctor.can_export,
       doctor.description,
       doctor.Dialysis_updates,
+      doctor.dailyReadingsAlerts,
       req.params.id,
     ]);
     if (result.affectedRows > 0) {

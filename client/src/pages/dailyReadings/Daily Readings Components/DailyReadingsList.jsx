@@ -10,6 +10,7 @@ import { readingTypes } from "../../../constants/ReadingConstants";
 import { getLanguages } from "../../../ApiCalls/languageApis";
 import TranslationModal from "../../../components/modals/TranslationModel";
 import Select from "react-select";
+import { Link } from "react-router-dom";
 
 function DailyForm() {
   const [editMode, setEditMode] = useState(false);
@@ -31,6 +32,8 @@ function DailyForm() {
     lower_assign_range: null,
     upper_assign_range: null,
     isGraph: 0,
+    unit:"",
+    sendAlert: 0,
     alertTextDoc: "",
   });
 
@@ -93,8 +96,10 @@ function DailyForm() {
       low_range: newReading.lower_assign_range,
       high_range: newReading.upper_assign_range,
       isGraph: newReading.isGraph,
+      unit: newReading.unit,
       readingsTranslations: translations,
       alertTextDoc: newReading.alertTextDoc,
+      sendAlert: newReading.sendAlert,
     };
     
     // console.log(payload)
@@ -152,6 +157,7 @@ function DailyForm() {
       <div className=" bg-white md:p-6 border p-2 rounded-md border-t-primary border-t-4 shadow-md">
         <div className="border-b-gray border-b-2 p-2 pt-4 md:pb-4 font-semibold text-primary tracking-wide text-xl">
           Readings Master
+          <Link to="/dailyReadingsCsv" className="mx-5">Or BulkUpload Question</Link>
         </div>
         <div className="p-5">
           {modelOpen && (
@@ -211,25 +217,63 @@ function DailyForm() {
               Set Translations
             </button>
           </div>
-
           <label className="block mb-2 text-sm font-medium text-gray-500 pt-6">
-            Alert Text
-          </label>
-          <div className="block md:flex w-full">
+  Send Alerts
+</label>
+<select
+  value={newReading.sendAlert}
+  onChange={(event) => {
+    console.log(event.target.value);
+    newReadingDsipatch({
+      type: "sendAlert",
+      payload: event.target.value,
+    });
+  }}
+  className="border border-gray-300 text-gray-500 text-sm rounded-lg block w-full p-2.5 focus:outline-primary"
+>
+  <option value="0">No</option>
+  <option value="1">Yes</option>
+</select>
+
+{newReading.sendAlert == 1 && (
+  <>
+    <label className="block mb-2 text-sm font-medium text-gray-500 pt-6">
+      Alert Text
+    </label>
+    <div className="block md:flex w-full">
+      <input
+        type="text"
+        placeholder="Alert Text for doctors"
+        value={newReading.alertTextDoc}
+        onChange={(event) => {
+          newReadingDsipatch({
+            type: "alertTextDoc",
+            payload: event.target.value,
+          });
+        }}
+        className=" border border-gray-300 text-gray-500 text-sm rounded-lg block md:w-3/4 w-full p-2.5 focus:outline-primary"
+      />
+    </div>
+  </>
+)}
+
+          <div>
+            <label className="block mb-2 text-sm font-medium text-gray-500 pt-6">
+              Unit
+            </label>
             <input
               type="text"
-              placeholder="Alert Text for doctors"
-              value={newReading.alertTextDoc}
+              placeholder="Unit"
+              value={newReading.unit}
               onChange={(event) => {
                 newReadingDsipatch({
-                  type: "alertTextDoc",
+                  type: "unit",
                   payload: event.target.value,
                 });
               }}
-              className=" border border-gray-300 text-gray-500 text-sm rounded-lg block md:w-3/4 w-full p-2.5 focus:outline-primary"
+              className=" border border-gray-300 text-gray-500 text-sm rounded-lg block w-full p-2.5 focus:outline-primary"
             />
           </div>
-
           <label className="block mb-2 text-sm font-medium text-gray-500 pt-6">
             Type*
           </label>

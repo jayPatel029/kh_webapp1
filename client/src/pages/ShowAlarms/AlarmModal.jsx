@@ -45,15 +45,30 @@ const AlarmModal = ({ closeModal, pid }) => {
   };
 
   const validate = () => {
-    if (
-      selectedAlarmType === "Dialysis" ||
-      selectedAlarmType === "Health Reading"
-    ) {
+    if (selectedAlarmType === "Health Reading") {
       if (selectedHealthParameter === "") {
         setMsg("Please select Parameter");
         return false;
       }
     } else if (selectedAlarmType === "Prescription") {
+      if(timings.length === 0){
+        setMsg("Please select Time");
+        return false;
+      }
+      if(doses.length === 0){
+        setMsg("Please enter Dose");
+        return false;
+      }
+      if(doseUnit.length === 0){
+        setMsg("Please select Dose Unit");
+        return false;
+      }
+      if(weekdays.length === 0){
+        setMsg("Please select Week Days");
+        return false;
+      }
+      
+
       if (selectedPrescription === "") {
         setMsg("Please select Prescription");
         return false;
@@ -485,7 +500,8 @@ const AlarmModal = ({ closeModal, pid }) => {
             </div>
             {/* health parameter's section */}
             {selectedAlarmType !== "Diet Details" &&
-              selectedAlarmType !== "Prescription" && (
+              selectedAlarmType !== "Prescription" && 
+                selectedAlarmType!== "Dialysis" &&(
                 <div className="mb-4">
                   <label className="block text-gray-700 text-sm font-semibold mb-2">
                     {selectedAlarmType &&
@@ -572,7 +588,7 @@ const AlarmModal = ({ closeModal, pid }) => {
               </div>
             )}
             {selectedAlarmType === "Diet Details" ||
-            selectedAlarmType === "Prescription" ? (
+            selectedAlarmType === "Prescription" || selectedAlarmType==="Dialysis"? (
               <div className="mb-4">
                 <label>Short Description*</label>
                 <input

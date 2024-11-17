@@ -20,37 +20,48 @@ const AddGraphReading = async (req, res, next) => {
   let result;
   try {
     result = await pool.query(checkQuery);
-    // console.log(result.length)
     if (result.length > 0) {
-      // If the combination already exists, return error response
       return res.status(201).json({
         success: false,
         data: "Readings for this date already exist",
       });
     }
 
-    // If the combination doesn't exist, proceed with inserting the data
+    // Proceed with fetching the title of the question
+    const titleQuery = await pool.execute(
+      `SELECT title FROM dialysis_readings WHERE id = ${question_id}`
+    );
+    const questionTitle = titleQuery[0].title;
+
+    // If title is 'weight after dialysis', check if 'weight before dialysis' is recorded for the same date
+    if (questionTitle.toLowerCase().trim() === "weight after dialysis") {
+      const beforeWeightQuery = `
+        SELECT * FROM graph_readings_dialysis 
+        WHERE user_id = '${user_id}' 
+        AND date = '${date} ${currentTime}' 
+        AND question_id IN (
+          SELECT id FROM dialysis_readings 
+          WHERE title = 'weight before dialysis'
+        )
+      `;
+      const beforeWeightResult = await pool.query(beforeWeightQuery);
+
+      // Log if "weight before dialysis" is missing
+      
+    }
+
+    // Insert the reading into the database
     const insertQuery = `
         INSERT INTO graph_readings_dialysis (question_id, user_id, date, readings)
-        VALUES ('${question_id}','${user_id}','${date} ${currentTime}' ,'${readings}')
+        VALUES ('${question_id}', '${user_id}', '${date} ${currentTime}', '${readings}')
       `;
     await pool.query(insertQuery);
 
-    const title_query = await pool.execute(
-      `
-       SELECT title FROM dialysis_readings where id = ${question_id}
-      `
-    )
-    const questionTitle = title_query[0].title;
-
     const excludedTitles = ["weight before dialysis", "weight after dialysis"];
-
-    // Check if the title is not in the excluded list before creating alerts
     if (!excludedTitles.includes(questionTitle.toLowerCase().trim())) {
       await AddDialysisReadingsAlerts(question_id, user_id, date, readings);
     }
 
-    // Return success response
     return res.status(200).json({
       success: true,
       data: "Readings Added Successfully",
@@ -218,9 +229,9 @@ const getReadingsByPatientAndQuestion = async (req, res, next) => {
   } catch (error) {
     console.log(error);
   }
-
+  console.log()
   const query = `
-    SELECT date,readings FROM graph_readings_dialysis
+    SELECT date,readings,id FROM graph_readings_dialysis
     WHERE question_id = ${question_id} AND user_id = ${user_id}
   `;
 
@@ -265,21 +276,16 @@ const getReadingsInterDialyticsResponse = async (question_id, user_id) => {
 
     // Step 2: Find responses for 'weight before dialysis' and 'weight after dialysis'
     const beforeResponseQuery = `
-      SELECT date, readings
+      SELECT date, readings,id
       FROM graph_readings_dialysis
-      WHERE question_id = ${beforeReadingId} AND user_id = ${user_id}
-      ORDER BY date
-    `;
-    const afterResponseQuery = `
-      SELECT date, readings
-      FROM graph_readings_dialysis
-      WHERE question_id = ${afterReadingId} AND user_id = ${user_id}
+      WHERE question_id = ${question_id} AND user_id = ${user_id}
       ORDER BY date
     `;
 
-    const [beforeResponseResult, afterResponseResult] = await Promise.all([
+
+    const [beforeResponseResult] = await Promise.all([
       pool.query(beforeResponseQuery),
-      pool.query(afterResponseQuery)
+      
     ]);
 
     const interDialyticResponses = [];
@@ -287,31 +293,15 @@ const getReadingsInterDialyticsResponse = async (question_id, user_id) => {
     // Step 3: Calculate interdialytic weight gain
     for (let i = 0; i < beforeResponseResult.length; i++) {
       const currentBefore = beforeResponseResult[i];
-      const previousDate = beforeResponseResult[i].date;
       
       // Normalize the dates to compare only the date part (YYYY-MM-DD)
-      const currentBeforeDate = new Date(currentBefore.date).split('T')[0];
-      const previousBeforeDate = new Date(beforeResponseResult[i - 1].date).toISOString().split('T')[0];
+      const currentBeforeDate = new Date(currentBefore.date).toISOString().split('T')[0];
+     
 
-      // Find the corresponding after dialysis reading for the previous day
-      const previousAfter = afterResponseResult.find(after => {
-        const afterDate = new Date(after.date).toISOString().split('T')[0];
-        return afterDate === previousBeforeDate;
-      });
-
-      // If there's no corresponding after dialysis weight for the previous day, handle it
-      if (!previousAfter) {
+      if (currentBefore ) {
+        const idwg = currentBefore.readings;
         interDialyticResponses.push({
-          date: currentBeforeDate,
-          readings:'Readings Not found'
-        });
-        console.error(`No after dialysis weight found for ${previousBeforeDate}`);
-        continue; // Skip this day or handle accordingly
-      }
-
-      if (currentBefore && previousAfter) {
-        const idwg = currentBefore.readings - previousAfter.readings;
-        interDialyticResponses.push({
+          id:currentBefore.id,
           date: currentBeforeDate,
           readings: idwg
         });
@@ -327,7 +317,7 @@ const getReadingsInterDialyticsResponse = async (question_id, user_id) => {
 
 const getReadingsInterDialyticsResponseGraph = async (question_id, user_id) => {
   try {
-    // Step 1: Find reading ids for 'weight before dialysis' and 'weight after dialysis'
+    // Step 1: Get the reading IDs for 'weight before dialysis' and 'weight after dialysis'
     const beforeDialysisQuery = `
       SELECT id
       FROM dialysis_readings
@@ -338,16 +328,22 @@ const getReadingsInterDialyticsResponseGraph = async (question_id, user_id) => {
       FROM dialysis_readings
       WHERE LOWER(title) = 'weight after dialysis'
     `;
-
-    const [beforeResult, afterResult] = await Promise.all([
+    const interId=`
+    SELECT id
+    FROM dialysis_readings
+    WHERE LOWER(title) = 'interDialysisGraph'
+    `
+    const [beforeResult, afterResult,inter] = await Promise.all([
       pool.query(beforeDialysisQuery),
-      pool.query(afterDialysisQuery)
+      pool.query(afterDialysisQuery),
+      pool.query(interId)
     ]);
 
     const beforeReadingId = beforeResult[0].id;
     const afterReadingId = afterResult[0].id;
+    const interReadingId=inter[0].id
 
-    // Step 2: Find responses for 'weight before dialysis' and 'weight after dialysis'
+    // Step 2: Get the responses for 'weight before dialysis' and 'weight after dialysis'
     const beforeResponseQuery = `
       SELECT date, readings
       FROM graph_readings_dialysis
@@ -360,46 +356,79 @@ const getReadingsInterDialyticsResponseGraph = async (question_id, user_id) => {
       WHERE question_id = ${afterReadingId} AND user_id = ${user_id}
       ORDER BY date
     `;
+    const otherDates =`
+    select date from graph_readings_dialysis where  user_id = ${user_id} AND question_id!=${interReadingId} AND  question_id != ${beforeReadingId} AND  question_id != ${afterReadingId} group by date`
 
-    const [beforeResponseResult, afterResponseResult] = await Promise.all([
+    const [beforeResponseResult, afterResponseResult, remaining] = await Promise.all([
       pool.query(beforeResponseQuery),
-      pool.query(afterResponseQuery)
+      pool.query(afterResponseQuery),
+      pool.query(otherDates)
     ]);
 
+    // Step 3: Create a map of dates and their corresponding before/after readings
+    const dateMap = {};
+    
+    // Add "before" readings to the dateMap
+    beforeResponseResult.forEach(before => {
+      const date = new Date(before.date).toISOString().split('T')[0];
+      dateMap[date] = { before: before.readings, after: null };  // Initialize 'after' as null
+    });
+
+    // Add "after" readings to the dateMap
+    afterResponseResult.forEach(after => {
+      const date = new Date(after.date).toISOString().split('T')[0];
+      if (dateMap[date]) {
+        dateMap[date].after = after.readings;
+      } else {
+        dateMap[date] = { before: null, after: after.readings };  // Initialize 'before' as null
+      }
+    });
+    for(let i=0;i<remaining.length;i++){
+      const date = new Date(remaining[i].date).toISOString().split('T')[0];
+      dateMap[date] = { before: null, after: null };  // Initialize 'before' as null
+    }
     const interDialyticResponses = [];
+    let previousDate = null;
 
-    // Step 3: Calculate interdialytic weight gain
-    for (let i = 1; i < beforeResponseResult.length; i++) {
-      const currentBefore = beforeResponseResult[i];
-      const previousDate = beforeResponseResult[i].date;
-      
-      // Normalize the dates to compare only the date part (YYYY-MM-DD)
-      const currentBeforeDate = new Date(currentBefore.date).toISOString().split('T')[0];
-      const previousBeforeDate = new Date(beforeResponseResult[i - 1].date).toISOString().split('T')[0];
+    // Step 4: Calculate interdialytic weight gain
+    const sortedDates = Object.keys(dateMap).sort((a, b) => new Date(a) - new Date(b));
 
-      // Find the corresponding after dialysis reading for the previous day
-      const previousAfter = afterResponseResult.find(after => {
-        const afterDate = new Date(after.date).toISOString().split('T')[0];
-        return afterDate === previousBeforeDate;
-      });
+    for (let i = 0; i < sortedDates.length; i++) {
+      const currentDate = sortedDates[i];
+      const { before, after } = dateMap[currentDate];
 
-      // If there's no corresponding after dialysis weight for the previous day, handle it
-      if (!previousAfter) {
+      if (i === 0) {
+        // Skip the first day, since no calculation is possible
         interDialyticResponses.push({
-          date: currentBeforeDate,
-          readings:'Readings Not found'
+          date: currentDate,
+          readings: 'No calculation for first day'
         });
-        console.error(`No after dialysis weight found for ${previousBeforeDate}`);
-        continue; // Skip this day or handle accordingly
+      } else {
+        const previousDateData = dateMap[sortedDates[i - 1]];
+
+        if (!before) {
+          // Case 1: No "Before" reading for the current day
+          interDialyticResponses.push({
+            date: currentDate,
+            readings: 'Reading Not found (Before missing)'
+          });
+        } else if (!previousDateData.after) {
+          // Case 2: No "After" reading for the previous day
+          interDialyticResponses.push({
+            date: currentDate,
+            readings: 'Reading Not found (After missing for previous day)'
+          });
+        } else {
+          // Case 3: Both "Before" reading for current day and "After" reading for previous day exist
+          const idwg = before - previousDateData.after;
+          interDialyticResponses.push({
+            date: currentDate,
+            readings: idwg
+          });
+        }
       }
 
-      if (currentBefore && previousAfter) {
-        const idwg = currentBefore.readings - previousAfter.readings;
-        interDialyticResponses.push({
-          date: currentBeforeDate,
-          readings: idwg
-        });
-      }
+      previousDate = currentDate; // Update the previousDate for the next iteration
     }
 
     return interDialyticResponses;

@@ -141,6 +141,12 @@ export function newDoctorReducer(state, action) {
         dailyReadings: action.payload,
       };
     }
+    case "dailyReadingsAlerts":{
+      return {
+        ...state,
+        dailyReadingsAlerts: action.payload,
+      };
+    }
     case "dialysisReadings": {
       return {
         ...state,

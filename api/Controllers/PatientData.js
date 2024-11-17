@@ -468,31 +468,63 @@ const PdfTextFunction = async (pdfUrl) => {
   if (!pdfUrl) {
     return null;
   }
-  /*
-    codes:
-    - 0: success
-    - 1: error while fetching the PDF
-    - 2: error while parsing the PDF
-    - 3: error while extracting text from the PDF
-   */
+
   try {
-    // Fetch the PDF from the provided URL
+    // Fetch and parse the PDF
     const response = await axios.get(pdfUrl, { responseType: 'arraybuffer' });
     const pdfBuffer = response.data;
-
-    // Parse the PDF and extract text
     const data = await pdfParse(pdfBuffer);
     const extractedText = data.text;
+
+    // Split into lines
     const textArray = extractedText.split('\n').filter(line => line.trim() !== '');
-    const medicalData = extractMedicalParameters(extractedText)
 
-    return medicalData;
+    // Extract readings
+    const readings = extractReadings(textArray);
 
+    console.log("Extracted Readings:", readings);
+    return readings;
 
   } catch (error) {
     console.error('Error fetching or parsing PDF:', error);
+    return { code: 1, message: "Error processing PDF", error };
   }
 };
+
+// Function to extract readings
+const extractReadings = (lines) => {
+  const readings = {};
+  const parameters = [
+    "Hemoglobin",
+    "Packed Cell Volume (PCV)",
+    "RBC Count",
+    
+  ];
+
+  lines.forEach((line, index) => {
+    // Check if the line matches a known parameter
+    const parameter = parameters.find(param => line.includes(param));
+    if (parameter) {
+      // Try to extract value and unit from the next lines
+      const nextLine = lines[index + 1]?.trim();
+      const nextNextLine = lines[index + 2]?.trim();
+
+      // Combine lines for robust parsing
+      const combinedLine = `${line} ${nextLine || ''} ${nextNextLine || ''}`;
+
+      // Extract value and unit using a regex
+      const match = combinedLine.match(/([\d.]+)\s+(\S+)/);
+      if (match) {
+        const [, value, unit] = match;
+        readings[parameter] = { value, unit };
+      }
+    }
+  });
+
+  return readings;
+};
+
+
 
 function extractMedicalParameters(text) {
   // Define patterns for parameter extraction using regular expressions

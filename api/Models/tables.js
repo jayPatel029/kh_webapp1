@@ -51,6 +51,34 @@ async function createLabReportTable() {
   }
 }
 
+async function createKfreDetailsTable() {
+  const createTableQuery = `
+  CREATE TABLE IF NOT EXISTS kfre_details (
+    id INT(11) NOT NULL AUTO_INCREMENT,
+    patient_id INT(11) NOT NULL,
+    GFR DECIMAL(5, 2) NULL DEFAULT NULL,
+    Phosphorous DECIMAL(5, 2) NULL DEFAULT NULL,
+    Bicarbonate DECIMAL(5, 2) NULL DEFAULT NULL,
+    Albumin DECIMAL(5, 2) NULL DEFAULT NULL,
+    Calcium DECIMAL(5, 2) NULL DEFAULT NULL,
+    Albumin_to_Creatinine_Ratio DECIMAL(5, 2) NULL DEFAULT NULL,
+    lab_id INT(11) NOT NULL,
+    kfre DECIMAL(5, 2) NULL DEFAULT NULL,
+    date DATE NULL DEFAULT NULL,
+    PRIMARY KEY (id) USING BTREE,
+    FOREIGN KEY (lab_id) REFERENCES labreport(id) ON DELETE CASCADE
+  )
+  COLLATE='utf8mb4_general_ci'
+  ENGINE=InnoDB;
+`;
+
+  try {
+    await pool.query(createTableQuery);
+  } catch (error) {
+    console.error("Error creating kfre_details table:", error);
+  }
+}
+
 async function addSuperUser() {
   const superUserData = {
     firstname: "Kifayti",
@@ -200,6 +228,28 @@ async function createPatientLogTable() {
   try {
     await pool.query(query);
     console.log("patient_log table created successfully.");
+  } catch (error) {
+    console.error("Error creating patient_log table:", error);
+  }
+}
+
+async function createDocLogTable() {
+  const query = `
+    CREATE TABLE IF NOT EXISTS \`doctor_log\` (
+      \`log_id\` INT AUTO_INCREMENT PRIMARY KEY,
+      \`doctor_id\` INT NOT NULL,
+      \`changed_field\` VARCHAR(255) NOT NULL,
+      \`old_value\` VARCHAR(255),
+      \`new_value\` VARCHAR(255),
+      \`changed_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      \`changed_by\` VARCHAR(255) NOT NULL,
+      FOREIGN KEY (\`doctor_id\`) REFERENCES \`doctors\`(\`id\`) ON DELETE CASCADE ON UPDATE CASCADE
+    ) ENGINE = InnoDB;
+  `;
+
+  try {
+    await pool.query(query);
+    console.log("doctor log table created successfully.");
   } catch (error) {
     console.error("Error creating patient_log table:", error);
   }
@@ -702,6 +752,7 @@ const createTables = async () => {
   await createUserParameterRanges();
   await createPrescriptionstable();
   await createAltertsTable();
+  await createKfreDetailsTable();
   await createChatTable();
   await createMessagesTable();
   await createMailOtpTable();
@@ -715,6 +766,7 @@ const createTables = async () => {
   await createalertsReadingTable();
   await creatCommentsReadTable();
   await createappAlertsTable();
+  await createDocLogTable();
 };
 
 module.exports = createTables;

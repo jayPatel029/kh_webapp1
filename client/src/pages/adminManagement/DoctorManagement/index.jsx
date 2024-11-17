@@ -93,6 +93,7 @@ function AdminManagement() {
     dialysisReadings: [],
     email_notification: "yes",
     Dialysis_updates: "yes",
+    dailyReadingsAlerts: "no",
     can_export: "no",
   });
 
@@ -190,10 +191,13 @@ function AdminManagement() {
         description: newDoctor.description,
         email_notification: newDoctor.email_notification,
         Dialysis_updates: newDoctor.Dialysis_updates,
+        dailyReadingsAlerts: newDoctor.dailyReadingsAlerts,
         can_export: newDoctor.can_export,
         specialities: newDoctor.specialities,
         dailyReadings: newDoctor.dailyReadings,
         dialysisReadings: newDoctor.dialysisReadings,
+        changeby:localStorage.getItem("email"),
+        doctorid:newDoctor.id
       };
 
       if (!editMode) {
@@ -229,17 +233,19 @@ function AdminManagement() {
         role: newDoctor.role,
         email: newDoctor.email,
         experience: newDoctor.yearsOfExperience,
-        ref: newDoctor.reference,
-        phoneno: newDoctor.phoneNo,
+        ref: newDoctor.reference || null,
+        phoneno: newDoctor.phoneNo ,
         institute: newDoctor.institute,
         address: newDoctor.address,
         practicingAt: newDoctor.practicingAt,
-        resume: resumeurl.data.objectUrl,
+        resume: resumeurl.data.objectUrl ||null,
         photo: photourl?.data.objectUrl,
         description: newDoctor.description,
         email_notification: newDoctor.email_notification,
         can_export: newDoctor.can_export,
         specialities: newDoctor.specialities,
+        changeby:localStorage.getItem("email"),
+        doctorid:newDoctor.id
       };
       if (!editMode) {
         const response = await registerDoctor(payload);
@@ -650,6 +656,23 @@ function AdminManagement() {
                     <input
                       type="checkbox"
                       className="h-4 w-4 accent-green-600  rounded cursor-pointer"
+                      checked={newDoctor.dailyReadingsAlerts == "yes"}
+                      onChange={(event) => {
+                        console.log(event.target.checked);
+                        newDoctorDispatch({
+                          type:"dailyReadingsAlerts",
+                        payload: event.target.checked == true ? "yes" : "no",
+                        })
+                      }}
+                    />
+                    <label className="ms-2 text-sm font-medium text-gray-500">
+                      Daily Reading Alert
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 accent-green-600  rounded cursor-pointer"
                       checked={newDoctor.Dialysis_updates == "yes"}
                       onChange={(event) => {
                         console.log(event.target.checked);
@@ -660,7 +683,7 @@ function AdminManagement() {
                       }}
                     />
                     <label className="ms-2 text-sm font-medium text-gray-500">
-                      Dialysis_updates
+                      Dialysis Technician Alerts
                     </label>
                   </div>
                   <div className="flex items-center">
@@ -796,6 +819,7 @@ function AdminManagement() {
                                       dailyReadings: u.dailyReadings,
                                       dialysisReadings: u.dialysisReadings,
                                       email_notification: u.email_notification,
+                                      dailyReadingsAlerts: u.daily_update,
                                       Dialysis_updates: u.Dialysis_updates,
                                       can_export: u.can_export,
                                     },

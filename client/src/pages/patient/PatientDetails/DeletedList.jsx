@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 import { BsTrash, BsCloudDownload } from "react-icons/bs";
 import { canExportPatient } from "../../../ApiCalls/patientAPis";
 import getValidImageUrl from "../../../helpers/utils";
-export default function DelPatientList({ data, patientId }) {
+export default function DeletedPatientList({ data, patientId }) {
   const recordsPerPage = 10;
   const [filteredData, setFilteredData] = useState(data);
   const [currentPage, setCurrentPage] = useState(1);
@@ -21,6 +21,7 @@ export default function DelPatientList({ data, patientId }) {
     try {
       console.log("Checking export permission...");
       const response = await canExportPatient();
+      console.log(response);
       if (response.success) {
         setCanExport(true);
       }
@@ -114,9 +115,8 @@ export default function DelPatientList({ data, patientId }) {
       if (!confirmed) {
         return; // If the user cancels, exit the function
       }
-      
-      await axiosInstance.delete(`${server_url}/patient/deletePatient/${id}`);
-      
+
+      await axiosInstance.put(`${server_url}/alerts/deletePatientAlert/${id}`);
 
       // Remove the deleted patient from the UI
       setFilteredData(filteredData.filter((patient) => patient.id !== id));
@@ -232,7 +232,11 @@ export default function DelPatientList({ data, patientId }) {
               <th class="p-3 font-bold uppercase bg-gray-200 text-gray-600 border border-gray-300 hidden lg:table-cell">
                 Assigned To
               </th>
-              
+              {(canExport || role.canDeletePatients) && (
+                <th class="p-3 font-bold uppercase bg-gray-200 text-gray-600 border border-gray-300 hidden lg:table-cell">
+                  Actions
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -258,13 +262,13 @@ export default function DelPatientList({ data, patientId }) {
                   <span class="lg:hidden absolute top-0 left-0 bg-gray-200 px-2 py-1 text-xs font-bold uppercase">
                     Name
                   </span>
-                  {row?.name ? row?.name : "Ananymous"}
+                  {row?.name ? row?.name : ""}
                 </td>
                 <td class="w-full lg:w-auto p-3 text-gray-800  border border-b text-center block lg:table-cell relative lg:static">
                   <span class="lg:hidden absolute top-0 left-0 bg-gray-200 px-2 py-1 text-xs font-bold uppercase">
                     Number
                   </span>
-                  {row?.number ? row?.number : "N/A"}
+                  {row?.number ? row?.number : ""}
                 </td>
                 <td class="w-full lg:w-auto p-6 text-gray-800  border border-b text-center block lg:table-cell relative lg:static sm:w:28 ">
                   <span class="lg:hidden absolute top-0 left-0 bg-gray-200 px-2 py-1 text-xs font-bold uppercase">
@@ -325,7 +329,32 @@ export default function DelPatientList({ data, patientId }) {
                     )}
                   </div>
                 </td>
-                
+                {(canExport || role?.canDeletePatients) && (
+                  <td class="w-full lg:w-auto p-3 text-gray-800  border border-b text-center block lg:table-cell relative lg:static">
+                    <span class="lg:hidden absolute top-0 left-0 bg-gray-200 px-2 py-1 text-xs font-bold uppercase">
+                      Actions
+                    </span>
+                    {canExport && (
+                      <button
+                        className="text-primary inline-block mx-2"
+                        onClick={() => {
+                          handleDownload(row);
+                        }}>
+                        <BsCloudDownload />
+                      </button>
+                    )}
+                    {role?.canDeletePatients && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent row click event from triggering
+                          handleDelete(row?.id);
+                        }}
+                        className="text-[#ff0000] inline-block mx-2">
+                        <BsTrash />
+                      </button>
+                    )}
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

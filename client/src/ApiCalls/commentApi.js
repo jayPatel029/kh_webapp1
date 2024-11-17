@@ -3,8 +3,9 @@ import { server_url } from "../constants/constants";
 
 export const addComment = async (content, fileId, fileType, userId, iSDoctor) => {
     var uid = userId;
+    var docId="";
     if (iSDoctor === 1){
-        uid = localStorage.getItem("email");
+        docId= localStorage.getItem("email");
     }
     const data = {
         content,
@@ -12,6 +13,7 @@ export const addComment = async (content, fileId, fileType, userId, iSDoctor) =>
         fileType,
         userId: uid,
         iSDoctor,
+        docId,
     };
     try {
         const response = await axiosInstance.post(`${server_url}/comments/addComment`, data);

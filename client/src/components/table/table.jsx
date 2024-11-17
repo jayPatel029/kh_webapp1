@@ -73,7 +73,7 @@ const Table = ({
   }, []);
   return (
     <div>
-      {role?.canEditPatients && (
+      {role && (
         <div className="mb-4">
           <label htmlFor="">Enter Reading/ Data</label>
           <button

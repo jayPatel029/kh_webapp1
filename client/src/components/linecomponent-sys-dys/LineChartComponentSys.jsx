@@ -947,8 +947,8 @@ const LineChartComponent = ({ aspect, title, questionId, user_id, unit, isPatien
           {highRange != 0 && <ReferenceLine y={highRange} label="high_range_1" stroke="orange" />}
           {lowRange2 != 0 && <ReferenceLine y={lowRange2} label="low_range_2" stroke="red" />} */}
 
-          <Line type="monotone" dataKey="systolic" stroke="#FF5733" strokeWidth={4} activeDot={{ r: 8 }} dot={<CustomizedDotOld2 />} />
-          <Line type="monotone" dataKey="diastolic" stroke="#097969" strokeWidth={4} activeDot={{ r: 8 }} dot={<CustomizedDotOld2sys />} />
+          <Line type="monotone" dataKey="systolic" stroke="#85c1e9" strokeWidth={4} activeDot={{ r: 8 }} dot={<CustomizedDotOld2 />} />
+          <Line type="monotone" dataKey="diastolic" stroke="#5b2c6f" strokeWidth={4} activeDot={{ r: 8 }} dot={<CustomizedDotOld2sys />} />
         </LineChart>
       </ResponsiveContainer>
     </div>

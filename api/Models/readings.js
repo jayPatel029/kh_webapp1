@@ -48,6 +48,12 @@ const DailyReadings = sequelize.define("daily_readings", {
     type: DataTypes.INTEGER,
     allowNull: true,
   },
+  sendAlert: {
+    type: DataTypes.INTEGER(5),
+    allowNull: true,
+    defaultValue: 0,
+
+  },  
   alertTextDoc: {
     type: DataTypes.TEXT,
     allowNull: true,
@@ -100,6 +106,11 @@ const DialysisReadings = sequelize.define("dialysis_readings", {
   priority_type: {
     type: DataTypes.INTEGER,
     allowNull: true,
+  },
+  sendAlert: {
+    type: DataTypes.INTEGER(5),
+    allowNull: true,
+    defaultValue: 0,
   },
   alertTextDoc: {
     type: DataTypes.TEXT,

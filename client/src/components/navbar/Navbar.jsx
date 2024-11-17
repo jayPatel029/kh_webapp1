@@ -41,6 +41,7 @@ const Navbar = () => {
               onClick={() => { setDDVisible(!dropdownVisible); }}
             />
           </div>
+          
           <Link to="/">
             <img
               src={kifayti_logo}
@@ -48,6 +49,7 @@ const Navbar = () => {
               className="h-12 w-auto ml-3 cursor-pointer"
             />
           </Link>
+          
 
 
           <div className="items-center justify-end flex text-xl w-[50%]">
