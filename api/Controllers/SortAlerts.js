@@ -592,6 +592,8 @@ const getAdminAlerts = async (req, res) => {
     // console.log("alerts", alerts);
 
     var filteredAlerts = [];
+    const filteredAlerts2= alerts.filter((alert) => alert.category!= "Missed Prescription Alarm")
+    alerts=filteredAlerts2
 
     for (const alert of alerts) {
       if (
@@ -837,7 +839,7 @@ const getDoctorAlerts = async (req, res) => {
         doctor_id
       );
       if (palert) {
-        console.log(palert);
+        
         finalAlerts.push(palert);
       }
     } else if (alerts[i].category === "Missed Prescription Alarm") {
@@ -860,10 +862,9 @@ const getDoctorAlerts = async (req, res) => {
       const data = {
         id: alerts[i].id,
         name: patientNameResult[0].name,
-        
         type: alerts[i].category,
         date: alerts[i].date,
-        alarmId: alerts[i].alarmId,
+        alarmId: alerts[i].alarmId||null,
        patientId: alerts[i].patientId,
       
       };

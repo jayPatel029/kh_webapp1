@@ -33,7 +33,9 @@ const getAlertbyType = async (req, res) => {
       WHERE ap.admin_id=? AND a.type = ?
       ORDER BY a.id DESC`;
     const response = await pool.execute(query,[userId,type]);
-    res.status(200).json(response);
+    console.log("res",response);
+    const alert= response.filter((alert) => alert.category != 'New Prescription Alarm' );
+    res.status(200).json(alert);
   } catch (error) {
     res.status(500).json(error);
   }

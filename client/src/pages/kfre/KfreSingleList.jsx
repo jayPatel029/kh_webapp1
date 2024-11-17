@@ -209,7 +209,7 @@ function KfreSingleList() {
 
       return {
         selectedPatient: { value: id.id , label: patientName },
-        Gfr: item.gfr,
+        eGFR: item.eGFR,
         calcium: item.calcium,
         acr: item.acr,
         phosphorous: item.phosphorous,

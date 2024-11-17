@@ -165,11 +165,16 @@ const UserCard = ({ title, Alerts }) => {
     setPrescriptionCount(presAlerts.length);
     setPrescriptionAlerts(presAlerts);
     var alerts = pAlerts.filter(
-      (alert) => alert.type !== `New Prescription Alarm for ${title}`
+      (alert) => alert.type !== `New Prescription Alarm for ${title} `
     );
+    var alerts= alerts.filter(
+      (alert) => !alert.type.includes("Dialysis Tech")
+
+    )
     var calerts = alerts.filter((alert) => alert.isRead === 0) || [];
    
     var sortedByDateAlerts = [];
+    console.log("thi",alerts)
     sortedByDateAlerts = alerts.sort(
       (a, b) => new Date(b.date) - new Date(a.date)
     );
@@ -323,6 +328,7 @@ const DoctorContainer = () => {
   const [Alerts, setAlerts] = React.useState([]);
   const [groupedAlerts, setGroupedAlerts] = useState({});
   const [DailyAlerts, setDailyAlerts] = useState(0);
+
   const getDailyAlerts = async () => {
     try {
       console.log("in daily alerts");
@@ -336,41 +342,45 @@ const DoctorContainer = () => {
           },
         }
       );
-      console.log("response from daily alerts ");
       console.log("response from daily alerts : ", response);
+
       if (response.status === 403) {
-        setDailyAlerts(true)
-        return { success: false };
+        return 0; // No daily alerts
       } else if (response.status === 200) {
-        setDailyAlerts(1)
+        return 1; // Daily alerts exist
       } else {
-        return { success: false };
+        return 0; // Default to 0 on unexpected response
       }
     } catch (error) {
-      
-      
-      
       console.log("error in daily alerts", error);
-      return { success: false, data: error.response.data.message };
+      return 0; // Default to 0 on error
     }
   };
-  useEffect(() => {
 
+  useEffect(() => {
     const fetchAlerts = async () => {
-      await getDailyAlerts();
+      const dailyAlertsStatus = await getDailyAlerts();
+      setDailyAlerts(dailyAlertsStatus); // Update the state here
+
       try {
-        var res1 = await axiosInstance.post(`${server_url}/doctor/byEmail/id`, {
+        const res1 = await axiosInstance.post(`${server_url}/doctor/byEmail/id`, {
           email: localStorage.getItem("email"),
         });
         
-        localStorage.setItem("id",res1.data.data)
-        // console.log("Doctor ID: ", res1.data.data);
-        var res = await axiosInstance.get(
+        localStorage.setItem("id", res1.data.data);
+        const res = await axiosInstance.get(
           `${server_url}/sortAlerts/doctor/${res1.data.data}`
         );
-        setAlerts(res.data);
-      console.log("ALERTS",res.data)
-        
+
+        let alerts = res.data;
+        if (dailyAlertsStatus === 0) {
+          // Filter alerts only if there are no daily alerts
+          alerts = alerts.filter((alert) => alert.dailyordia !== "daily" &&  alert.dailyordia !== "dialysis" );
+        }
+
+        setAlerts(alerts);
+        console.log("ALERTS", alerts);
+
       } catch (error) {
         console.error("Error fetching alerts:", error);
       }
@@ -378,7 +388,7 @@ const DoctorContainer = () => {
     fetchAlerts();
   }, []);
 
-  // get all unique patients names from alerts
+  // Get unique patient names from alerts
   let names;
   try {
     names = [
@@ -407,7 +417,6 @@ const DoctorContainer = () => {
       return accumulator;
     }, {});
 
-    // Updating the state with grouped alerts
     setGroupedAlerts(grouped);
   }, [Alerts]);
 
@@ -415,35 +424,24 @@ const DoctorContainer = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen lg:py-10 lg:px-40 overflow-y-auto">
-      {/* Alerts Container */}
       <div className="flex flex-col lg:flex-row lg:justify-center">
-        {/* Doctor Alerts Container */}
         <div className="bg-white p-5 rounded-lg border-t-primary border-t-4 shadow-lg my-10 lg:w-2/3">
           <p className="text-lg font-semibold text-center lg:sticky lg:top-0 bg-white pt-2">
             Important Alerts
           </p>
-          <div className="flex justify-center overflow-hidden  flex-col sm:overflow-auto max-h-screen sm:max-h-[calc(100%-2rem)]">
+          <div className="flex justify-center overflow-hidden flex-col sm:overflow-auto max-h-screen sm:max-h-[calc(100%-2rem)]">
             {Array.isArray(names) &&
               names.map((name) => (
                 <div key={name} className="mb-5 text-center sm:mb-2">
                   <UserCard title={name} Alerts={Alerts} />
                 </div>
               ))}
-            
-            {/* {typeof groupedAlerts === 'object' && Object.keys(groupedAlerts).map(patientId => (
-              <div key={patientId}>
-                <UserCard
-                  title={groupedAlerts[patientId][0].name} 
-                  Alerts={groupedAlerts[patientId]} 
-                  key={groupedAlerts[patientId][0].name} 
-                />
-              </div>
-            ))} */}
           </div>
         </div>
       </div>
     </div>
   );
 };
+
 
 export default DoctorContainer;

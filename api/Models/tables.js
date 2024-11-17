@@ -233,6 +233,28 @@ async function createPatientLogTable() {
   }
 }
 
+async function createDocLogTable() {
+  const query = `
+    CREATE TABLE IF NOT EXISTS \`doctor_log\` (
+      \`log_id\` INT AUTO_INCREMENT PRIMARY KEY,
+      \`doctor_id\` INT NOT NULL,
+      \`changed_field\` VARCHAR(255) NOT NULL,
+      \`old_value\` VARCHAR(255),
+      \`new_value\` VARCHAR(255),
+      \`changed_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      \`changed_by\` VARCHAR(255) NOT NULL,
+      FOREIGN KEY (\`doctor_id\`) REFERENCES \`doctors\`(\`id\`) ON DELETE CASCADE ON UPDATE CASCADE
+    ) ENGINE = InnoDB;
+  `;
+
+  try {
+    await pool.query(query);
+    console.log("doctor log table created successfully.");
+  } catch (error) {
+    console.error("Error creating patient_log table:", error);
+  }
+}
+
 
 async function createDoctorDialysisReadingTable() {
   const query =
@@ -744,6 +766,7 @@ const createTables = async () => {
   await createalertsReadingTable();
   await creatCommentsReadTable();
   await createappAlertsTable();
+  await createDocLogTable();
 };
 
 module.exports = createTables;

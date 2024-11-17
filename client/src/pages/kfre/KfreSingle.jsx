@@ -17,7 +17,7 @@ function KfreSingle() {
           <Navbar />
         </div>
         
-      <div className="p-10">
+      <div className="max-w-4xl">
       <KfreSingleList />
       </div>
       </div>

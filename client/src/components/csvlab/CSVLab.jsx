@@ -88,7 +88,7 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
   );
   const [headData, setHeadData] = useState([]);
   const [columnMappings, setColumnMappings] = useState({
-    gfr: "",
+    eGFR: "",
     calcium: "",
     acr: "",
     phosphorous: "",
@@ -103,8 +103,8 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
     const mappedData = csvData
       .map((row) => ({
         patientId: patientId,  // Directly using the provided patientId
-        gfr: columnMappings.gfr
-          ? row[columnOptions.indexOf(columnMappings.gfr)]
+        eGFR: columnMappings.eGFR
+          ? row[columnOptions.indexOf(columnMappings.eGFR)]
           : undefined,
         calcium: columnMappings.calcium
           ? row[columnOptions.indexOf(columnMappings.calcium)]
@@ -128,18 +128,7 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
     setData(trimmedMappedData);
     setSuccess(!success);
 
-    let data = { data: trimmedMappedData };
-      console.log("Data:", data);
-    axiosInstance
-      .post(`${server_url}/labreport/addBulkIndividual`, data)
-      .then((response) => {
-        console.log("Response:", response.data);
-        setCsvData([]);
-        setHeadData([]);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+   
   };
 
   return (
@@ -192,7 +181,7 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
                     setHeadData([]);
                     setColumnOptions([]);
                     setColumnMappings({
-                      gfr: "",
+                      eGFR: "",
                       calcium: "",
                       acr: "",
                       phosphorous: "",

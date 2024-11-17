@@ -336,12 +336,21 @@ const updateDryWeight = async (req, res, next) => {
 
 const updatePatientAilment = async (req, res, next) => {
   const { id, aliments } = req.body;
-
+  const { changeBy } = req.body;
   try {
     // Delete existing entries for the patient
-    await pool.query(`DELETE FROM ailment_patient WHERE patient_id = '${id}'`);
-
+    
     // Create new entries for selected ailments
+    const oldDetails = await pool.execute(`SELECT * from ailment_patient where patient_id = ?`, [id]);
+    const oldAilments = oldDetails.map((item) => item.ailment_id);
+    const newAilments = aliments.map(Number);
+    if(oldAilments.length !== newAilments.length || oldAilments.some((ailment) => !newAilments.includes(ailment))) {
+      await logChange(id, "ailments", oldAilments.join(", "), newAilments.join(", "), changeBy);
+    }
+
+   
+    console.log(oldAilments, newAilments);
+    await pool.query(`DELETE FROM ailment_patient WHERE patient_id = '${id}'`);
     const ailmentIds = aliments.map(Number); // Convert ailment IDs to numbers
     const insertQuery = `
       INSERT INTO ailment_patient (patient_id, ailment_id)
@@ -350,7 +359,6 @@ const updatePatientAilment = async (req, res, next) => {
         .join(",")}
     `;
     await pool.query(insertQuery);
-
     res.status(200).json({
       success: true,
       data: "Patient Profile Updated Successfully",

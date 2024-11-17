@@ -32,6 +32,7 @@ function DailyForm() {
     upper_assign_range: null,
     isGraph: 0,
     unit:"",
+    sendAlert: 0,
     alertTextDoc: "",
   });
 
@@ -97,6 +98,7 @@ function DailyForm() {
       unit: newReading.unit,
       readingsTranslations: translations,
       alertTextDoc: newReading.alertTextDoc,
+      sendAlert: newReading.sendAlert,
     };
     
     // console.log(payload)
@@ -213,24 +215,46 @@ function DailyForm() {
               Set Translations
             </button>
           </div>
-
           <label className="block mb-2 text-sm font-medium text-gray-500 pt-6">
-            Alert Text
-          </label>
-          <div className="block md:flex w-full">
-            <input
-              type="text"
-              placeholder="Alert Text for doctors"
-              value={newReading.alertTextDoc}
-              onChange={(event) => {
-                newReadingDsipatch({
-                  type: "alertTextDoc",
-                  payload: event.target.value,
-                });
-              }}
-              className=" border border-gray-300 text-gray-500 text-sm rounded-lg block md:w-3/4 w-full p-2.5 focus:outline-primary"
-            />
-          </div>
+  Send Alerts
+</label>
+<select
+  value={newReading.sendAlert}
+  onChange={(event) => {
+    console.log(event.target.value);
+    newReadingDsipatch({
+      type: "sendAlert",
+      payload: event.target.value,
+    });
+  }}
+  className="border border-gray-300 text-gray-500 text-sm rounded-lg block w-full p-2.5 focus:outline-primary"
+>
+  <option value="0">No</option>
+  <option value="1">Yes</option>
+</select>
+
+{newReading.sendAlert == 1 && (
+  <>
+    <label className="block mb-2 text-sm font-medium text-gray-500 pt-6">
+      Alert Text
+    </label>
+    <div className="block md:flex w-full">
+      <input
+        type="text"
+        placeholder="Alert Text for doctors"
+        value={newReading.alertTextDoc}
+        onChange={(event) => {
+          newReadingDsipatch({
+            type: "alertTextDoc",
+            payload: event.target.value,
+          });
+        }}
+        className=" border border-gray-300 text-gray-500 text-sm rounded-lg block md:w-3/4 w-full p-2.5 focus:outline-primary"
+      />
+    </div>
+  </>
+)}
+
           <div>
             <label className="block mb-2 text-sm font-medium text-gray-500 pt-6">
               Unit

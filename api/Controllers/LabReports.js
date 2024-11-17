@@ -47,7 +47,7 @@ const addLabReport = async (req, res, next) => {
     if(Report_Type === "Lab") {
       medicalData= await PdfTextFunction(Lab_Report);
       console.log("Data",medicalData)
-      const success= await insertMedicalDataDB(medicalData,patient_id,date)
+      // const success= await insertMedicalDataDB(medicalData,patient_id,date)
     }
 
     res.status(200).json({

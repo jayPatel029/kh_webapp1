@@ -19,6 +19,7 @@ const {
   removeAdminFromPatient,
 } = require("../Controllers/Patient.js");
 const { verifyToken } = require("../Helpers/middlewares/roles.js");
+const { downloadLog } = require("../Controllers/log.js");
 
 router.get("/getPatients", verifyToken, getPatients);
 router.post("/AddPatient", AddPatient);
@@ -36,5 +37,6 @@ router.get("/getAilments/:id", getPatientAilments);
 router.put("/updateMedical/:id", updateMedicalTeam);
 router.put("/updateAdmin/:id", updateAdminTeam);
 router.delete("/removeAdmin/:id", removeAdminFromPatient);
+router.get("/patientLog", downloadLog);
 
 module.exports = router;

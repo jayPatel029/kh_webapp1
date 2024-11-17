@@ -8,6 +8,91 @@ const {
   DialysisReadings,
 } = require("../Models/readings");
 
+async function checkDialysisEntries() {
+  console.log("Checking for Dialysis Entries.....");
+   // Get today's date in YYYY-MM-DD format
+  const today=new Date().toISOString().slice(0, 19).replace("T", " ");
+  
+  const entryCount = await pool.query(`
+      SELECT COUNT(*) AS entry_count 
+      FROM graph_readings_dialysis 
+      WHERE DATE(date) = ?
+  `, [today]);
+console.log(Number(entryCount[0].entry_count))
+  if (Number(entryCount[0].entry_count) > 0) {
+      
+      const missingQuestions = await pool.query(`
+          SELECT id,title
+          FROM dialysis_readings
+          WHERE id NOT IN (
+              SELECT question_id
+              FROM graph_readings_dialysis
+              WHERE DATE(date) = ?
+          )
+      `, [today]);
+
+      if (missingQuestions.length > 0) {
+        const category= `Dialysis Tech has failed to enter dialysis readings for ${missingQuestions.map(q => q.title).join(', ')}`;
+        const query = `INSERT INTO alerts (date, type, isOpened, category,  patientId) VALUES ('${today}', '${type}', ${isOpened}, '${category}', ${alarmId}, ${patientId})`;
+          console.log(`Missing entries for questions: ${missingQuestions.map(q => q.title).join(', ')}`);
+      } else {
+          return 'All entries are present for today.';
+      }
+  } else {
+      console.log('No entries found in graph_readings_dialysis for today.');
+  }
+}
+async function checkDialysisEntriesForAdmin(adminId) {
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Get patients under this admin
+  const patients = await pool.query(`
+      SELECT patient_id
+      FROM admin_patients
+      WHERE admin_id = 7
+  `, );
+
+  for (const { patient_id } of patients) {
+      // Check if the patient has any entry for today
+      const entryCount = await pool.query(`
+          SELECT COUNT(*) AS entry_count 
+          FROM graph_readings_dialysis 
+          WHERE DATE(date) = ? AND user_id = ?
+      `, [today, patient_id]);
+
+      if (entryCount[0].entry_count > 0) {
+          // Check if readings for all questions are present for today
+          const missingQuestions = await pool.query(`
+              SELECT id,title
+              FROM dialysis_readings
+              WHERE id NOT IN (
+                  SELECT question_id
+                  FROM graph_readings_dialysis
+                  WHERE DATE(date) = ? AND user_id = ?
+              )
+          `, [today, patient_id]);
+
+          if (missingQuestions.length > 0) {
+            const category = `Dialysis Tech has failed to enter dialysis readings for ${missingQuestions.map(q => q.title).join(', ')}`;
+            const type = 'Patient';  // Specify alert type
+            const isOpened = false;         // Mark alert as unopened initially
+    
+            // Insert alert into the alerts table
+            await pool.query(`
+              INSERT INTO alerts (date, type, isOpened, category, patientId)
+              VALUES (?, ?, ?, ?, ?)
+            `, [today, type, isOpened, category, patient_id]);
+              console.log(`Missing entries for patient ${patient_id}: ${missingQuestions.map(q => q.title).join(', ')}`);
+          } else {
+              console.log(`All entries are present for patient ${patient_id} for today.`);
+          }
+      } else {
+          console.log(`No entries found in graph_readings_dialysis for patient ${patient_id} for today.`);
+      }
+  }
+}
+
+
 async function createNewAlertForPatientDoctors() {
   try {
     console.log("Checking for Missed Prescriptions By The Doctors.....");
@@ -470,7 +555,7 @@ async function checkMissedAlarms() {
   const d = new Date();
   let day = d.getDay();
   const dailyQuery =
-    "SELECT * FROM `alarm` WHERE `alarm`.`frequency` = 'Daily/Weekly' AND FIND_IN_SET(?, `weekdays`); ";
+    "SELECT * FROM `alarm` WHERE `alarm`.`frequency` = 'Daily/Weekly' AND status='Approved' AND FIND_IN_SET(?, `weekdays`); ";
   const todayDailyAlarms = await pool.execute(dailyQuery, [daysOfWeek[day]]);
   const monthlyQuery =
     "SELECT * FROM `alarm` WHERE `alarm`.`frequency` = 'Monthly' AND FIND_IN_SET(?, `dateofmonth`); ";
@@ -545,6 +630,78 @@ async function checkMissedAlarms() {
   );
 }
 
+async function checkMissedAlarmsForDoctors() {
+  console.log("Checking for Missed Alarms.....");
+  const d = new Date();
+  let day = d.getDay();
+  const dailyQuery =
+    "SELECT * FROM `alarm` WHERE `alarm`.`frequency` = 'Daily/Weekly' AND status='Pending' AND FIND_IN_SET(?, `weekdays`); ";
+  const todayDailyAlarms = await pool.execute(dailyQuery, [daysOfWeek[day]]);
+  const monthlyQuery =
+    "SELECT * FROM `alarm` WHERE `alarm`.`frequency` = 'Monthly' AND FIND_IN_SET(?, `dateofmonth`); ";
+  const monthlyAlarms = await pool.execute(monthlyQuery, [d.getDate()]);
+  checkAlarmAnswers(todayDailyAlarms, (frequency = "Daily/Weekly")).then(
+    async () => {
+      checkAlarmAnswers(monthlyAlarms, (frequency = "Monthly")).then(
+        async () => {
+          const missedQuery =
+            "SELECT * FROM `alarm` WHERE `missedFrequency` >= 3;";
+          const missedAlarms = await pool.execute(missedQuery);
+          console.log(
+            "=========================================================="
+          );
+          console.log("Missed Alarms: ", missedAlarms);
+          console.log(
+            "=========================================================="
+          );
+          missedAlarms.forEach(async (alarm) => {
+            const missedAlertQuery =
+              "INSERT INTO `alerts` (`date`, `type`, `isOpened`, `category`, `alarmId`, `patientId`) VALUES (?, ?, ?, ?, ?, ?);";
+            let res;
+              
+              res= await pool.execute(missedAlertQuery, [
+                d,
+                "doctor",
+                0,
+                "Doctor has failed to approve/disapprove medicine alarm for 3 or more days",
+                alarm.id,
+                alarm.patientid,
+              ]);
+            
+            
+            const alertId = Number(res.insertId);
+            const getDoctorsQuery = "SELECT * FROM `doctor_patients` WHERE `patient_id` = ?;";
+            const doctors = await pool.execute(getDoctorsQuery, [
+              alarm.patientid,
+            ]);
+            doctors.forEach(async (doctor) => {
+              const doctorId = doctor.doctor_id;
+              const patientId = alarm.patientid;
+              const isRead = 0;
+              const dailyordia = "Missed Alarm";
+              const insertQuery = `INSERT INTO alertsread (alertId,isRead,doctorId,dailyordia) VALUES (${alertId},${isRead},${doctorId},'${dailyordia}') `
+              try {
+                await pool.query(insertQuery)
+
+              } catch (error) {
+                console.log(error)
+
+              }
+
+            });
+
+
+          });
+          const updateQuery =
+            "UPDATE `alarm` SET `missedFrequency` = 0 WHERE `missedFrequency` >= 3 ;";
+          await pool.execute(updateQuery);
+          const addisReadQuery = "UPDATE `alarm` SET `isRead` = 0;";
+        }
+      );
+    }
+  );
+}
+
 const deleteExpiredOTPs = async () => {
   try {
     // Calculate the timestamp 5 minutes ago
@@ -569,6 +726,9 @@ module.exports = {
   createNewAlertForPatientDoctors,
   // check_missed_dr_readings,
   check_missed_readings,
+  checkMissedAlarmsForDoctors,
   checkMissedAlarms,
+  checkDialysisEntries,
   deleteExpiredOTPs,
+  checkDialysisEntriesForAdmin,
 };

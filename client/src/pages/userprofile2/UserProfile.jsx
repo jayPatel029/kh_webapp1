@@ -136,7 +136,7 @@ function UserProfile({ patient }) {
         }
       );
       // console.log("custom id", id)
-      // console.log("custom ailments", response.data)
+       console.log("custom ailments", response.data)
       return response.data;
     } catch (error) {
       console.error("Error fetching questions:", error);
@@ -735,7 +735,7 @@ function UserProfile({ patient }) {
                   openedClassName="collapsable-open">
                   <QuestionsContainer
                     aliment="Generic Profile"
-                    user_id={userData.id}
+                    user_id={id}
                   />
                 </Collapsible>
 
@@ -763,7 +763,7 @@ function UserProfile({ patient }) {
                     </Collapsible>
                   ))}
                 </div>
-                {(role?.role_name!=="Dialysis Technician") && <div className="generalParameters">
+                {(role?.role_name!=="Dialysis Technician" && userData.program!="Basic") && <div className="generalParameters">
                   {generalParameters.length > 0 &&(
                     <h1 className="sectionTitle">General Parameter</h1>
                   )}
@@ -849,10 +849,10 @@ function UserProfile({ patient }) {
                 </div>}
 
                 <div className="dialysisParameters">
-                  {dialysisParameters.length > 0 && (
+                  {dialysisParameters.length > 0 && userData.program!="Basic" && (
                     <h1 className="sectionTitle">Dialysis Parameters</h1>
                   )}
-                  {dialysisParameters
+                  {userData.program!="Basic" && dialysisParameters
                     .filter(
                       (question) =>
                         !question.title.toLowerCase().includes("diastolic")
@@ -934,8 +934,8 @@ function UserProfile({ patient }) {
                 </div>
 
                 <div className="generalParameters">
-                  <h1 className="sectionTitle">Lab Reports</h1>
-                  {labReadings.map((reading) => (
+                  {userData.program!="Basic"&& <h1 className="sectionTitle">Lab Reports</h1>}
+                  {userData.program!="Basic"&& labReadings.map((reading) => (
                     <Collapsible
                       key={reading.id}
                       trigger={

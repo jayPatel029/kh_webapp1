@@ -6,6 +6,7 @@ const {
   QuestionAilments,
 } = require("../Models/questions");
 const { Ailment } = require("../Models/ailment.js");
+const { ca } = require("date-fns/locale");
 
 const isAdmin = async (req, res, next) => {
   try {
@@ -115,6 +116,10 @@ const fetchQuestions = async (req, res) => {
 const updateQuestion = async (req, res) => {
   try {
     const { ailment, type, name, options, translations } = req.body;
+    
+    const query =`select id from ailments where name='${ailment[0].label}'`
+    const ailmentId = await pool.execute(query);
+    console.log(ailmentId[0].id)
     const question = await Question.update(
       {
         type,
@@ -123,23 +128,24 @@ const updateQuestion = async (req, res) => {
       },
       {
         where: {
-          id: req.params.id,
+          id: req.body.id,
         },
       }
     );
+    console.log(question);
     await QuestionAilments.destroy({
       where: {
-        question_id: req.params.id,
+        question_id: req.body.id,
       },
     });
     await QuestionTranslation.destroy({
       where: {
-        question_id: req.params.id,
+        question_id: req.body.id,
       },
     });
     const ailmentsInserted = await QuestionAilments.create({
-      question_id: question.id,
-      ailment_id: ailment,
+      question_id: req.body.id,
+      ailment_id: ailmentId[0].id,
     });
     const translationsInserted = Object.entries(translations).map(
       ([language, translation]) => ({
@@ -272,32 +278,77 @@ const dialysisParametersByType = async (req, res)=>{
 const generalParametersByTypeWithResponse = async (req, res) => {
   const ailment = req.query.ailment;
   const user = req.query.user_id;
-  try {
-    // Fetch questions for the specified user
-    const questionsQuery = `
-      SELECT * FROM questions;
-    `;
-    const questionsRows = await pool.execute(questionsQuery);
-    // console.log(questionsRows)
+  if(ailment =="Generic Profile"){
+    
+      const query =  `select id from questions`
+      const questionIds = await pool.execute(query);
+      const questionsQuery =
+      `
+      SELECT q.*
+FROM questions q
+LEFT JOIN question_ailments qa ON q.id = qa.question_id
+WHERE qa.question_id IS NULL;
+`
+      const questionsRows = await pool.execute(questionsQuery);
+      console.log("questionsRows",questionsRows)
+      const questions = questionsRows.map((row) => ({
+        ...row,
+        response: "", // Initialize an empty string to store the response for each question
+      }));
+  
+      // Fetch responses for each question
+      for (const question of questions) {
+        const responseQuery = `
+          SELECT response FROM user_responses 
+          WHERE question_id=${question.id} AND user_id=${user};
+        `;
+        const responseRows = await pool.execute(responseQuery);
+        if (responseRows.length > 0) {
+          // If response exists, append it to the corresponding question
+          question.response = responseRows[0].response;
+        }
+      }
+  
+      res.status(200).json({
+        success: true,
+        data: questions,
+      });
+    }
+    else{
 
+      try {
+        const query = `select id from ailments where name='${ailment}'`;
+        const ailmentId = await pool.execute(query);
+        
+    const ailmentIdValue = ailmentId[0].id;
+   
+    const query1 = `SELECT question_id as id from question_ailments where ailment_id=${ailmentIdValue}`;
+    const questionIds = await pool.execute(query1);
+    
+    // Fetch questions for the specified user
+    const questionsQuery = `SELECT * FROM questions WHERE id IN (${questionIds.map((q) => q.id).join(",")})`;
+    const questionsRows = await pool.execute(questionsQuery);
+    console.log(questionsRows)
+    
     const questions = questionsRows.map((row) => ({
       ...row,
       response: "", // Initialize an empty string to store the response for each question
     }));
-
+    
     // Fetch responses for each question
     for (const question of questions) {
       const responseQuery = `
-        SELECT response FROM user_responses 
-        WHERE question_id=${question.id} AND user_id=${user};
+      SELECT response FROM user_responses 
+      WHERE question_id=${question.id} AND user_id=${user};
       `;
       const responseRows = await pool.execute(responseQuery);
       if (responseRows.length > 0) {
         // If response exists, append it to the corresponding question
+        console.log("responseRows",responseRows)
         question.response = responseRows[0].response;
       }
     }
-
+    
     res.status(200).json({
       success: true,
       data: questions,
@@ -307,6 +358,7 @@ const generalParametersByTypeWithResponse = async (req, res) => {
       success: false,
       data: error.message,
     });
+  }
   }
 };
 

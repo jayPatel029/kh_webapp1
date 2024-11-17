@@ -8,7 +8,7 @@ export function newQuestionReducer(state, action) {
         id: action.payload,
       };
     }
-
+    
     case "title": {
       return {
         ...state,
@@ -60,6 +60,12 @@ export function newQuestionReducer(state, action) {
       return {
         ...state,
         type: action.payload,
+      };
+    }
+    case "sendAlert"  : {
+      return {
+        ...state,
+        sendAlert: action.payload,
       };
     }
     case "alertTextDoc": {

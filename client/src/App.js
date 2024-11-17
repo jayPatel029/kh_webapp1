@@ -45,6 +45,10 @@ import UniqueUserprescription from "./pages/Userprescription/UniqueUserprescript
 import DeletePatient from "./pages/patient/DeletePatient";
 import AddPatientForm from "./pages/patient/AddPatientForm";
 import KfreSingle from "./pages/kfre/KfreSingle";
+import DailyReadingsCsv1 from "./pages/dailyReadings/DailyReadingCsv1";
+import DialysisReadingCsv from "./pages/dialysisReadings/DialysisReadingCsv";
+import LogsPage from "./pages/logs/patientLog";
+import DocLogPage from "./pages/logs/DoctorLog";
 
 function App() {
   return (
@@ -109,6 +113,36 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+            path="dailyReadingsCsv"
+            element={
+              <ProtectedRoute routeName={"Daily"}>
+                < DailyReadingsCsv1/>
+              </ProtectedRoute>
+            }
+            />
+            <Route
+              path="DialysisReadingsCsv"
+              element={
+                <ProtectedRoute routeName={"DialysisReadingsCsv"}>
+                  <DialysisReadingCsv />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="logs"
+              element={
+                <ProtectedRoute routeName={"logs"}>
+                  <LogsPage />
+                </ProtectedRoute>
+              } />
+              <Route
+              path="Doclogs"
+              element={
+                <ProtectedRoute routeName={"Doclogs"}>
+                  <DocLogPage />
+                </ProtectedRoute>
+              } />
             <Route
               path="profileQuestions"
               element={

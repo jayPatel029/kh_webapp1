@@ -116,7 +116,7 @@ const Sidebar = ({ mobile = false }) => {
             </Link>
           ) : null}
 
-          {(role?.role_name=="Admin" || role?.role_name=="PsAdmin" || role?.role_name=="Doctor") ? (
+          {/* {(role?.role_name=="Admin" || role?.role_name=="PsAdmin" || role?.role_name=="Doctor") ? (
             <Link to="/kfre" style={{ textDecoration: "none" }}>
               <li>
                 <PictureAsPdfIcon className="icon" />
@@ -127,7 +127,7 @@ const Sidebar = ({ mobile = false }) => {
                 <span>BulkUploadCSV</span>
               </li>
             </Link>
-          ) : null}
+          ) : null} */}
 
           {/* {role?.patients ? (
             <Link to="/aiChat" style={{ textDecoration: "none" }}>
