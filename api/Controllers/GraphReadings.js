@@ -118,12 +118,57 @@ const AddGraphReading = async (req, res, next) => {
     }
 };
 
+const updateGraph = async (req, res, next) => {
+    const {id,
+        value
+    } = req.body;
+
+
+    try {
+        // Check if the combination of question_id, user_id, and date already exists
+        const updateQuery = ` UPDATE graph_readings SET readings = '${value}' WHERE id=${id}`;
+        const result = await pool.query(updateQuery);
+        return res.status(200).json({
+            success: true,
+            data: "Readings updates Successfully",
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            data: "Error while Adding Readings",
+        });
+    }
+};
+
+const deleteGraph = async (req, res, next) => {
+    const {
+        id
+    } = req.body;
+
+    try {
+        // Check if the combination of question_id, user_id, and date already exists
+        const deleteQuery = ` DELETE FROM graph_readings where id=${id}`;
+        const result = await pool.query(deleteQuery);
+        return res.status(200).json({
+            success: true,
+            data: "Readings Deleted Successfully",
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            data: "Error while Adding Readings",
+        }); 
+    }
+};
+
 
 const getReadingsByPatientAndQuestion = async (req, res, next) => {
     const { question_id, user_id } = req.query;
 
     const query = `
-    SELECT date,readings FROM graph_readings
+    SELECT date,readings,id FROM graph_readings
     WHERE question_id = ${question_id} AND user_id = ${user_id}
   `;
 
@@ -491,6 +536,8 @@ module.exports = {
     getReadingsByPatientAndQuestionSysAndDysDialysis,
     AddGraphReadingSysDia,
     getSystolicIdDia,
+    updateGraph,
+    deleteGraph
 };
 
 

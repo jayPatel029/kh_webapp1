@@ -269,7 +269,7 @@ const UserCard = ({ title, Alerts }) => {
                 <button
                 className="bg-violet-900 mr-2 hover:bg-violet-700 text-white p-2 rounded transition duration-300 ease-in-out transform hover:scale-105"
                   onClick={()=>openDiaModal()}>
-                  {Dialysis_updates.length} Dialysis Update
+                  {Dialysis_updates.length} Dialysis Tech Alerts
                 </button>
               </div>
             )
@@ -425,7 +425,7 @@ const DoctorContainer = () => {
   return (
     <div className="bg-gray-100 min-h-screen lg:py-10 lg:px-40 overflow-y-auto">
       <div className="flex flex-col lg:flex-row lg:justify-center">
-        <div className="bg-white p-5 rounded-lg border-t-primary border-t-4 shadow-lg my-10 lg:w-2/3">
+        <div className="bg-white p-5 rounded-lg border-t-primary border-t-4 shadow-lg my-10 min-w-min">
           <p className="text-lg font-semibold text-center lg:sticky lg:top-0 bg-white pt-2">
             Important Alerts
           </p>

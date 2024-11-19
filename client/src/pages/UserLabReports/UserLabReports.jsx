@@ -12,6 +12,7 @@ import UploadedFileModal from "./UploadedFileModal";
 import { FaFilePdf } from "react-icons/fa6";
 import CSVLab2 from "../../components/csvLab2/CSVLab2";
 import CSVReader from "../../components/csvlab/CSVLab";
+import { da } from "date-fns/locale";
 
 const UserLabReports = () => {
   const [showModal, setShowModal] = useState(false);
@@ -22,7 +23,7 @@ const UserLabReports = () => {
   const { id } = useParams();
   const [patients, setPatients] = useState([]);
   const [viewPrescription, setViewPrescription] = useState(false);
-  
+  const email = localStorage.getItem("email");
   
   const [patientData, setPatientData] = useState([
     {
@@ -80,7 +81,7 @@ const UserLabReports = () => {
     setUploadedFile(null);
   };
 
-  const deleteLabReport = async (id) => {
+  const deleteLabReport = async (id,email) => {
     const isConfirmed = window.confirm(
       "Are you sure you want to delete this lab report?"
     );
@@ -88,7 +89,8 @@ const UserLabReports = () => {
       try {
         console.log(id);
         const response = await axiosInstance.delete(
-          `${server_url}/labreport/deleteLabReport/${id}`
+          `${server_url}/labreport/deleteLabReport/${id}`,
+          { data: { email } }
         );
         console.log(response);
 
@@ -144,7 +146,7 @@ const UserLabReports = () => {
         </div>
         <div className="container">
           <div className="bg-gray-100 min-h-screen md:py-10 md:px-40">
-            <div className="manage-roles-container p-7 ml-4 mr-4 mt-4 bg-white shadow-md border-t-4 border-primary">
+            <div className="manage-roles-container p-7 ml-4 mr-4 mt-4 bg-white max-w-7xl shadow-md border-t-4 border-primary">
               <Link
                 to={`/userProfile/${id}`}
                 className="text-primary border-b-2 border-primary">
@@ -256,7 +258,7 @@ const UserLabReports = () => {
                               className="text-red-500 "
                               style={{ fontSize: "1.5rem" }}
                               onClick={() =>
-                                deleteLabReport(labReportsItem.id)
+                                deleteLabReport(labReportsItem.id,email)
                               }>
                               <BsTrash />
                               {/* <button

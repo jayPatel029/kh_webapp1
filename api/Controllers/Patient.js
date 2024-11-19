@@ -179,7 +179,7 @@ const deletePatient = async (req, res, next) => {
     await pool.query(adminQuery);
     const doctorQuery = `DELETE FROM doctor_patients WHERE patient_id = ${id}`;
     await pool.query(doctorQuery);
-    const query = `DELETE FROM patients WHERE id = ${id}`;
+    const query = `UPDATE  patients Set name="",number="",profile_photo="" WHERE id = ${id}`;
     await pool.query(query);
     res.status(200).json({
       success: true,
@@ -250,16 +250,19 @@ const updatePatientProgram = async (req, res, next) => {
 const updatePatientProfile = async (req, res, next) => {
   const { id, name, number, dob, changeBy } = req.body;
   const newDetails = req.body;
-  const pName =`select name from patients where id = ${id}`
-  const patientName = await pool.execute(pName);
-  const numberQ =`select number from patients where id = ${id}`
-  const patientNumber = await pool.execute(numberQ);
+  
   try {
     const [oldDetails] = await pool.execute(`SELECT * FROM patients WHERE id = ?`, [id]);
 
         // Compare and log each field
         for (const field in newDetails) {
+          if(field === "changeBy") continue;
+          if(field === "id") continue;
             if (newDetails[field] !== oldDetails[field] && newDetails[field] !== changeBy) {
+              const pName =`select name from patients where id = ${id}`
+  const patientName = await pool.execute(pName);
+  const numberQ =`select number from patients where id = ${id}`
+  const patientNumber = await pool.execute(numberQ);
                 await logChange(id, field,patientName[0].name,patientNumber[0].number ,oldDetails[field], newDetails[field], changeBy);
             }
         }

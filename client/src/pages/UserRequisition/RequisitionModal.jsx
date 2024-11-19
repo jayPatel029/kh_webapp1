@@ -9,6 +9,7 @@ const RequisitionModal = ({ closeModal, user_id, onSuccess }) => {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedImages, setSelectedImages] = useState([]);
+  const email = localStorage.getItem("email");
 
   const handleImageChange = (e) => {
     // const file = e.target.files[0];
@@ -47,6 +48,7 @@ const RequisitionModal = ({ closeModal, user_id, onSuccess }) => {
             return;
           }
           let data = {
+            email:email,
             Patient_id: user_id,
             Date: selectedDate,
             Requisition: res.data.objectUrl,
@@ -91,6 +93,7 @@ const RequisitionModal = ({ closeModal, user_id, onSuccess }) => {
             return;
           }
           let data = {
+            email:email,
             Patient_id: user_id,
             Date: selectedDate,
             Requisition: res.data.objectUrl,

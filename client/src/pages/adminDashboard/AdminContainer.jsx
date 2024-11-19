@@ -104,7 +104,9 @@ const UserCard = ({ user }) => {
       alert.type === "patient" &&
       alert.category === "New Requisition"
     ) {
-      navigate(`/UserRequisition/${alert.patientId}`);
+      navigate(`/UserRequisition/${alert.patientId}`,
+        { state: { patientId: alert.patientId } }
+      );
     } else if (
       alert.type === "patient" &&
       alert.category === "Delete Account"

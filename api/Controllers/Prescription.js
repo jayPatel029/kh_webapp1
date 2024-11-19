@@ -3,7 +3,7 @@ const AWS = require("aws-sdk");
 const { createNewPrescriptionAlert } = require("./Alerts.js");
 const s3 = new AWS.S3();
 const moment = require("moment-timezone");
-
+const { ReportLog } = require("./log.js");
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -21,8 +21,18 @@ async function getSignedURLEndpoint(key, operation) {
 
 const deletePrescription = async (req, res) => {
   const id = req.params.id;
+  const email = req.body.email
+  const massage="Prescription Deleted"
+  const type="Prescription"
+  const query1 =`select Prescription,patient_id from prescriptions where id = ${id}`
+  const link= await pool.query(query1)
+   console.log("link",link[0])
+  const report = link[0].Prescription
+  const patient_id = link[0].patient_id
   const query = `DELETE FROM prescriptions WHERE id = '${id}'`;
   const result = await pool.query(query);
+  
+  await ReportLog(patient_id,report,type,id,massage,email)
   if (result) {
     res.status(200).json({
       success: true,
@@ -41,16 +51,19 @@ const addPrescriptionById = async (req, res) => {
     const file = req.body.Prescription;
     const date = req.body.date;
     const patient_id = req.body.patient_id;
+    const email=req.body.email
     const prescriptionGivenBy = req.body.prescriptionGivenBy;
     console.log("addPrescriptionById", req.body);
     const query = `INSERT INTO prescriptions (Prescription, Date, Patient_id,prescriptionGivenBy) VALUES (?, ?, ?,?)`;
+    
     const response = await pool.query(query, [
       file,
       date,
       patient_id,
       prescriptionGivenBy,
     ]);
-
+    const query1=`insert into report_log (patient_id,report,type,report_id,message,deletedBy) values (${patient_id},'${file}','Prescription',${Number(response.insertId)},'Prescription added ','${email}')`
+    await pool.query(query1)
     console.log(Number(response.insertId), patient_id);
 
     createNewPrescriptionAlert(Number(response.insertId), patient_id);

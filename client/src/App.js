@@ -50,6 +50,7 @@ import DialysisReadingCsv from "./pages/dialysisReadings/DialysisReadingCsv";
 import LogsPage from "./pages/logs/patientLog";
 import DocLogPage from "./pages/logs/DoctorLog";
 import DelPatient from "./pages/patient/delPatient";
+import Logs from "./pages/logs/Logs";
 
 function App() {
   return (
@@ -138,10 +139,17 @@ function App() {
               }
             />
             <Route
+              path="Patientlogs"
+              element={
+                <ProtectedRoute routeName={"Patientlogs"}>
+                  <LogsPage />
+                </ProtectedRoute>
+              } />
+              <Route
               path="logs"
               element={
                 <ProtectedRoute routeName={"logs"}>
-                  <LogsPage />
+                  <Logs />
                 </ProtectedRoute>
               } />
               <Route

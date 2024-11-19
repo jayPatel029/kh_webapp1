@@ -201,6 +201,14 @@ const Sidebar = ({ mobile = false }) => {
               </li>
             </Link>
           ) : null}
+          {role?.changePassword ? (
+            <Link to="/logs" style={{ textDecoration: "none" }}>
+              <li>
+                <LockResetIcon className="icon" />
+                <span>logs</span>
+              </li>
+            </Link>
+          ) : null}
         </ul>
       </div>
       <div className="bottom"></div>

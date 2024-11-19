@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useState } from "react";
-
+import { server_url } from "../../constants/constants";
+import axiosInstance from "../../helpers/axios/axiosInstance";
 const PdfDataExtractor = () => {
   const [file, setFile] = useState(null);
   const [text, setText] = useState("");
@@ -11,13 +12,13 @@ const PdfDataExtractor = () => {
 
   const handleSubmit = async () => {
     if (!file) return;
-
+    
     const formData = new FormData();
     formData.append("pdf", file);
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/text/upload",
+      const response = await axiosInstance.post(
+          `${server_url}/patientdata/extractTextFromPdf`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

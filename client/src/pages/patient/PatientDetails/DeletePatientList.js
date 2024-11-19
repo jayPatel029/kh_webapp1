@@ -288,18 +288,7 @@ export default function DelPatientList({ data, patientId }) {
                       .split(",")
                       .map((name, index) => <div key={index}>{name}</div>)}
                   <div>
-                    {role?.manageRoles !== 0 && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/userMedicalTeam/${row?.id}`, {
-                            state: row,
-                          });
-                        }}
-                        className="bg-primary text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">
-                        MANAGE
-                      </button>
-                    )}
+                    
                   </div>
                 </td>
                 <td class="w-full lg:w-auto p-3 text-gray-800  border border-b text-center block lg:table-cell relative lg:static">
@@ -310,20 +299,7 @@ export default function DelPatientList({ data, patientId }) {
                     adminNames[row?.id]
                       .split(",")
                       .map((name, index) => <div key={index}>{name}</div>)}
-                  <div>
-                    {role?.manageRoles !== 0 && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/userListManage/${row?.id}`, {
-                            state: row,
-                          });
-                        }}
-                        className="bg-primary text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">
-                        MANAGE
-                      </button>
-                    )}
-                  </div>
+                  
                 </td>
                 
               </tr>

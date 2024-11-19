@@ -23,11 +23,12 @@ const PdfText = async (req, res) => {
     const data = await pdfParse(pdfBuffer);
     const extractedText = data.text;
     const textArray = extractedText.split('\n').filter(line => line.trim() !== '');
-
+    const kfreData = extractKfreReadings(textArray);
+    console.log(kfreData);
     // const text = extractCBCData(extractedText);
-    const extractedData = extractMedicalParameters(extractedText);
+    // const extractedData = extractMedicalParameters(extractedText);
 
-    res.json({ text: extractedData });
+    res.json({ text: extractedText, data: kfreData });
   } catch (error) {
     console.error('Error fetching or parsing PDF:', error);
     res.status(500).json({ error: 'Failed to fetch or parse PDF' });
@@ -478,8 +479,8 @@ const PdfTextFunction = async (pdfUrl) => {
 
     // Split into lines
     const textArray = extractedText.split('\n').filter(line => line.trim() !== '');
-
-    // Extract readings
+    // const medicalData= extractMedicalParameters(extractedText);
+    // return medicalData;
     const readings = extractReadings(textArray);
 
     console.log("Extracted Readings:", readings);
@@ -498,25 +499,43 @@ const extractReadings = (lines) => {
     "Hemoglobin",
     "Packed Cell Volume (PCV)",
     "RBC Count",
-    
+    "MCV",
+    "uric acid",
+    "MCH",
+    "MCHC",
+    "Red Cell Distribution Width (RDW)",
+    "Total Leukocyte Count (TLC)",
+    "Neutrophils",
+    "Lymphocytes",
+    "Monocytes",
+    "Eosinophils",
+    "Basophils",
+    "Neutrophils (absolute)",
+    "Lymphocytes (absolute)",
+    "Monocytes (absolute)",
+    "Eosinophils (absolute)",
+    "Basophils (absolute)",
+    "Platelet Count",
+    "eGfr",
+
   ];
 
   lines.forEach((line, index) => {
     // Check if the line matches a known parameter
-    const parameter = parameters.find(param => line.includes(param));
+    const parameter = parameters.find(param => line.toLowerCase().includes((param).toLowerCase()));
     if (parameter) {
-      // Try to extract value and unit from the next lines
+      // Try to extract value from the next lines
       const nextLine = lines[index + 1]?.trim();
       const nextNextLine = lines[index + 2]?.trim();
 
       // Combine lines for robust parsing
       const combinedLine = `${line} ${nextLine || ''} ${nextNextLine || ''}`;
 
-      // Extract value and unit using a regex
-      const match = combinedLine.match(/([\d.]+)\s+(\S+)/);
+      // Extract value using a regex
+      const match = combinedLine.match(/([\d.]+)/);
       if (match) {
-        const [, value, unit] = match;
-        readings[parameter] = { value, unit };
+        const value = parseFloat(match[1]); // Parse the value as a number
+        readings[parameter] = value; // Keep the parameter name as it is
       }
     }
   });
@@ -525,6 +544,40 @@ const extractReadings = (lines) => {
 };
 
 
+const extractKfreReadings = (lines) => {
+  const readings = {};
+  const parameters = [
+    "eGFR",
+    "Phosphorus",
+    "Bicarbonate",
+    "Albumin",
+    "Calcium",
+    "Albium_to_Creatinine_Ratio",
+    
+  ];
+
+  lines.forEach((line, index) => {
+    // Check if the line matches a known parameter
+    const parameter = parameters.find(param => line.includes(param));
+    if (parameter) {
+      // Try to extract value from the next lines
+      const nextLine = lines[index + 1]?.trim();
+      const nextNextLine = lines[index + 2]?.trim();
+
+      // Combine lines for robust parsing
+      const combinedLine = `${line} ${nextLine || ''} ${nextNextLine || ''}`;
+
+      // Extract value using a regex
+      const match = combinedLine.match(/([\d.]+)/);
+      if (match) {
+        const value = parseFloat(match[1]); // Parse the value as a number
+        readings[parameter] = value; // Keep the parameter name as it is
+      }
+    }
+  });
+
+  return readings;
+};
 
 function extractMedicalParameters(text) {
   // Define patterns for parameter extraction using regular expressions
