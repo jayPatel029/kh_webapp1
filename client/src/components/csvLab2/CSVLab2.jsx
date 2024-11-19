@@ -91,7 +91,26 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
   const [columnMappings, setColumnMappings] = useState({
     date: "",
     Hemoglobin: "",
+    PCV: "",
+    RBC: "",
+    MCH : "",
+    MCHC : "",
     MCV: "",
+    RDW : "",
+    TLC: "",
+    Segmented_Neutrophils:"",
+    Neutrophils: "",
+    Lymphocytes: "",
+    Monocytes: "",
+    Eosinophils: "",
+    Basophils: "",
+    Neutrophils_absolute: "",
+    Lymphocytes_absolute: "",
+    Monocytes_absolute: "",
+    Eosinophils_absolute: "",
+    Basophils_absolute: "",
+    Platelet_Count: "",
+
   });
   const [csvData, setCsvData] = useState([]);
   const [columnOptions, setColumnOptions] = useState([]);
@@ -109,6 +128,61 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
         date: columnMappings.date
           ? row[columnOptions.indexOf(columnMappings.date)]
           : undefined,
+        'Packed Cell Volume (PCV)': columnMappings.PCV
+          ? row[columnOptions.indexOf(columnMappings.PCV)]
+          : undefined,
+          'RBC Count': columnMappings.RBC
+          ? row[columnOptions.indexOf(columnMappings.RBC)]
+          : undefined,
+        MCH: columnMappings.MCH
+          ? row[columnOptions.indexOf(columnMappings.MCH)]
+          : undefined,
+        MCHC: columnMappings.MCHC
+          ? row[columnOptions.indexOf(columnMappings.MCHC)]
+          : undefined,
+        'Red Cell Distribution Width (RDW)': columnMappings.RDW
+          ? row[columnOptions.indexOf(columnMappings.RDW)]
+          : undefined,
+        'Total Leukocyte Count (TLC)': columnMappings.TLC
+          ? row[columnOptions.indexOf(columnMappings.TLC)]
+          : undefined,
+        'Segmented Neutrophils': columnMappings.Segmented_Neutrophils
+          ? row[columnOptions.indexOf(columnMappings.Segmented_Neutrophils)]
+          : undefined,
+        Neutrophils: columnMappings.Neutrophils
+          ? row[columnOptions.indexOf(columnMappings.Neutrophils)]
+          : undefined,
+        Lymphocytes: columnMappings.Lymphocytes
+          ? row[columnOptions.indexOf(columnMappings.Lymphocytes)]
+          : undefined,
+        Monocytes: columnMappings.Monocytes
+          ? row[columnOptions.indexOf(columnMappings.Monocytes)]
+          : undefined,
+        Eosinophils: columnMappings.Eosinophils
+          ? row[columnOptions.indexOf(columnMappings.Eosinophils)]
+          : undefined,
+        Basophils: columnMappings.Basophils
+          ? row[columnOptions.indexOf(columnMappings.Basophils)]
+          : undefined,
+        'Neutrophils (absolute)': columnMappings.Neutrophils_absolute
+          ? row[columnOptions.indexOf(columnMappings.Neutrophils_absolute)]
+          : undefined,
+        'Lymphocytes (absolute)': columnMappings.Lymphocytes_absolute
+          ? row[columnOptions.indexOf(columnMappings.Lymphocytes_absolute)]
+          : undefined,
+        'Monocytes (absolute)': columnMappings.Monocytes_absolute
+          ? row[columnOptions.indexOf(columnMappings.Monocytes_absolute)]
+          : undefined,
+        'Eosinophils (absolute)': columnMappings.Eosinophils_absolute
+          ? row[columnOptions.indexOf(columnMappings.Eosinophils_absolute)]
+          : undefined,
+        'Basophils (absolute)': columnMappings.Basophils_absolute
+          ? row[columnOptions.indexOf(columnMappings.Basophils_absolute)]
+          : undefined,
+        'Platelet Count': columnMappings.Platelet_Count
+          ? row[columnOptions.indexOf(columnMappings.Platelet_Count)]
+          : undefined,
+            
 
       }))
       .filter((item) => Object.values(item).some((value) => value !== undefined));
@@ -207,7 +281,7 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
           {headData.slice(1).map((row, rowIndex) => (
             <tr key={rowIndex}>
               {row.map((cell, cellIndex) => (
-                <td key={cellIndex} className="border px-4 py-2">
+                <td key={cellIndex} className="border px-1 py-2">
                   {cell}
                 </td>
               ))}
@@ -222,7 +296,7 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
           {headData.length > 0 && (
             <div>
               <h2 className="text-xl font-semibold mb-4">Match the Columns</h2>
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <ul className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {Object.entries(columnMappings).map(([key, value]) => (
                   <li key={key} className="flex flex-col space-y-2">
                     <label htmlFor={key} className="font-medium">{key}</label>

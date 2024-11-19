@@ -85,6 +85,7 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
             return;
           }
           let data = {
+            email:localStorage.getItem("email"),
             patient_id: user_id,
             date: selectedDate,
             Prescription: res.data.objectUrl,
@@ -155,6 +156,7 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
             return;
           }
           let data = {
+            email:localStorage.getItem("email"),
             patient_id: user_id,
             date: selectedDate,
             Prescription: res.data.objectUrl,

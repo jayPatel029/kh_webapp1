@@ -12,6 +12,7 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
   const [selectedReportType, setSelectedReportType] = useState("Select");
   const [selectedImage, setSelectedImage] = useState(null);
   // const [reportId, setReportId] = useState(null);
+  const email=localStorage.getItem("email");
   const [selectedImages, setSelectedImages] = useState([]);
   const reportTypes = [
     "Select",
@@ -64,6 +65,7 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
             return;
           }
           let data = {
+            email:email,
             patient_id: user_id,
             date: selectedDate,
             Report_Type: selectedReportType,
@@ -106,6 +108,7 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
             return;
           }
           let data = {
+            email:email,
             patient_id: user_id,
             date: selectedDate,
             Report_Type: selectedReportType,

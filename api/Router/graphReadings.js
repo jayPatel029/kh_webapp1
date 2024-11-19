@@ -7,12 +7,16 @@ getSystolicId,
 getReadingsByPatientAndQuestionSysAndDysDialysis, 
 AddGraphReadingSysDia,
 getSystolicIdDia,
+updateGraph,
+deleteGraph,
 } = require("../Controllers/GraphReadings");
 
 const router = require("express").Router();
 const { verifyToken } = require("../Helpers/middlewares/roles.js");
 
 router.post("/add",verifyToken, AddGraphReading);
+router.post("/update",verifyToken, updateGraph);
+router.post("/delete",verifyToken, deleteGraph);
 router.post("/add/sys",verifyToken, AddGraphReadingSys);
 router.get("/get",verifyToken, getReadingsByPatientAndQuestion);
 router.get("/get/sys",verifyToken, getReadingsByPatientAndQuestionSysAndDys);

@@ -3,6 +3,7 @@ const { PdfTextFunction } = require("./PatientData.js");
 const LabReadings = require("../Models/labreadings.js");
 const { where } = require("sequelize");
 const moment = require("moment-timezone");
+const { ReportLog } = require("./log.js");
 
 const getLabReports = async (req, res, next) => {
   const id = req.params.id;
@@ -37,17 +38,19 @@ const getLabReportByPatient = async (req, res, next) => {
 };
 
 const addLabReport = async (req, res, next) => {
-  const { Lab_Report, patient_id, date, Report_Type } = req.body;
+  const { Lab_Report, patient_id, date, Report_Type,email } = req.body;
   console.log("lab",req.body)
-      // const date_2 = new Date().toISOString().slice(0, 19).replace("T", " ");
-  const query = `INSERT INTO labreport (Lab_Report,Date,patient_id, Report_Type) VALUES ('${Lab_Report}','${date}','${patient_id}', '${Report_Type}')`;
+      const date_2 = new Date().toISOString().slice(0, 19).replace("T", " ");
+   const query = `INSERT INTO labreport (Lab_Report,Date,patient_id, Report_Type) VALUES ('${Lab_Report}','${date}','${patient_id}', '${Report_Type}')`;
   try {
     const result = await pool.query(query);
     var medicalData;
     if(Report_Type === "Lab") {
+      const query=`insert into report_log (patient_id,report,type,report_id,message,deletedBy) values (${patient_id},'${Lab_Report}','Lab Report',${Number(result.insertId)},'Lab Report added ','${email}')`
+      await pool.query(query)
       medicalData= await PdfTextFunction(Lab_Report);
       console.log("Data",medicalData)
-      // const success= await insertMedicalDataDB(medicalData,patient_id,date)
+      //  const success= await insertMedicalDataDB(medicalData,patient_id,date)
     }
 
     res.status(200).json({
@@ -94,7 +97,16 @@ async function insertIntoGraphReadingsLab(userId, date, questionTitle, extracted
 
 const deleteLabReport = async (req, res, next) => {
   const id = req.params.id;
+  const email = req.body.email
+  const massage="Lab Report deleted "
+  const type="Lab Report"
+  const query1 =`select Lab_Report,patient_id from labreport where id = ${id}`
+  const link= await pool.query(query1)
+  const report = link[0].Lab_Report
+  const patient_id = link[0].patient_id
+
   const query = `DELETE FROM labreport WHERE id = '${id}'`;
+  await ReportLog(patient_id,report,type,id,massage,email)
   const result = await pool.query(query);
   if (result) {
     res.status(200).json({
@@ -248,6 +260,7 @@ async function getQuestionId(questionTitle) {
 const insertMedicalDataDB = async (extractedData,user_id,date)=>{
   try {
     for (let key in extractedData) {
+      if(key === "date") continue;
       const questionId = await getQuestionId(key);
 
       const newLabReading = await LabReadings.GraphReadingsLab.create({

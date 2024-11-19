@@ -23,6 +23,7 @@ const Userprescription = () => {
   const [doctorOptions, setDoctorOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const location = useLocation();
+  const email= localStorage.getItem("email");
  
   const openModal = () => {
     setShowModal(true);
@@ -91,7 +92,7 @@ const Userprescription = () => {
     }
   }, []);
 
-  const handleDelete = async (prescriptionId) => {
+  const handleDelete = async (prescriptionId,email) => {
     const isConfirmed = window.confirm(
       "Are you sure you want to delete this prescription?"
     );
@@ -99,7 +100,12 @@ const Userprescription = () => {
       try {
         console.log("prescription id", prescriptionId);
         await axiosInstance.delete(
-          `${server_url}/prescription/deletePrescription/${prescriptionId}`
+          `${server_url}/prescription/deletePrescription/${prescriptionId}`,
+          {
+            data: {
+              email: email
+            }
+          }
         );
 
         // Remove the deleted prescription from the state
@@ -260,7 +266,7 @@ const Userprescription = () => {
                               <button
                                 className="text-[#ff0000] inline-block mx-2 text-2xl"
                                 onClick={() =>
-                                  handleDelete(prescriptionItem.id)
+                                  handleDelete(prescriptionItem.id,email)
                                 }>
                                 <BsTrash />
                               </button>

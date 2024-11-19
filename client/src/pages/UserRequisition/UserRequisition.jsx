@@ -15,6 +15,7 @@ const UserRequisition = () => {
   const [showModal, setShowModal] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
   const { id } = useParams();
+  const email = localStorage.getItem("email");
   // const { name } = useParams();
   const [userRequisitionData, setUserRequisitionData] = useState([]);
   const openModal = () => {
@@ -36,13 +37,13 @@ const UserRequisition = () => {
   };
   const location = useLocation();
 
-  const deleteRequisition = async (id) => {
+  const deleteRequisition = async (id,email) => {
     const isConfirmed = window.confirm(
       "Are you sure you want to delete this requisition?"
     );
     if (isConfirmed) {
       try {
-        await axiosInstance.delete(`${server_url}/requisition/${id}`);
+        await axiosInstance.delete(`${server_url}/requisition/${id}`,{data:{email}});
         await fetchData();
       } catch (error) {
         console.error("Error deleting requisition:", error);
@@ -57,7 +58,7 @@ const UserRequisition = () => {
       const response = await axiosInstance.get(
         `${server_url}/requisition/getRequisition/${patient_id}`
       );
-      console.log(response.data.data);
+      console.log("requ",response.data.data);
       setUserRequisitionData(response.data.data);
       console.log(response.data.data);
     } catch (error) {
@@ -188,7 +189,7 @@ const UserRequisition = () => {
                               className="text-red-500 "
                               style={{ fontSize: "1.5rem" }}
                               onClick={() =>
-                                deleteRequisition(requisitionItem.id)
+                                deleteRequisition(requisitionItem.id,email)
                               }>
                               <BsTrash />
                             </button>

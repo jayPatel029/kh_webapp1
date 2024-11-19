@@ -17,7 +17,8 @@ function Patient() {
     axiosInstance
       .get(`${server_url}/patient/getPatients`)
       .then((response) => {
-        setPatientData(response.data.data);
+        const data = response.data.data.filter((patient) => patient.name);
+        setPatientData(data);
         setLoading(false);
       })
       .catch((error) => {
