@@ -479,8 +479,8 @@ const PdfTextFunction = async (pdfUrl) => {
 
     // Split into lines
     const textArray = extractedText.split('\n').filter(line => line.trim() !== '');
-    // const medicalData= extractMedicalParameters(extractedText);
-    // return medicalData;
+    const medicalData= extractMedicalParameters(extractedText);
+    return medicalData;
     const readings = extractReadings(textArray);
 
     console.log("Extracted Readings:", readings);
