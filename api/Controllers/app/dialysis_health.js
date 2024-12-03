@@ -9,7 +9,7 @@ const translations = require("./translation.json");
 const fetchDialysisParameters = async (req, res) => {
   const { userID, date, language } = req.body;
   try {
-    const query = `SELECT doctor_id FROM doctor_patients WHERE patient_id = ${userID};`;
+    const query = `SELECT doctor_id, patient_id FROM doctor_patients WHERE patient_id = ${userID};`; //! added patient_id in qry
     const resp = await pool.query(query);
     var respOut = [];
     if (resp.length > 0) {
@@ -34,13 +34,13 @@ const fetchDialysisParameters = async (req, res) => {
                 const parameterNameTranslation = parameterTranslation
                   ? parameterTranslation[language]
                   : parameterName;
-                
+
                 // console.log(parameterTranslation);
                 const unitOfMeasure = dialysisReadings.unit;
                 const unitOfMeasureTranslation = dialysisReadings.unit;
 
                 respOut.push({
-                  dialysisUserParameterID: parseInt(doctor["medical_team"]),
+                  dialysisUserParameterID: parseInt(doctor["patient_id"]), //! changed "medical_team" to "patient_id"
                   dialysisParameterID: dialysisReadingID["dialysisreadingid"],
                   dialysisParameterName: parameterName,
                   dialysisParameterNameTranslation: parameterNameTranslation ?? parameterName,
