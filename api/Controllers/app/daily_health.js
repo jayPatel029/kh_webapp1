@@ -76,6 +76,8 @@ const fetchDailyParameters = async (req, res) => {
               if (resp3.length > 0) {
                 const dailyReadings = resp3[0];
                 const answerQuery = `SELECT readings FROM graph_readings WHERE question_id = ${readingID2} AND user_id = ${userID} AND date = '${date}';`;
+
+                console.log("Executing Query:", answerQuery);
                 const answerResp = await pool.query(answerQuery);
                 let answer = "";
                 if (answerResp.length > 0) {
@@ -95,7 +97,8 @@ const fetchDailyParameters = async (req, res) => {
                   userParameterID: parseInt(doctor["doctor_id"]),
                   parameterID: readingID2,
                   parameterName: parameterName,
-                  parameterNameTranslation: parameterNameTranslation ?? parameterName,
+                  parameterNameTranslation:
+                    parameterNameTranslation ?? parameterName,
                   parameterType: dailyReadings["type"],
                   unitOfMeasure: unitOfMeasure,
                   unitOfMeasureTranslation: unitOfMeasureTranslation,
@@ -113,8 +116,17 @@ const fetchDailyParameters = async (req, res) => {
 
             if (resp3.length > 0) {
               const dailyReadings = resp3[0];
-              const answerQuery = `SELECT readings FROM graph_readings WHERE question_id = ${readingID} AND user_id = ${userID} AND date = '${date}';`;
+              // const answerQuery = `SELECT readings FROM graph_readings WHERE question_id = ${readingID} AND user_id = ${userID} AND date = '${date}';`;
+              // const answerResp = await pool.query(answerQuery);
+
+              const answerQuery = `SELECT readings FROM graph_readings 
+                                   WHERE question_id = ${readingID} 
+                                     AND user_id = ${userID} 
+                                     AND date = '${date}'
+                                   ORDER BY id DESC 
+                                   LIMIT 1;`;
               const answerResp = await pool.query(answerQuery);
+
               let answer = "";
               if (answerResp.length > 0) {
                 answer = answerResp[0].readings;

@@ -3,6 +3,9 @@ const { pool } = require("../databaseConn/database.js");
 const axios = require("axios");
 const { createNewEnrollmentAlertFunction } = require("./Alerts.js");
 const { logChange } = require("./log.js");
+const jwt = require("jsonwebtoken");
+
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 const getPatients = async (req, res) => {
   try {
@@ -57,6 +60,7 @@ const getPatients = async (req, res) => {
   }
 };
 
+// new addition added new cols and dynamic jwt!
 const AddPatient = async (req, res, next) => {
   const {
     name,
@@ -69,9 +73,22 @@ const AddPatient = async (req, res, next) => {
     medical_team,
     program,
     pushNotificationId,
+    address,
+    pincode,
+    state,
   } = req.body;
 
-  if (!name || !aliments || !number || !dob || !registered_date) {
+  if (
+    !name ||
+    !aliments ||
+    !number ||
+    !dob ||
+    !registered_date
+    ||
+    !address ||
+    !pincode ||
+    !state
+  ) {
     return res.status(400).json({
       success: false,
       data: "All fields are required",
@@ -86,43 +103,36 @@ const AddPatient = async (req, res, next) => {
     });
   }
 
-  const connection = await pool.getConnection();
+  const checkNumberQuery = `SELECT * FROM patients WHERE number = '${numberString}'`;
+  const existingNumber = await pool.query(checkNumberQuery);
+  if (existingNumber.length > 0) {
+    return res.status(400).json({
+      success: false,
+      data: "Phone number already exists",
+    });
+  }
 
-  try {
-    await connection.beginTransaction();
-
-    const checkNumberQuery = `SELECT * FROM patients WHERE number = '${numberString}'`;
-    const existingNumber = await connection.query(checkNumberQuery);
-
-    if (existingNumber.length > 0) {
-      await connection.rollback();
-      return res.status(400).json({
-        success: false,
-        data: "Phone number already exists",
-      });
-    }
-
-    const query = `
-      INSERT INTO patients (name, number, dob, profile_photo, registered_date, program_assigned_to, medical_team, program, push_notification_id)
-      VALUES ('${name}','${number}','${dob}','${profile_photo}','${registered_date}','${program_assigned_to}','${medical_team}', '${program}', '${pushNotificationId}')
+  const query = `
+    INSERT INTO patients 
+    (name, number, dob, profile_photo, registered_date, program_assigned_to, medical_team, program, push_notification_id, address, pincode, state) 
+    VALUES 
+    ('${name}', '${number}', '${dob}', '${profile_photo}', '${registered_date}', '${program_assigned_to}', '${medical_team}', '${program}', '${pushNotificationId}', '${address}', '${pincode}', '${state}')
     `;
-    const result = await connection.query(query);
-    const patientId = result.insertId;
-
-    // Handle aliments insertion
-    await Promise.all(
+  
+    try {
+      const result = await pool.query(query);
+      const patientId = result.insertId;
+  
       aliments.map(async (ailmentId) => {
-        const ailmentsQuery = `INSERT INTO ailment_patient (patient_id, ailment_id) VALUES (${patientId},${ailmentId})`;
-        await connection.query(ailmentsQuery);
-      })
-    );
-
-    // Extract and update ailment names
-    let updateAilmentNames = "";
-    await Promise.all(
-      aliments.map(async (ailmentId) => {
-        const ailmentsNames = `SELECT name FROM ailments WHERE id = ${ailmentId}`;
-        const ailmentName = await connection.query(ailmentsNames);
+        const ailmentsQuery = `INSERT INTO ailment_patient (patient_id, ailment_id) VALUES (${patientId}, ${ailmentId})`;
+        await pool.query(ailmentsQuery);
+      });
+  
+      let updateAilmentNames = "";
+      await Promise.all(
+        aliments.map(async (ailmentId) => {
+          const ailmentsNames = `SELECT name FROM ailments WHERE id = ${ailmentId}`;
+        const ailmentName = await pool.query(ailmentsNames);
         const name = ailmentName[0].name;
         updateAilmentNames += name + ", ";
       })
@@ -133,45 +143,43 @@ const AddPatient = async (req, res, next) => {
     }
 
     const updatePatientQuery = `
-      UPDATE patients
-      SET aliments = '${updateAilmentNames}'
+      UPDATE patients 
+      SET aliments = '${updateAilmentNames}' 
       WHERE id = ${patientId}
     `;
-    await connection.query(updatePatientQuery);
-
-    const insertPatientIntoDoctorQuery = `INSERT INTO doctor_patients (doctor_id, patient_id) VALUES (? , ?)`;
-    const insertPatientIntoAdminQuery = `INSERT INTO admin_patients (admin_id, patient_id) VALUES (? , ?)`;
-
-    await connection.query(insertPatientIntoDoctorQuery, [
-      medical_team,
-      patientId,
-    ]);
-    await connection.query(insertPatientIntoAdminQuery, [1, patientId]);
-
-    createNewEnrollmentAlertFunction(patientId);
-
-    await connection.commit();
-
+    await pool.query(updatePatientQuery);
+    const insertPatientIntoDoctorQuery = `INSERT INTO doctor_patients (doctor_id, patient_id) VALUES (?, ?)`;
+    const insertPatientIntoAdminQuery = `INSERT INTO admin_patients (admin_id, patient_id) VALUES (?, ?)`;
+    await pool.query(insertPatientIntoDoctorQuery, [medical_team, patientId]);
+    await pool.query(insertPatientIntoAdminQuery, [1, patientId]);
+const isAdvance = program === "Advanced" ? 1 : 0;
+    const payload = {
+      name,
+      number,
+      id: patientId.toString(), // Convert BigInt to string
+      pushNotificationId: pushNotificationId || null,
+      isAdvance,
+    };
+    const token = jwt.sign(payload, JWT_SECRET_KEY, {
+      expiresIn: "24h",
+      issuer: "https://localhost:7173/",
+    });
+// Respond with success
     res.status(200).json({
       success: true,
       result: true,
       data: "Patient Registered Successfully",
-      userId: result.insertId.toString(),
-      message:
-        "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VybmFtZSI6IkRlZXJhaiIsIlVzZXJJbWFnZSI6IiIsIlVzZXJJRCI6Ijg5IiwiSXNBZHZhbmNlZCI6ImZhbHNlIiwiRGF0ZU9mQmlydGgiOiIxMC8xMC8yMDAzIDEyOjAwOjAwIEFNIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiJkMGI2MjBjYi1lNzFlLTRlYWEtYmRjZS1iYTM4MGMzYmExOWUiLCJleHAiOjE3NDIwMjI2NTUsImlzcyI6Imh0dHBzOi8vbG9jYWxob3N0OjcxNzMvIiwiYXVkIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NzE3My8ifQ.Ste1qMw9OgllwGwVKUMUFo3RrFOTFy78VjdEvxoSnQw",
+      userId: patientId.toString(), // Convert BigInt to string
+      token,
     });
   } catch (err) {
-    await connection.rollback();
-    console.error("Error Details:", err);
+    console.log(err);
     res.status(500).json({
       success: false,
       data: "Error while Registering Patient",
     });
-  } finally {
-    connection.release();
   }
 };
-
 const deletePatient = async (req, res, next) => {
   const id = req.params.id;
   try {

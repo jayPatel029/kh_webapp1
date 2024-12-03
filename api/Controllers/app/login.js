@@ -1,5 +1,5 @@
 const { pool } = require("../../databaseConn/database.js");
-
+//!static token1
 const login = async (req, res) => {
   console.log("login req found");
   const { pushNotificationID, phoneNo } = req.body;
@@ -21,8 +21,62 @@ const login = async (req, res) => {
   }
 };
 
+
+const jwt = require("jsonwebtoken");
+
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
+
+const loginv2 = async (req, res) => {
+console.log(JWT_SECRET_KEY);
+  console.log("login request received");
+  const {pushNotificationID, phoneNo } = req.body;
+  const query = `SELECT * FROM patients WHERE number = ${phoneNo}`;
+  try {
+    const result = await pool.query(query);
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        result: false,
+        message: "No patient found with this phone number",
+      });
+    }
+
+    const patient = result[0];
+
+    const isAdvance = patient.program === "Advanced" ? 1 : 0;
+
+    const payload = {
+      name: patient.name,
+      number: patient.number,
+      id: patient.id,
+      pushNotificationID: pushNotificationID || null,
+      isAdvance: isAdvance,
+    };
+
+    const token = jwt.sign(payload, JWT_SECRET_KEY, {
+      expiresIn: "24h", 
+      issuer: "https://localhost:7173/", //temp issuer
+    });
+
+    // Respond with the token and user ID
+    const responseJSON = {
+      token,
+      userID: patient.id,
+    };
+
+    res.json(responseJSON);
+  } catch (err) {
+    console.error("Error during login:", err);
+    res.status(500).json({
+      result: false,
+      message: "Error while fetching patient",
+    });
+  }
+};
+
 module.exports = {
   login,
+  loginv2,
 };
 
 // const login = async (req, res, next) => {

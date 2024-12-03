@@ -5,26 +5,88 @@ const {
 } = require("../../Helpers/date_formatter.js");
 const { addToReadTable } = require("./prescription.js");
 
+// const getRequisitionInApp = async (req, res, next) => {
+//   const { id } = req.body;
+//   try {
+//     const query = `SELECT * FROM requisition WHERE Patient_id = ${id}`;
+//     const requisition = await pool.query(query);
+//     if (requisition.length > 0) {
+//       var out = [];
+
+//       for (var i in requisition) {
+//         out.push({
+//           requisitionID: requisition[i]["id"],
+//           image: requisition[i]["Requisition"],
+//           date: formatDate(requisition[i]["Date"]).replaceAll(" ", "-"),
+//         });
+//       }
+//       res.status(200).json({
+//         result: true,
+//         message: "Successful",
+//         data: out,
+//       });
+      
+//       console.log("response", res);
+      
+//     } else {
+//       res.status(200).json({
+//         result: false,
+//         message: "Data Not Found",
+//         data: null,
+//       });
+//     }
+//   } catch (err) {
+//     console.log("error: ", err);
+//     res.status(500).json({
+//       result: false,
+//       message: "Unsuccessful",
+//       error: "error while fetching user requisitions",
+//     });
+//   }
+// };
+
+
+
+
 const getRequisitionInApp = async (req, res, next) => {
   const { id } = req.body;
   try {
     const query = `SELECT * FROM requisition WHERE Patient_id = ${id}`;
     const requisition = await pool.query(query);
+
     if (requisition.length > 0) {
       var out = [];
 
       for (var i in requisition) {
+        let formattedDate = "Invalid Date";
+        const dateStr = requisition[i]["Date"];
+        
+        if (dateStr) {
+          try {
+            // Manually parse the date in YYYY-DD-MM format to YYYY-MM-DD
+            const [year, day, month] = dateStr.split("-");
+            const parsedDate = new Date(`${year}-${month}-${day}`);
+            formattedDate = formatDate(parsedDate).replaceAll(" ", "-");
+          } catch (dateError) {
+            console.log("Invalid Date format for requisition ID:", requisition[i]["id"], dateError);
+          }
+        }
+
         out.push({
           requisitionID: requisition[i]["id"],
           image: requisition[i]["Requisition"],
-          date: formatDate(requisition[i]["Date"]).replaceAll(" ", "-"),
+          date: formattedDate,
         });
       }
+
       res.status(200).json({
         result: true,
         message: "Successful",
         data: out,
       });
+
+      console.log("response", res);
+
     } else {
       res.status(200).json({
         result: false,
@@ -33,6 +95,7 @@ const getRequisitionInApp = async (req, res, next) => {
       });
     }
   } catch (err) {
+    console.log("error: ", err);
     res.status(500).json({
       result: false,
       message: "Unsuccessful",
@@ -40,6 +103,9 @@ const getRequisitionInApp = async (req, res, next) => {
     });
   }
 };
+
+
+
 
 const fetchRequisitionComments = async (req, res) => {
   const { requisitionID } = req.body;

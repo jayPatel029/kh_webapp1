@@ -1,6 +1,6 @@
 const { pool } = require("../databaseConn/database.js");
 const { isDoctor } = require("./Users.js");
-
+const {sendPushNotification} = require("./app/notification.js")
 const getComments = async (req, res, next) => {
     const { fileId, fileType } = req.body;
 
@@ -95,15 +95,17 @@ const updateReadTable = async (req, res) => {
 }
 
 const addComment = async (req, res, next) => {
-    const { content, fileId, fileType, userId, iSDoctor, docId } = req.body;
+    const { content, fileId, fileType, userId, iSDoctor, doctorId:doctorEmail } = req.body;
     console.log("doctors",req.body);
     const date = new Date().toISOString().slice(0, 19).replace('T', ' ');
     var uid = 0;
+    let commentingUserId=userId;
+    let commentingDoctorId=null;
     if (iSDoctor === 1) {
         const query = `SELECT * FROM doctors WHERE email='${docId}'`;
         try {
             const doctor = await pool.query(query);
-            uid = doctor[0].id;
+            commentingDoctorId = doctor[0].id;
         } catch (error) {
             console.error("Error getting doctor:", error);
             res.status(400).json({
@@ -114,7 +116,7 @@ const addComment = async (req, res, next) => {
         }
 
     }
-    const query = `INSERT INTO comments (content,userId,typeId,isDoctor,date,type,doctorId) VALUES ('${content}','${userId}','${fileId}','${iSDoctor}','${date}','${fileType}','${uid}')`;
+    const query = `INSERT INTO comments (content,userId,typeId,isDoctor,date,type,doctorId) VALUES ('${content}','${commentingUserId}','${fileId}','${iSDoctor}','${date}','${fileType}','${commentingDoctorId}')`;
 
     try {
         const result = await pool.query(query);
@@ -151,6 +153,18 @@ const addComment = async (req, res, next) => {
 
             }
         }
+        const pushNotiData = {
+            title: "New Comment",
+            body: `A new ${fileType} comment has been added.`,
+            type: "New Comment",
+            customField: "This is a custom notification from Firebase.",
+        };
+
+        try {
+            await sendPushNotification(pushNotiData, userId);
+            console.log("Push Notification Sent Successfully");
+        } catch (error) {
+            console.error("Error Sending Push Notification:", error);}
         res.status(200).json({
             success: true,
             message: "Comment added successfully",

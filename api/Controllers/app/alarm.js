@@ -77,7 +77,7 @@ const getAlarmOfPatient = async (req, res) => {
           userID: parseInt(patientId),
           alarmID: result[i]["id"],
           setByuser: result[i]["setByUser"] == "1" ? true : false,
-          alarmType: getAlarmTypeFromString(result[i]["type"]), // if dialysis then 2, health parameter then 3, diet details then 4, havent checked prescription but maybe 1
+          alarmType: getAlarmTypeFromString(result[i]["type"]), // if dialysis then 2, health parameter then 3, diet details then 4, medicine 1
           shortDesc: result[i]["description"] || result[i]["parameter"],
           isWeek:
             result[i]["isWeek"] == 1 ||
@@ -115,8 +115,105 @@ const getAlarmOfPatient = async (req, res) => {
   }
 };
 
+//!changes here
+
+// const createAlarm = async (req, res) => {
+//   console.log("creating alarm");
+//   const {
+//     userID,
+//     userParameterID,
+//     alarmType,
+//     parameter,
+//     shortDesc,
+//     frequency,
+//     timeInMonth,
+//     weekdays,
+//     timeInADay,
+//     timeDoses,
+//     status,
+//     reason,
+//     datesOFMonth,
+//     prescriptionid,
+//     setByuser,
+//     isWeek,
+//     daysOFWeek,
+//   } = req.body;
+
+//   // console.log(req.body);
+//   // console.log(timeDoses);
+//   // console.log(timeDoses[0]["time"]);
+//   // console.log(timeDoses[0]["doses"]);
+//   // console.log(userParameterID);
+
+//   const query = `INSERT INTO alarm (doctorId, type, parameter, description, frequency, timesamonth, weekdays, timesaday, time, status, reason, dateofmonth, patientid, prescriptionid, dateadded, setByUser, isWeek, daysOFWeek) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ? , ? , ?)`;
+//   const values = [
+//     userParameterID,
+//     convertAlarmTypeFromInt(alarmType) || null,
+//     parameter || null,
+//     shortDesc || null,
+//     timeDoses[0]["doses"] || null,
+//     timeInMonth || null,
+//     weekdays || null,
+//     timeInADay || null,
+//     timeDoses[0]["time"] || null,
+//     status || "Approved",
+//     reason || null,
+//     datesOFMonth || null,
+//     userID,
+//     prescriptionid || null,
+//     new Date().toISOString().slice(0, 19).replace("T", " "),
+//     setByuser,
+//     isWeek,
+//     daysOFWeek,
+//   ];
+//   /* 
+  
+//   {userParameterID: 0, userID: 11, alarmID: 0, setByuser: true, alarmType: 2, shortDesc: test, isWeek: true, daysOFWeek: 1, datesOFMonth: , timeInADay: 2, timeInMonth: 0, timeDoses: [{autoID: 0, time: 8:00, doses: 1.0, unitType: tablet}, {autoID: 0, time: 8:00, doses: 1.0, unitType: tablet}]}
+
+//   {userParameterID: 0, userID: 11, alarmID: 0, setByuser: true, alarmType: 2, shortDesc: tryyyyy, isWeek: true, daysOFWeek: 1,2, datesOFMonth: , timeInADay: 2, timeInMonth: 0, timeDoses: [{autoID: 0, time: 8:00, doses: 1.0, unitType: tablet}, {autoID: 0, time: 21:00, doses: 1.0, unitType: tablet}]}
+//   */
+//   console.log("body sent: ", values);
+//   try {
+//     // const result = await pool.query(query);
+//     const result = await pool.query(query, values);
+//     const alarmID = result.insertId;
+//     var a = [];
+//     for (var i in timeDoses) {
+//       const query2 = `INSERT INTO alarm_doses (alarmID, time, doses, unitType, createdAt, updatedAt) VALUES (? , ? , ? , ? , ? , ?)`;
+//       const values2 = [
+//         alarmID,
+//         timeDoses[i]["time"],
+//         timeDoses[i]["doses"],
+//         timeDoses[i]["unitType"],
+//         new Date().toISOString().slice(0, 19).replace("T", " "),
+//         new Date().toISOString().slice(0, 19).replace("T", " "),
+//       ];
+//       try {
+//         const result2 = await pool.query(query2, values2);
+//         a.push(result2.insertId);
+//       } catch (err) {
+//         console.error(err);
+//         res.status(500).send("Error addin doses");
+//         break;
+//       }
+//     }
+
+//     res.status(200).json({
+//       result: true,
+//       // message: "2520", // auto id of dose
+//       message: a.join(","),
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send("Error creating alarm");
+//   }
+// };
+
+
+
+
 const createAlarm = async (req, res) => {
-  console.log("creating alarm");
+  console.log("Creating alarm");
   const {
     userID,
     userParameterID,
@@ -137,75 +234,104 @@ const createAlarm = async (req, res) => {
     daysOFWeek,
   } = req.body;
 
-  // console.log(req.body);
-  // console.log(timeDoses);
-  // console.log(timeDoses[0]["time"]);
-  // console.log(timeDoses[0]["doses"]);
-  // console.log(userParameterID);
+  const currentTimestamp = new Date().toISOString().slice(0, 19).replace("T", " ");
+  const alarmTypeConverted = convertAlarmTypeFromInt(alarmType) || null;
 
-  const query = `INSERT INTO alarm (doctorId, type, parameter, description, frequency, timesamonth, weekdays, timesaday, time, status, reason, dateofmonth, patientid, prescriptionid, dateadded, setByUser, isWeek, daysOFWeek) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ? , ? , ?)`;
+  // Log input values to check if they are correct
+  console.log("Received values:", {
+    userID,
+    userParameterID,
+    alarmTypeConverted,
+    parameter,
+    shortDesc,
+    frequency,
+    timeInMonth,
+    weekdays,
+    timeInADay,
+    timeDoses,
+    status,
+    reason,
+    datesOFMonth,
+    prescriptionid,
+    setByuser,
+    isWeek,
+    daysOFWeek,
+  });
+
+  // Query for alarm table
+  const query = `
+    INSERT INTO alarm 
+    (doctorId, type, parameter, description, frequency, timesamonth, weekdays, timesaday, time, status, reason, dateofmonth, patientid, prescriptionid, dateadded, setByUser, isWeek, daysOFWeek)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  
   const values = [
     userParameterID,
-    convertAlarmTypeFromInt(alarmType) || null,
+    alarmTypeConverted,
     parameter || null,
     shortDesc || null,
-    timeDoses[0]["doses"] || null,
+    timeDoses?.[0]?.doses || null,
     timeInMonth || null,
     weekdays || null,
     timeInADay || null,
-    timeDoses[0]["time"] || null,
+    timeDoses?.[0]?.time || null,
     status || "Approved",
     reason || null,
     datesOFMonth || null,
     userID,
     prescriptionid || null,
-    new Date().toISOString().slice(0, 19).replace("T", " "),
+    currentTimestamp,
     setByuser,
     isWeek,
     daysOFWeek,
   ];
-  /* 
-  
-  {userParameterID: 0, userID: 11, alarmID: 0, setByuser: true, alarmType: 2, shortDesc: test, isWeek: true, daysOFWeek: 1, datesOFMonth: , timeInADay: 2, timeInMonth: 0, timeDoses: [{autoID: 0, time: 8:00, doses: 1.0, unitType: tablet}, {autoID: 0, time: 8:00, doses: 1.0, unitType: tablet}]}
 
-  {userParameterID: 0, userID: 11, alarmID: 0, setByuser: true, alarmType: 2, shortDesc: tryyyyy, isWeek: true, daysOFWeek: 1,2, datesOFMonth: , timeInADay: 2, timeInMonth: 0, timeDoses: [{autoID: 0, time: 8:00, doses: 1.0, unitType: tablet}, {autoID: 0, time: 21:00, doses: 1.0, unitType: tablet}]}
-  */
+  console.log("Query for alarm table:", query);
+  console.log("Values for alarm table:", values);
 
   try {
-    // const result = await pool.query(query);
     const result = await pool.query(query, values);
     const alarmID = result.insertId;
-    var a = [];
-    for (var i in timeDoses) {
-      const query2 = `INSERT INTO alarm_doses (alarmID, time, doses, unitType, createdAt, updatedAt) VALUES (? , ? , ? , ? , ? , ?)`;
+    console.log("Alarm created with ID:", alarmID);
+
+    const doseIDs = [];
+    for (const dose of timeDoses || []) {
+      const query2 = `
+        INSERT INTO alarm_doses 
+        (alarmID, time, doses, unitType, createdAt, updatedAt) 
+        VALUES (?, ?, ?, ?, ?, ?)`;
+      
       const values2 = [
         alarmID,
-        timeDoses[i]["time"],
-        timeDoses[i]["doses"],
-        timeDoses[i]["unitType"],
-        new Date().toISOString().slice(0, 19).replace("T", " "),
-        new Date().toISOString().slice(0, 19).replace("T", " "),
+        dose.time,
+        dose.doses,
+        dose.unitType,
+        currentTimestamp,
+        currentTimestamp,
       ];
+
+      console.log("Query for alarm_doses table:", query2);
+      console.log("Values for alarm_doses table:", values2);
+
       try {
         const result2 = await pool.query(query2, values2);
-        a.push(result2.insertId);
+        doseIDs.push(result2.insertId);
+        console.log("Dose added with ID:", result2.insertId);
       } catch (err) {
-        console.error(err);
-        res.status(500).send("Error addin doses");
-        break;
+        console.error("Error inserting dose:", err);
+        return res.status(500).json({ error: "Error adding doses" });
       }
     }
 
     res.status(200).json({
       result: true,
-      // message: "2520", // auto id of dose
-      message: a.join(","),
+      message: doseIDs.join(","),
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Error creating alarm");
+    console.error("Error creating alarm:", error);
+    res.status(500).json({ error: "Error creating alarm" });
   }
 };
+
 
 const updateAlarm = async (req, res) => {
   const {
@@ -296,6 +422,7 @@ const updateAlarm = async (req, res) => {
   }
 };
 
+//for patient app
 async function insertAlarm(req, res) {
   const { alarmID } = req.body;
 

@@ -6,8 +6,10 @@ const {
 const {
   getDoctorCode,
   getDoctorMessages,
+  getUnreadDoctorComments,
+  markCommentAsRead,
 } = require("../Controllers/app/doctor");
-const { login } = require("../Controllers/app/login");
+const { login,loginv2 } = require("../Controllers/app/login");
 const {
   getAilmentList,
   getProfileDetails,
@@ -57,6 +59,7 @@ const {
 } = require("../Controllers/app/delete_account_request.js");
 const { submitUserFeedback } = require("../Controllers/app/feedback.js");
 const { sendPushNotification } = require("../Controllers/app/notification.js");
+const { verifyToken } = require("../Helpers/middlewares/roles.js");
 const router = require("express").Router();
 // Set storage engine
 // const storage = multer.diskStorage({
@@ -76,11 +79,13 @@ router.post("/getProfileDetails", getProfileDetails);
 router.post("/register/getDoctorCode", getDoctorCode);
 router.post("/getDoctorMessages", getDoctorMessages);
 router.post("/login", login);
+router.post("/loginv2",loginv2 );
 router.post("/pushTokenUpdate", updateToken);
 
 // UPDATE
 router.post("/updateUserAilments", updateUserAilment);
-
+router.get("/getUnreadDoctorCmts",verifyToken,getUnreadDoctorComments);
+router.post("/markCommentsAsRead", markCommentAsRead);
 // ALARMS
 router.post("/alarms/fetchAlarms", getAlarmOfPatient);
 router.post("/alarms/insertAlarm", insertAlarm);
