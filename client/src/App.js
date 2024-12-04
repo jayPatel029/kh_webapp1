@@ -47,10 +47,10 @@ import AddPatientForm from "./pages/patient/AddPatientForm";
 import KfreSingle from "./pages/kfre/KfreSingle";
 import DailyReadingsCsv1 from "./pages/dailyReadings/DailyReadingCsv1";
 import DialysisReadingCsv from "./pages/dialysisReadings/DialysisReadingCsv";
-import LogsPage from "./pages/logs/patientLog";
-import DocLogPage from "./pages/logs/DoctorLog";
+import LogsPage from "./pages/AuditLogs/patientLog";
+import DocLogPage from "./pages/AuditLogs/DoctorLog";
 import DelPatient from "./pages/patient/delPatient";
-import Logs from "./pages/logs/Logs";
+import Logs from "./pages/AuditLogs/Logs";
 
 function App() {
   return (
