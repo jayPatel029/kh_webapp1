@@ -144,6 +144,8 @@ async function createDoctorsTable() {
     description TEXT NULL , 
     email_notification ENUM('yes', 'no') NOT NULL ,
     can_export ENUM('yes', 'no') NOT NULL ,
+    daily_update ENUM('yes', 'no') ,
+    Dialysis_updates ENUM('yes', 'no') ,
     regdate DATE,PRIMARY KEY (id)) ENGINE = InnoDB;`;
 
   try {
@@ -637,6 +639,7 @@ const createCommentsTable = async () => {
       isDoctor INT(11) DEFAULT NULL,
       date VARCHAR(255) DEFAULT NULL,
       type VARCHAR(255) DEFAULT NULL,
+      doctorId INT(11) Not NULL,
       PRIMARY KEY (id) USING BTREE
     ) COLLATE='utf8mb4_general_ci' ENGINE=InnoDB;
   `;
