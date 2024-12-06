@@ -9,7 +9,9 @@ const {
   fetchLabReadings,
   fetchLabReadingsResponse,
   addLabReadings,
-  getRange
+  getRange,
+  saveConfirmedData,
+  getColoumnName
 } = require("../Controllers/LabReports.js");
 const { verifyToken } = require("../Helpers/middlewares/roles.js");
 
@@ -20,12 +22,15 @@ router.get("/range",verifyToken,getRange)
 
 router.get("/getLabReports/:id",verifyToken, getLabReports);
 // router.get("/:patient",verifyToken, getLabReportByPatient);
-router.post("/add",verifyToken, addLabReport);
+router.post("/extract", addLabReport); // For initial extraction
+router.post("/confirm", saveConfirmedData); // For final save
+
 router.delete("/:id",verifyToken, deleteLabReport);
 router.get("/getLabReport/:id",verifyToken, getLabReportById);
 router.delete("/deleteLabReport/:id",verifyToken, deleteLabReport);
 router.post("/addBulkIndividual",verifyToken, uploadBulkLabReportIndividual);
 router.get("/LabReadings",verifyToken,fetchLabReadings)
+router.get("/getColumnNames",verifyToken,getColoumnName)
 
 
 

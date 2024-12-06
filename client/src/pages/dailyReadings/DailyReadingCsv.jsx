@@ -25,6 +25,7 @@ function DailyquestionCsv() {
       high_range: "",
       isGraph:"",
       unit:"",
+      sendAlert:"",
       alertTextDoc:"",
     },
   ]);
@@ -49,7 +50,7 @@ function DailyquestionCsv() {
 
   const calculate = async () => {
     for (const data of patientData) { // Use for...of instead of forEach
-      if (data.title && data.type && data.assign_range && data.ailments
+      if (data.title && data.type
       ) {
         console.log("typeof",typeof(data.ailments))
        console.log("ygwdu",data)
@@ -62,6 +63,7 @@ function DailyquestionCsv() {
         console.error("All fields are required for calculation.");
       }
     }
+    alert("Data Added Successfully")
   };
   
 
@@ -77,6 +79,7 @@ function DailyquestionCsv() {
         high_range: row.high_range,
         isGraph: row.isGraph,
         unit: row.unit,
+        sendAlert: row.sendAlert,
         alertTextDoc: row.alertTextDoc,
 
       }));

@@ -22,6 +22,7 @@ function DailyquestionCsv() {
       high_range: "",
       isGraph:"",
       unit:"",
+      sendAlert:"",
       alertTextDoc:"",
     },
   ]);
@@ -59,6 +60,7 @@ function DailyquestionCsv() {
         console.error("All fields are required for calculation.");
       }
     }
+    alert("Data Added Successfully")
   };
   
 
@@ -74,6 +76,7 @@ function DailyquestionCsv() {
         high_range: row.high_range,
         isGraph: row.isGraph,
         unit: row.unit,
+        sendAlert: row.sendAlert,
         alertTextDoc: row.alertTextDoc,
 
       }));
