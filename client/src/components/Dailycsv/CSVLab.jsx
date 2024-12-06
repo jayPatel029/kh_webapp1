@@ -5,8 +5,7 @@ import {
   formatFileSize,
 } from "react-papaparse";
 import axiosInstance from "../../helpers/axios/axiosInstance";
-import { server_url } from "../../constants/constants";
-import { is } from "date-fns/locale";
+
 
 const GREY = "#CCC";
 const GREY_LIGHT = "rgba(255, 255, 255, 0.4)";
@@ -33,6 +32,7 @@ export default function CSVReader({ setData, setSuccess, success }) {
     high_range: "",
     isGraph:"",
     unit:"",
+    sendAlert:"",
     alertTextDoc:"",
 
   });
@@ -68,6 +68,9 @@ export default function CSVReader({ setData, setSuccess, success }) {
         unit: columnMappings.unit
           ? row[columnOptions.indexOf(columnMappings.unit)]
           : undefined,
+        sendAlert: columnMappings.sendAlert
+          ? row[columnOptions.indexOf(columnMappings.sendAlert)]
+          : undefined,  
         alertTextDoc: columnMappings.alertTextDoc
           ? row[columnOptions.indexOf(columnMappings.alertTextDoc)]
           : undefined,

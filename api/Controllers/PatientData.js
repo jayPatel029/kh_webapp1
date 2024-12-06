@@ -479,8 +479,8 @@ const PdfTextFunction = async (pdfUrl) => {
 
     // Split into lines
     const textArray = extractedText.split('\n').filter(line => line.trim() !== '');
-    const medicalData= extractMedicalParameters(extractedText);
-    return medicalData;
+    // const medicalData= extractMedicalParameters(extractedText);
+    // return medicalData;
     const readings = extractReadings(textArray);
 
     console.log("Extracted Readings:", readings);
@@ -493,33 +493,15 @@ const PdfTextFunction = async (pdfUrl) => {
 };
 
 // Function to extract readings
-const extractReadings = (lines) => {
+const extractReadings = async(lines) => {
   const readings = {};
+  const params = `select title from labreadings `;
+  const Dbparameters = await pool.query(params);
+  console.log("para",Dbparameters);
   const parameters = [
-    "Hemoglobin",
-    "Packed Cell Volume (PCV)",
-    "RBC Count",
-    "MCV",
-    "uric acid",
-    "MCH",
-    "MCHC",
-    "Red Cell Distribution Width (RDW)",
-    "Total Leukocyte Count (TLC)",
-    "Neutrophils",
-    "Lymphocytes",
-    "Monocytes",
-    "Eosinophils",
-    "Basophils",
-    "Neutrophils (absolute)",
-    "Lymphocytes (absolute)",
-    "Monocytes (absolute)",
-    "Eosinophils (absolute)",
-    "Basophils (absolute)",
-    "Platelet Count",
-    "eGfr",
-
+    ...Dbparameters.map(item => item.title), // Extract titles from database
+   
   ];
-
   lines.forEach((line, index) => {
     // Check if the line matches a known parameter
     const parameter = parameters.find(param => line.toLowerCase().includes((param).toLowerCase()));

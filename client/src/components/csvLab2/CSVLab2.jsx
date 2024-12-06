@@ -18,69 +18,7 @@ const REMOVE_HOVER_COLOR_LIGHT = lightenDarkenColor(
 );
 const GREY_DIM = "#686868";
 
-const styles = {
-  zone: {
-    alignItems: "center",
-    border: `2px dashed ${GREY}`,
-    borderRadius: 20,
-    display: "flex",
-    flexDirection: "column",
-    height: "100%",
-    justifyContent: "center",
-    padding: 20,
-  },
-  file: {
-    background: "linear-gradient(to bottom, #EEE, #DDD)",
-    borderRadius: 20,
-    display: "flex",
-    height: 120,
-    width: 120,
-    position: "relative",
-    zIndex: 10,
-    flexDirection: "column",
-    justifyContent: "center",
-  },
-  info: {
-    alignItems: "center",
-    display: "flex",
-    flexDirection: "column",
-    paddingLeft: 10,
-    paddingRight: 10,
-  },
-  size: {
-    backgroundColor: GREY_LIGHT,
-    borderRadius: 3,
-    marginBottom: "0.5em",
-    justifyContent: "center",
-    display: "flex",
-  },
-  name: {
-    backgroundColor: GREY_LIGHT,
-    borderRadius: 3,
-    fontSize: 12,
-    marginBottom: "0.5em",
-  },
-  progressBar: {
-    bottom: 14,
-    position: "absolute",
-    width: "100%",
-    paddingLeft: 10,
-    paddingRight: 10,
-  },
-  zoneHover: {
-    borderColor: GREY_DIM,
-  },
-  default: {
-    borderColor: GREY,
-  },
-  remove: {
-    height: 23,
-    position: "absolute",
-    right: 6,
-    top: 6,
-    width: 23,
-  },
-};
+
 export default function CSVReader({ setData, setSuccess, success, patientId }) {
   const { CSVReader } = useCSVReader();
   const [zoneHover, setZoneHover] = useState(false);
@@ -104,89 +42,38 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
     Monocytes: "",
     Eosinophils: "",
     Basophils: "",
-    Neutrophils_absolute: "",
-    Lymphocytes_absolute: "",
-    Monocytes_absolute: "",
-    Eosinophils_absolute: "",
-    Basophils_absolute: "",
-    Platelet_Count: "",
+    
 
   });
   const [csvData, setCsvData] = useState([]);
   const [columnOptions, setColumnOptions] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
+  const handleAddNewField = () => {
+    const newFieldKey = `New_Field_${Object.keys(columnMappings).length + 1}`;
+    const fieldName = prompt("Enter a name for the new field:");
+    if (fieldName) {
+      setColumnMappings({
+        ...columnMappings,
+        [fieldName]: "",
+      });
+    }
+  };
+  
   const handleSubmit = () => {
     const mappedData = csvData
-      .map((row) => ({
-        Hemoglobin: columnMappings.Hemoglobin
-          ? row[columnOptions.indexOf(columnMappings.Hemoglobin)]
-          : undefined,
-        MCV: columnMappings.MCV
-          ? row[columnOptions.indexOf(columnMappings.MCV)]
-          : undefined,
-        date: columnMappings.date
-          ? row[columnOptions.indexOf(columnMappings.date)]
-          : undefined,
-        'Packed Cell Volume (PCV)': columnMappings.PCV
-          ? row[columnOptions.indexOf(columnMappings.PCV)]
-          : undefined,
-          'RBC Count': columnMappings.RBC
-          ? row[columnOptions.indexOf(columnMappings.RBC)]
-          : undefined,
-        MCH: columnMappings.MCH
-          ? row[columnOptions.indexOf(columnMappings.MCH)]
-          : undefined,
-        MCHC: columnMappings.MCHC
-          ? row[columnOptions.indexOf(columnMappings.MCHC)]
-          : undefined,
-        'Red Cell Distribution Width (RDW)': columnMappings.RDW
-          ? row[columnOptions.indexOf(columnMappings.RDW)]
-          : undefined,
-        'Total Leukocyte Count (TLC)': columnMappings.TLC
-          ? row[columnOptions.indexOf(columnMappings.TLC)]
-          : undefined,
-        'Segmented Neutrophils': columnMappings.Segmented_Neutrophils
-          ? row[columnOptions.indexOf(columnMappings.Segmented_Neutrophils)]
-          : undefined,
-        Neutrophils: columnMappings.Neutrophils
-          ? row[columnOptions.indexOf(columnMappings.Neutrophils)]
-          : undefined,
-        Lymphocytes: columnMappings.Lymphocytes
-          ? row[columnOptions.indexOf(columnMappings.Lymphocytes)]
-          : undefined,
-        Monocytes: columnMappings.Monocytes
-          ? row[columnOptions.indexOf(columnMappings.Monocytes)]
-          : undefined,
-        Eosinophils: columnMappings.Eosinophils
-          ? row[columnOptions.indexOf(columnMappings.Eosinophils)]
-          : undefined,
-        Basophils: columnMappings.Basophils
-          ? row[columnOptions.indexOf(columnMappings.Basophils)]
-          : undefined,
-        'Neutrophils (absolute)': columnMappings.Neutrophils_absolute
-          ? row[columnOptions.indexOf(columnMappings.Neutrophils_absolute)]
-          : undefined,
-        'Lymphocytes (absolute)': columnMappings.Lymphocytes_absolute
-          ? row[columnOptions.indexOf(columnMappings.Lymphocytes_absolute)]
-          : undefined,
-        'Monocytes (absolute)': columnMappings.Monocytes_absolute
-          ? row[columnOptions.indexOf(columnMappings.Monocytes_absolute)]
-          : undefined,
-        'Eosinophils (absolute)': columnMappings.Eosinophils_absolute
-          ? row[columnOptions.indexOf(columnMappings.Eosinophils_absolute)]
-          : undefined,
-        'Basophils (absolute)': columnMappings.Basophils_absolute
-          ? row[columnOptions.indexOf(columnMappings.Basophils_absolute)]
-          : undefined,
-        'Platelet Count': columnMappings.Platelet_Count
-          ? row[columnOptions.indexOf(columnMappings.Platelet_Count)]
-          : undefined,
-            
-
-      }))
-      .filter((item) => Object.values(item).some((value) => value !== undefined));
-
+      
+        .map((row) => {
+          const mappedRow = {};
+          for (const [key, value] of Object.entries(columnMappings)) {
+            if (value) {
+              mappedRow[key] = row[columnOptions.indexOf(value)];
+            }
+          }
+          return mappedRow;
+        })
+        .filter((item) => Object.values(item).some((value) => value !== undefined));
+  
     const trimmedMappedData = mappedData.slice(1);
     setData(trimmedMappedData);
     setSuccess(!success);
@@ -320,7 +207,12 @@ export default function CSVReader({ setData, setSuccess, success, patientId }) {
                 ))}
               </ul>
               <div className="mt-4">
-            
+              <button
+                onClick={handleAddNewField}
+                className="mt-4 bg-green-500 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded"
+              >
+                Add New Field
+              </button>
                 <button
                   onClick={handleSubmit}
                   className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"

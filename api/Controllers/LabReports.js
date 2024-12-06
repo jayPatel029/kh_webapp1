@@ -36,35 +36,62 @@ const getLabReportByPatient = async (req, res, next) => {
     data: labreports,
   });
 };
+const saveConfirmedData = async (req, res) => {
+  const { patient_id, date, Report_Type, email,Lab_Report, confirmedValues } = req.body;
 
-const addLabReport = async (req, res, next) => {
-  const { Lab_Report, patient_id, date, Report_Type,email } = req.body;
-  console.log("lab",req.body)
-      const date_2 = new Date().toISOString().slice(0, 19).replace("T", " ");
-   const query = `INSERT INTO labreport (Lab_Report,Date,patient_id, Report_Type) VALUES ('${Lab_Report}','${date}','${patient_id}', '${Report_Type}')`;
   try {
-    const result = await pool.query(query);
-    var medicalData;
-    if(Report_Type === "Lab") {
-      const query=`insert into report_log (patient_id,report,type,report_id,message,deletedBy) values (${patient_id},'${Lab_Report}','Lab Report',${Number(result.insertId)},'Lab Report added ','${email}')`
-      await pool.query(query)
-      medicalData= await PdfTextFunction(Lab_Report);
-      console.log("Data",medicalData)
-      //  const success= await insertMedicalDataDB(medicalData,patient_id,date)
-    }
+    // Insert the lab report details
+    const reportQuery = `
+      INSERT INTO labreport (Date, patient_id,Lab_Report, Report_Type)
+      VALUES ('${date}', '${patient_id}','${Lab_Report}', '${Report_Type}')
+    `;
+    const reportResult = await pool.query(reportQuery);
+
+    const reportId =Number(reportResult.insertId);
+
+    // Insert each confirmed medical parameter into the database
+    const success = await insertMedicalDataDB(confirmedValues, patient_id, date);
+
+    // Log the operation
+    // const logQuery = `
+    //   INSERT INTO report_log (patient_id, type, report_id, message, deletedBy)
+    //   VALUES ('${patient_id}', '${Report_Type}', '${reportId}', 'Lab Report confirmed and saved', '${email}')
+    // `;
+    // await pool.query(logQuery);
 
     res.status(200).json({
       success: true,
-      message: "Lab Report added successfully",
-      data: Number(result.insertId),
+      message: "Lab Report confirmed and saved successfully",
+      reportId: reportId,
     });
   } catch (error) {
-    console.error("Error adding lab report:", error);
+    console.error("Error saving confirmed data:", error);
     res.status(400).json({
       success: false,
-      message: "Something went wrong",
+      message: "Error saving confirmed data",
     });
-    
+  }
+};
+
+
+const addLabReport = async (req, res) => {
+  const { Lab_Report } = req.body;
+
+  try {
+    // Extract data from the PDF
+    const medicalData = await PdfTextFunction(Lab_Report);
+
+    res.status(200).json({
+      success: true,
+      message: "Extracted data from Lab Report successfully",
+      extractedValues: medicalData, // Send extracted values to the frontend
+    });
+  } catch (error) {
+    console.error("Error processing lab report:", error);
+    res.status(400).json({
+      success: false,
+      message: "Error extracting data from Lab Report",
+    });
   }
 };
 
@@ -281,7 +308,12 @@ const insertMedicalDataDB = async (extractedData,user_id,date)=>{
 
 }
 
-
+const getColoumnName = async () => {
+const query =`select title from labreadings`
+const result = await pool.execute(query)
+console.log("res",result)
+return result
+}
 
 const uploadBulkLabReportIndividual = async (req, res) => {
   console.log("req", req.body);
@@ -328,10 +360,12 @@ module.exports = {
   getLabReportByPatient,
   addLabReport,
   deleteLabReport,
+  saveConfirmedData,
   getLabReportById,
   uploadBulkLabReportIndividual,
   fetchLabReadings,
   fetchLabReadingsResponse,
   addLabReadings,
   getRange,
+  getColoumnName,
 };
