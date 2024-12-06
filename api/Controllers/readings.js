@@ -315,22 +315,27 @@ async function addDialysisReading(req, res) {
       alertTextDoc,
       sendAlert,
     });
-
-    const ailmentsInserted = await ailments.map(async (ailment) => {
+    const query=`select id from ailments where name in (${ailments.map((ailment)=>`'${ailment}'`).join(",")})`;
+    const ailmentIds=await pool.query(query );
+    console.log("ailmentIds",ailmentIds);
+    const ailmentsInserted = await ailmentIds.map(async (ailment) => {
       await DialysisReadingAilments.create({
         dr_id: newReading.id,
-        ailmentID: ailment,
+        ailmentID: ailment.id,
       });
     });
     // Insert translations for the new reading
-    const translations = Object.entries(readingsTranslations).map(
-      ([language, translation]) => ({
-        dr_id: newReading.id,
-        language_id: parseInt(language),
-        title: translation,
-      })
-    );
-    await DialysisReadingsTranslations.bulkCreate(translations);
+    if(readingsTranslations && readingsTranslations!==undefined){
+
+      const translations = Object.entries(readingsTranslations).map(
+        ([language, translation]) => ({
+          dr_id: newReading.id,
+          language_id: parseInt(language),
+          title: translation,
+        })
+      );
+      await DialysisReadingsTranslations.bulkCreate(translations);
+    }
 
     res.status(201).send("Dialysis reading added successfully");
   } catch (error) {
