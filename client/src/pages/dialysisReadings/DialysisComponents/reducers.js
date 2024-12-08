@@ -69,7 +69,12 @@ export function newQuestionReducer(state, action) {
         isGraph: action.payload,
       };
     }
-    
+    case "unit": {
+      return {
+        ...state,
+        unit: action.payload,
+      };
+    }
     case "all": {
       return {
         id: null,
@@ -80,6 +85,8 @@ export function newQuestionReducer(state, action) {
         lower_assign_range: 0,
         upper_assign_range: 100,
         isGraph: 0,
+        sendAlert: 0,
+        unit: "",
         alertTextDoc:"",
         ...action.payload,
       };

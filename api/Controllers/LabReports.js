@@ -269,6 +269,7 @@ const getRange = async (req, res) => {
 
 async function getQuestionId(questionTitle) {
   try {
+    console.log("questionTitle",questionTitle)
     const question = await LabReadings.LabReadings.findOne({
       where: {
         title: questionTitle
@@ -277,7 +278,11 @@ async function getQuestionId(questionTitle) {
     if (question) {
       return question.id;
     } else {
-      throw new Error(`Question with title '${questionTitle}' not found.`);
+      const id = await LabReadings.LabReadings.create({
+        title: questionTitle,
+        isGraph: true,
+      });
+      return Number(id.id);
     }
   } catch (error) {
     throw new Error(`Error fetching questionId for title '${questionTitle}': ${error.message}`);
@@ -287,9 +292,9 @@ async function getQuestionId(questionTitle) {
 const insertMedicalDataDB = async (extractedData,user_id,date)=>{
   try {
     for (let key in extractedData) {
-      if(key === "date") continue;
+      if(key === "Date") continue;
       const questionId = await getQuestionId(key);
-
+      console.log("questionId",questionId)
       const newLabReading = await LabReadings.GraphReadingsLab.create({
         questionId: questionId,
         userId: user_id,
@@ -308,11 +313,14 @@ const insertMedicalDataDB = async (extractedData,user_id,date)=>{
 
 }
 
-const getColoumnName = async () => {
+const getColoumnName = async (req,res) => {
 const query =`select title from labreadings`
 const result = await pool.execute(query)
 console.log("res",result)
-return result
+return res.status(200).json({
+  success: true,
+  data: result,
+});
 }
 
 const uploadBulkLabReportIndividual = async (req, res) => {
@@ -323,21 +331,33 @@ const uploadBulkLabReportIndividual = async (req, res) => {
     const results = [];
 
     for (const record of data) {
-      let { date } = record;
+      let { Date } = record;
 
-      // Convert date from DD-MM-YYYY to YYYY-MM-DD
-      const [day, month, year] = date.split("-");
-      date = `${year}-${month}-${day}`;
+      // Validate and format the Date
+      if (!Date || !Date.includes("-")) {
+        console.warn(`Invalid or missing Date field in record: ${JSON.stringify(record)}`);
+        continue; // Skip the record
+      }
 
+      // Convert Date to YYYY-MM-DD format
+      try {
+        const [day, month, year] = Date.split("-");
+        Date = `${year}-${month}-${day}`;
+      } catch (error) {
+        console.warn(`Error parsing Date for record: ${JSON.stringify(record)}. Skipping.`);
+        continue; // Skip the record if the date parsing fails
+      }
+
+      // Insert lab report data
       const query = `INSERT INTO labreport (Date, patient_id, Report_Type, Lab_Report) 
-                     VALUES ('${date}', '${patient_id}', '${Report_Type}', '${Lab_Report}')`;
+                     VALUES ('${Date}', '${patient_id}', '${Report_Type}', '${Lab_Report}')`;
 
       const result = await pool.query(query);
-      results.push(result.insertId);
+      results.push(Number(result.insertId));
 
       // If the report type is "Lab", insert medical data
       if (Report_Type === "Lab") {
-        await insertMedicalDataDB(record, patient_id, date);
+        await insertMedicalDataDB(record, patient_id, Date);
       }
     }
 

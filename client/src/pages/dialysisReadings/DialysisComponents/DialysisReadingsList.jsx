@@ -33,6 +33,7 @@ function DialysisReadingsList() {
     lower_assign_range: null,
     upper_assign_range: null,
     isGraph: 0,
+    unit : "",
     alertTextDoc: "",
     sendAlert: 0,
   });
@@ -40,43 +41,38 @@ function DialysisReadingsList() {
   const [ailments, setAilments] = useState([]);
   const [languages, setLanguages] = useState([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        getAilments().then((resultAilment) => {
-          if (resultAilment.success && resultAilment.data.listOfAilments) {
-            const filteredAilments = resultAilment.data.listOfAilments.filter(
-              (ailment) =>
-                ["hemo dialysis", "peritoneal dialysis"].includes(
-                  ailment.name.toLowerCase().trim()
-                )
-            );
-            setAilments(filteredAilments);
-          } else {
-            console.error("Failed to fetch Ailments:", resultAilment);
-          }
-        });
-        getLanguages().then((resultLanguage) => {
-          if (resultLanguage.success && resultLanguage.data) {
-            setLanguages(resultLanguage.data);
-            let transaltiondict = {};
-            resultLanguage.data.forEach((lang) => {
-              if (lang.id !== 1) {
-                transaltiondict[lang.id] = "";
-              }
-            });
-            setTranslations(transaltiondict);
-          } else {
-            console.error("Failed to fetch Languages:", resultLanguage);
-          }
-        });
-      } catch (error) {
-        console.error("Error fetching questions:", error);
-      }
-    };
 
-    fetchData();
-  }, []);
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          getAilments().then((resultAilment) => {
+            if (resultAilment.success && resultAilment.data.listOfAilments) {
+              setAilments(resultAilment.data.listOfAilments);
+            } else {
+              console.error("Failed to fetch Ailments:", resultAilment);
+            }
+          });
+          getLanguages().then((resultLanguage) => {
+            if (resultLanguage.success && resultLanguage.data) {
+              setLanguages(resultLanguage.data);
+              let transaltiondict = {};
+              resultLanguage.data.forEach((lang) => {
+                if (lang.id !== 1) {
+                  transaltiondict[lang.id] = "";
+                }
+              });
+              setTranslations(transaltiondict);
+            } else {
+              console.error("Failed to fetch Languages:", resultLanguage);
+            }
+          });
+        } catch (error) {
+          console.error("Error fetching questions:", error);
+        }
+      };
+  
+      fetchData();
+    }, []);
 
   function validateForm() {
     if (
@@ -104,6 +100,7 @@ function DialysisReadingsList() {
       isGraph: newReading.isGraph,
       readingsTranslations: translations,
       alertTextDoc: newReading.alertTextDoc,
+      unit: newReading.unit,
       sendAlert: newReading.sendAlert,
     };
     if (validateForm()) {
@@ -158,9 +155,9 @@ function DialysisReadingsList() {
   return (
     <div>
       <div className=" bg-white md:p-6 border p-2 rounded-md border-t-primary border-t-4 shadow-md">
-        <div className="border-b-gray border-b-2 p-2 pt-4 md:pb-4 font-semibold text-primary tracking-wide text-xl">
+        <div className="border-b-gray border-b-2 p-2  pt-4 md:pb-4 font-semibold text-primary tracking-wide text-xl">
           Readings Master
-          <Link to="/dialysisReadingsCsv" className="mx-5">Or BulkUpload Question</Link>
+          <Link to="/dialysisReadingsCsv"  className="border md:ml-2 ml-0 text-white bg-primary font-semibold tracking-wide text-lg border-gray-300  md:w-1/4 rounded-lg  p-1.5"> BulkUpload Question</Link>
         </div>
         <div className="p-5">
           {modelOpen && (
@@ -281,6 +278,23 @@ function DialysisReadingsList() {
               );
             })}
           </select>
+          <div>
+            <label className="block mb-2 text-sm font-medium text-gray-500 pt-6">
+              Unit
+            </label>
+            <input
+              type="text"
+              placeholder="Unit"
+              value={newReading.unit}
+              onChange={(event) => {
+                newReadingDsipatch({
+                  type: "unit",
+                  payload: event.target.value,
+                });
+              }}
+              className=" border border-gray-300 text-gray-500 text-sm rounded-lg block w-full p-2.5 focus:outline-primary"
+            />
+          </div>
           {["Int", "Decimal"].includes(newReading.type) && (
             <>
               <label className="block mb-2 text-sm font-medium text-gray-500 pt-6">
