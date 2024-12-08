@@ -297,6 +297,7 @@ async function addDialysisReading(req, res) {
       low_range,
       high_range,
       isGraph,
+      unit,
       alertTextDoc,
       readingsTranslations,
       sendAlert,
@@ -314,6 +315,7 @@ async function addDialysisReading(req, res) {
       isGraph,
       alertTextDoc,
       sendAlert,
+      unit,
     });
     const query=`select id from ailments where name in (${ailments.map((ailment)=>`'${ailment}'`).join(",")})`;
     const ailmentIds=await pool.query(query );
@@ -386,7 +388,7 @@ async function updateDialysisReading(req, res) {
       alertTextDoc,
       readingsTranslations,
       sendAlert,
-
+      unit
     } = req.body;
 
     console.log(type, assign_range, low_range, high_range, isGraph, alertTextDoc, readingsTranslations)
@@ -401,6 +403,7 @@ async function updateDialysisReading(req, res) {
         high_range,
         isGraph,
         alertTextDoc,
+        unit
       },
       {
         where: { id },

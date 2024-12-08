@@ -11,6 +11,7 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
   const [extractedValues, setExtractedValues] = useState(null); // State for extracted data
   const [isExtracting, setIsExtracting] = useState(false); // Loading state for extraction
   const [email] = useState(localStorage.getItem("email"));
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setSelectedImage(file);
@@ -53,8 +54,10 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
       alert("No data to save.");
       return;
     }
+
     const uploadRes = await getFileRes(selectedImage);
-      const pdfUrl = uploadRes.data.objectUrl;
+    const pdfUrl = uploadRes.data.objectUrl;
+
     const finalData = {
       patient_id: user_id,
       date: selectedDate,
@@ -77,6 +80,13 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
 
   const handleEditValue = (key, value) => {
     setExtractedValues((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleAddField = () => {
+    const fieldName = prompt("Enter the name of the new field:");
+    if (fieldName) {
+      setExtractedValues((prev) => ({ ...prev, [fieldName]: "" }));
+    }
   };
 
   return (
@@ -135,7 +145,7 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
           {extractedValues && (
             <div className="mt-6">
               <h3 className="text-lg font-bold mb-4">Extracted Values:</h3>
-              <div className=" overflow-auto h-24 grid grid-cols-2 gap-4">
+              <div className="overflow-auto h-24 grid grid-cols-2 gap-4">
                 {Object.keys(extractedValues).map((key) => (
                   <div key={key} className="flex flex-col">
                     <label className="text-gray-700 font-medium">{key}</label>
@@ -149,8 +159,13 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
                 ))}
               </div>
               <button
+                onClick={handleAddField}
+                className="bg-blue-500 text-white py-2 px-4 rounded mt-4">
+                + Add New Field
+              </button>
+              <button
                 onClick={handleSave}
-                className="bg-green-600 text-white py-2 px-4 rounded mt-6">
+                className="bg-green-600 text-white py-2 px-4 rounded mt-4">
                 Save Report
               </button>
             </div>

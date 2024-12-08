@@ -77,7 +77,7 @@ const insertReadings = async () => {
 
 
 // Run the insert function
-//  insertReadings();
+ insertReadings();
 
 
 // Define the graphReadingsLab model
