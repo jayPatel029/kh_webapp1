@@ -35,7 +35,7 @@ function ProfileQuestions() {
   }, [successful]);
 
   async function removeLang(id) {
-    setLanguages(languages.filter((q) => q.id !== id));
+    
     const response = await deleteLanguage(id);
     if (response.success) {
       setErrMsg("");
@@ -49,7 +49,7 @@ function ProfileQuestions() {
   const [newLanguage, setNewLanguage] = useState("");
   const [langJson, setLangJson] = useState(null);
   const [langAudio, setLangAudio] = useState(null);
-  const [editID, setEditID] = useState(null);
+  const [editID, setEditID] = useState("");
 
   function validateForm() {
     if (newLanguage.trim() === "") {
@@ -225,6 +225,7 @@ function ProfileQuestions() {
                             <button
                               className="text-primary inline-block mx-2"
                               onClick={() => {
+                                setEditID(lang.id);
                                 setNewLanguage(lang.language_name);
                                 setEditMode(true);
                                 window.scrollTo({
