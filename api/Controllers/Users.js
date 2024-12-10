@@ -226,8 +226,7 @@ const getTotalUsersThisWeek = async (req, res, next) => {
     console.log("User ID:", userId);
 
     let query = `
-      SELECT * FROM patients 
-      WHERE registered_date > DATE_SUB(NOW(), INTERVAL 1 WEEK);
+      SELECT * FROM  patients WHERE registered_date > DATE_SUB(NOW(), INTERVAL 1 WEEK) AND patients.name IS NOT NULL AND name <> '';
     `;
     let queryParams = [];
 
