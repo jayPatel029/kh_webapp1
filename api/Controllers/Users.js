@@ -35,7 +35,11 @@ const getTotalUsers = async (req, res, next) => {
     const userId = req.user.id;
     console.log(userId);
 
-    var query = `SELECT * FROM patients`;
+    var query = `SELECT *
+FROM patients
+WHERE patients.name IS NOT NULL AND name <> '';
+;
+`;
     if (userId !== 1) {
       query = `
         SELECT p.*
