@@ -23,7 +23,7 @@ const submitUserFeedback = async (req, res) => {
         .toISOString()
         .slice(0, 19)
         .replace("T", " ");
-      const contactusQuery = `INSERT INTO contactus (phoneno, message, email, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?);`;
+      const contactusQuery = `INSERT INTO ContactUs (phoneno, message, email, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?);`;
 
       try {
         // Inserting into contactus table
