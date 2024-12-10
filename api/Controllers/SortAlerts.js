@@ -667,7 +667,7 @@ const getAdminAlerts = async (req, res) => {
         if (temp) {
           finalAlerts.push(temp);
         }
-      } else if (alert.category == "Delete Account") {
+      } else if (alert.category == "Delete Account" || alert.category == "Account Deletion") {
         console.log("Delete Account");
         const temp = await generateDeleteAccountAlert(alert);
         console.log(temp);
