@@ -147,11 +147,12 @@ const AddPatient = async (req, res, next) => {
       SET aliments = '${updateAilmentNames}' 
       WHERE id = ${patientId}
     `;
+    const date = new Date().toISOString().slice(0, 19).replace("T", " ");
     await pool.query(updatePatientQuery);
     const insertPatientIntoDoctorQuery = `INSERT INTO doctor_patients (doctor_id, patient_id) VALUES (?, ?)`;
-    const insertPatientIntoAdminQuery = `INSERT INTO admin_patients (admin_id, patient_id) VALUES (?, ?)`;
+    const insertPatientIntoAdminQuery = `INSERT INTO admin_patients (admin_id, patient_id,date) VALUES (?, ?,?)`;
     await pool.query(insertPatientIntoDoctorQuery, [medical_team, patientId]);
-    await pool.query(insertPatientIntoAdminQuery, [1, patientId]);
+    await pool.query(insertPatientIntoAdminQuery, [1, patientId, date]);
 const isAdvance = program === "Advanced" ? 1 : 0;
     const payload = {
       name,
