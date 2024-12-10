@@ -80,7 +80,7 @@ const UserCard = ({ user }) => {
       navigate(`/showAlarms/${alert.patientId}/`);
     } else if (
       alert.type === "patient" &&
-      alert.category === "Delete patient Alert"
+      alert.category === "Delete patient Alert" || alert.category === "Account Deletion"
     ) {
       navigate(`/patient/${alert.patientId}`);
     } else if (

@@ -693,6 +693,7 @@ const createAdminPatientsTable = async () => {
     CREATE TABLE IF NOT EXISTS admin_patients (
       admin_id INT NOT NULL,
       patient_id INT NOT NULL,
+      date DATE NOT NULL,
       PRIMARY KEY (admin_id, patient_id),
       FOREIGN KEY (admin_id) REFERENCES users(id),
       FOREIGN KEY (patient_id) REFERENCES patients(id)
