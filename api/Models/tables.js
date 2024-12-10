@@ -188,6 +188,9 @@ const createPatientTable = async () => {
     kefr INT(11) NULL DEFAULT NULL,
     push_notification_id VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
     fitbit_token VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+    address varchar(255) NULL DEFAULT NULL,
+    pincode varchar(6) NULL DEFAULT NULL,
+    state varchar(50) NULL DEFAULT NULL,
     PRIMARY KEY (id) USING BTREE
   )
   COLLATE='utf8mb4_general_ci'
