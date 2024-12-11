@@ -26,11 +26,26 @@ export default function AilmentMasterComponent() {
       try {
         getAilments().then((resultAilment) => {
           if (resultAilment.success && resultAilment.data.listOfAilments) {
+            console.log("Ailments:", resultAilment.data.listOfAilments);
             setAilments(resultAilment.data.listOfAilments);
+            resultAilment.data.listOfAilments.forEach((element) => {
+              if (element.ailmentTranslations) {
+                let translationDict = {};
+                element.ailmentTranslations.forEach((element) => {
+                  translationDict[element.languageId] = element.name;
+                }
+                );
+                setTranslations(translationDict); 
+              }
+            }
+            );
+                  
+
           } else {
             console.error("Failed to fetch Ailments:", resultAilment);
           }
         });
+        
         getLanguages().then((resultLanguage) => {
           if (resultLanguage.success && resultLanguage.data) {
             setLanguages(resultLanguage.data);

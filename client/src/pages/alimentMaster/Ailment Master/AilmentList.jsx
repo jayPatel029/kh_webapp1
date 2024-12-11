@@ -59,10 +59,10 @@ const AilmentList = ({
                       setSuccessful("");
                       setName(item.name);
                       setId(item.id);
-                      if (item.AilmentTranslations) {
+                      if (item.ailmentTranslations) {
                         let translationDict = {};
 
-                        item.AilmentTranslations.forEach((element) => {
+                        item.ailmentTranslations.forEach((element) => {
                           translationDict[element.languageId] = element.name;
                         });
                         setTranslations(translationDict);
