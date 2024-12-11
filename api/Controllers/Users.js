@@ -186,11 +186,12 @@ const getTotalUsersThisWeekPSadmin = async (req, res, next) => {
     // If the user is not an admin, modify the query to filter based on the user's role
     if (userId !== 1) {
       query = `
+      
         SELECT p.*
         FROM patients p
         JOIN admin_patients ap ON p.id = ap.patient_id
         WHERE ap.admin_id = ? 
-          AND ap.date > DATE_SUB(NOW(), INTERVAL 1 WEEK)
+        AND registered_date > DATE_SUB(NOW(), INTERVAL 1 WEEK) AND patients.name IS NOT NULL AND name <> ''
       `;
       queryParams = [userId];
     }

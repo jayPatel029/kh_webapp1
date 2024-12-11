@@ -56,7 +56,7 @@ export default function ContactUs() {
                       Sr. no.
                     </th>
                     <th scope="col" className="px-6 py-3">
-                      Email
+                      Name
                     </th>
                     <th scope="col" className="px-6 py-3 w-1/5">
                       Phone No.
