@@ -18,12 +18,9 @@ const submitUserFeedback = async (req, res) => {
     if (resp.length > 0) {
       const patientemail = resp[0]["name"];
       const patientnumber = resp[0]["number"];
-      const contactusDate = new Date()
-      .toISOString()
-      .slice(0, 19)
-      .replace("T", " ");
-      const contactusQuery = `INSERT INTO contactus (phoneno, message, email, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?);`;
-      
+      const contactusDate = new Date().toISOString().slice(0, 19).replace("T", " ");
+      const contactusQuery = `INSERT INTO ContactUs (phoneno, message, email, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?);`;
+
       try {
         // Inserting into contactus table
         const result= await pool.query(contactusQuery, [
