@@ -24,7 +24,6 @@ const { sendEmails } = require("./cronjob/AlertEmail.js");
 connectToDatabase();
 createTables();
 
-
 // createNewAlertForPatientDoctors();
 
 
