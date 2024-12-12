@@ -54,7 +54,7 @@ export default function ContactUs() {
               </div>
             </div>
             <div className="p-4 border-b-gray border-b-2 flex">
-              <div className="font-semibold text-xl text-primary">Email:</div>
+              <div className="font-semibold text-xl text-primary">Name:</div>
               <div className="text-xl px-5 text-gray-600">
                 {contactus.email}
               </div>

@@ -183,7 +183,13 @@ const isAdvance = program === "Advanced" ? 1 : 0;
 };
 const deletePatient = async (req, res, next) => {
   const id = req.params.id;
+  const query =`Select number from patients where id = ${id}`
+  let number = await pool.execute(query);
+  number = number[0].number;
+
   try {
+    const contactUsQuery = `Update contactus Set email="", phoneno="" WHERE phoneno = '${number}'`;
+    await pool.query(contactUsQuery);
     const adminQuery = `DELETE FROM admin_patients WHERE patient_id = ${id}`;
     await pool.query(adminQuery);
     const doctorQuery = `DELETE FROM doctor_patients WHERE patient_id = ${id}`;

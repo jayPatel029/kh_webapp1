@@ -408,7 +408,7 @@ const createAlamrsTable = async () => {
     dateadded DATE NULL DEFAULT NULL,
     setByUser VARCHAR(10) NOT NULL DEFAULT 'false',
     isWeek VARCHAR(10) NOT NULL DEFAULT 'true',
-    daysOFWeek VARCHAR(10) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+    daysOFWeek VARCHAR(20) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
     messagefordoctor VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
     missedFrequency INT(11) NULL DEFAULT 0,
     PRIMARY KEY (id) USING BTREE
