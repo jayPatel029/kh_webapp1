@@ -29,6 +29,7 @@ const isAdmin = async (req, res, next) => {
 const addQuestion = async (req, res) => {
   try {
     const { ailment, type, name, options, translations } = req.body;
+    console.log("options",options)
     const question = await Question.create({
       type,
       name,

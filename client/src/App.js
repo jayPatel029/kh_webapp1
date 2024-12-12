@@ -51,6 +51,7 @@ import LogsPage from "./pages/AuditLogs/patientLog";
 import DocLogPage from "./pages/AuditLogs/DoctorLog";
 import DelPatient from "./pages/patient/delPatient";
 import Logs from "./pages/AuditLogs/Logs";
+import ProfileQuestionCsv from "./pages/profileQuestion/ProfileQuestionCsv";
 
 function App() {
   return (
@@ -435,6 +436,14 @@ function App() {
               element={
                 <ProtectedRoute routeName={"ContactUs"}>
                   <ContactUs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="ProfileQuestionCsv"
+              element={
+                <ProtectedRoute routeName={"ContactUs"}>
+                  <ProfileQuestionCsv />
                 </ProtectedRoute>
               }
             />

@@ -314,7 +314,7 @@ const insertMedicalDataDB = async (extractedData,user_id,date)=>{
 }
 
 const getColoumnName = async (req,res) => {
-const query =`select title from labreadings`
+const query =`select title from labReadings`
 const result = await pool.execute(query)
 console.log("res",result)
 return res.status(200).json({

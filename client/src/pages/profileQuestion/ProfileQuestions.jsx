@@ -15,6 +15,7 @@ import { getAilments } from "../../ApiCalls/ailmentApis";
 import { getLanguages } from "../../ApiCalls/languageApis";
 import TranslationModal from "../../components/modals/TranslationModel";
 import Select from "react-select";
+import { Link } from "react-router-dom";
 
 function ProfileQuestions() {
   const [editMode, setEditMode] = useState(false);
@@ -209,7 +210,9 @@ function ProfileQuestions() {
           <div className=" bg-white md:p-6 border p-2 rounded-md border-t-primary border-t-4 shadow-md">
             <div className="border-b-gray border-b-2 p-2 pt-4 md:pb-4 font-semibold text-primary tracking-wide text-xl">
               Question Master
+                      <Link to="/ProfileQuestionCsv"  className="border md:ml-2 ml-0 text-white bg-primary font-semibold tracking-wide text-lg border-gray-300  md:w-1/4 rounded-lg  p-1.5">Bulkupload Question </Link>
             </div>
+            
             <div className="p-5">
               {modelOpen && (
                 <TranslationModal
