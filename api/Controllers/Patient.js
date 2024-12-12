@@ -207,7 +207,7 @@ const deletePatient = async (req, res, next) => {
   number = number[0].number;
 
   try {
-    const contactUsQuery = `Update contactus Set email="", phoneno="" WHERE phoneno = '${number}'`;
+    const contactUsQuery = `Update ContactUs Set email="", phoneno="" WHERE phoneno = '${number}'`;
     await pool.query(contactUsQuery);
     const adminQuery = `DELETE FROM admin_patients WHERE patient_id = ${id}`;
     await pool.query(adminQuery);
