@@ -89,7 +89,7 @@ const UserCard = ({ user }) => {
     ) {
       navigate(`/UserLabReports/${alert.patientId}`);
     }else if (alert.category === "New Feedback") {
-      navigate(`/contactuspage`);} 
+      navigate(`/contactus/${alert?.contactUsId}`);} 
     else if (
       alert.type === "doctor" &&
       (alert.category === "Prescription Disapproved " ||

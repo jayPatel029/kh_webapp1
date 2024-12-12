@@ -16,11 +16,13 @@ const getPatients = async (req, res) => {
       query = `
         SELECT p.*
         FROM patients p
-        JOIN admin_patients ap ON p.id = ap.patient_id and ap.admin_id = ${id}
+        JOIN admin_patients ap ON p.id = ap.patient_id and ap.admin_id = ${id} and p.name <> '';
       `;
 
       if (id === 1) {
-        query = "SELECT * FROM patients";
+        query = `SELECT *
+FROM patients
+WHERE name <> '';`
       }
     } else if (role === "Doctor" || role === "Medical Staff") {
       const doctor_id_query = ` select * from doctors where email = '${req.user.email}'`;
@@ -30,13 +32,13 @@ const getPatients = async (req, res) => {
       query = `
         SELECT p.*
         FROM patients p
-        JOIN doctor_patients dp ON p.id = dp.patient_id and dp.doctor_id = ${doctor_id}
+        JOIN doctor_patients dp ON p.id = dp.patient_id and dp.doctor_id = ${doctor_id} and p.name <> '';
       `;
     }else if(role==="PSadmin" || role==="Dialysis Technician"){
       query = `
         SELECT p.*
         FROM patients p
-        JOIN admin_patients ap ON p.id = ap.patient_id and ap.admin_id = ${id}
+        JOIN admin_patients ap ON p.id = ap.patient_id and ap.admin_id = ${id} and p.name <> '';
       `;
     }   
     else {
@@ -60,6 +62,23 @@ const getPatients = async (req, res) => {
   }
 };
 
+const getDeletdPatients = async (req, res) => {
+  try {
+    const query = `SELECT * FROM patients WHERE name = ''`;
+    const patients = await pool.execute(query);
+    // Return the fetched patients
+    res.status(200).json({
+      success: true,
+      data: patients,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({
+      success: false,
+      data: "error in fetching patients",
+    });
+  }
+};
 // new addition added new cols and dynamic jwt!
 const AddPatient = async (req, res, next) => {
   const {
@@ -604,4 +623,5 @@ module.exports = {
   updateMedicalTeam,
   updateAdminTeam,
   removeAdminFromPatient,
+  getDeletdPatients
 };

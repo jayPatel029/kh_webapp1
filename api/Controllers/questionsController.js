@@ -120,40 +120,32 @@ const updateQuestion = async (req, res) => {
     const query =`select id from ailments where name='${ailment[0].label}'`
     const ailmentId = await pool.execute(query);
     console.log(ailmentId[0].id)
-    const question = await Question.update(
-      {
-        type,
-        name,
-        options,
-      },
-      {
-        where: {
-          id: req.body.id,
-        },
-      }
-    );
+    console.log("id",req.body.id)
+    const id = req.body.id;
+    const question = await pool.execute( ` UPDATE questions SET type='${type}', name='${name}', options='${options}' WHERE id=${id};`);
     console.log(question);
     await QuestionAilments.destroy({
       where: {
-        question_id: req.body.id,
+        question_id: id,
       },
     });
     await QuestionTranslation.destroy({
       where: {
-        question_id: req.body.id,
+        question_id: id,
       },
     });
     const ailmentsInserted = await QuestionAilments.create({
-      question_id: req.body.id,
+      question_id: id,
       ailment_id: ailmentId[0].id,
     });
     const translationsInserted = Object.entries(translations).map(
       ([language, translation]) => ({
-        dr_id: newReading.id,
+        dr_id: id,
         language_id: parseInt(language),
         title: translation,
       })
     );
+    await QuestionTranslation.bulkCreate(translationsInserted);
     res.status(200).json({ message: "Question updated" });
   } catch (error) {
     res.status(500).json({ message: error.message });

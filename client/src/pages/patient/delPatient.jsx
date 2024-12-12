@@ -18,7 +18,7 @@ function DelPatient() {
 
   useEffect(() => {
     axiosInstance
-      .get(`${server_url}/patient/getPatients`)
+      .get(`${server_url}/patient/getDeletdPatients`)
       .then((response) => {
         const data = response.data.data.filter((patient) => !patient.name);
         setPatientData(data);
