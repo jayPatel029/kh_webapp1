@@ -42,7 +42,7 @@ const AilmentTranslation = sequelize.define("ailmentTranslation", {
     },
   },
   name: {
-    type: DataTypes.STRING(255),
+    type: DataTypes.TEXT,
     allowNull: false,
   },
 });

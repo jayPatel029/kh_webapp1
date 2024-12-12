@@ -207,7 +207,7 @@ const updateAilment = async (req, res, next) => {
     ([language, translation]) => ({
       ailmentId: id,
       languageId: parseInt(language),
-      name: `"${translation}"`,
+      name: `${translation}`,
     })
   );
   await AilmentTranslation.bulkCreate(AilmentTranslationObj);
