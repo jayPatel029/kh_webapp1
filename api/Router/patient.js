@@ -17,11 +17,13 @@ const {
   updateMedicalTeam,
   updateAdminTeam,
   removeAdminFromPatient,
+  getDeletdPatients,
 } = require("../Controllers/Patient.js");
 const { verifyToken } = require("../Helpers/middlewares/roles.js");
 const { downloadLog } = require("../Controllers/log.js");
 
 router.get("/getPatients", verifyToken, getPatients);
+router.get("/getDeletdPatients", verifyToken, getDeletdPatients);
 router.post("/AddPatient", AddPatient);
 router.put("/updateProgram", updatePatientProgram);
 router.get("/getPatient/:id", getPatientById);
