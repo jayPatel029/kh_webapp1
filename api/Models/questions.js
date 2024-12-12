@@ -1,4 +1,4 @@
-const { DataTypes } = require("sequelize");
+const { DataTypes, Sequelize } = require("sequelize");
 const { sequelize } = require("../databaseConn/database");
 const { Ailment } = require("./ailment");
 const { Language } = require("./language");
@@ -41,7 +41,7 @@ const QuestionTranslation = sequelize.define('question_translations', {
         allowNull: false
     },
     name: {
-        type: DataTypes.STRING,
+        type: Sequelize.STRING(255),
         allowNull: false
     },
     options: {
@@ -51,6 +51,9 @@ const QuestionTranslation = sequelize.define('question_translations', {
 }, {
     tableName: 'question_translations',
     timestamps: false
+}, {
+    charset: 'utf8mb4', // Enables support for full Unicode (e.g., multi-language, emojis)
+    collate: 'utf8mb4_unicode_ci' // Collation ensures proper sorting for Unicode
 });
 
 const QuestionAilments = sequelize.define('question_ailments', {
