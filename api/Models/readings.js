@@ -1,4 +1,4 @@
-const { DataTypes } = require("sequelize");
+const { DataTypes, Sequelize } = require("sequelize");
 const { sequelize } = require("../databaseConn/database");
 const { Ailment } = require("./ailment");
 const { Language } = require("./language");
@@ -144,10 +144,13 @@ const DailyReadingsTranslations = sequelize.define(
       },
     },
     title: {
-      type: DataTypes.STRING(255),
+      type: Sequelize.STRING(255),
       allowNull: false,
       collate: "utf8mb4_general_ci",
     },
+  },{
+    charset: 'utf8mb4', // Enables support for full Unicode (e.g., multi-language, emojis)
+    collate: 'utf8mb4_unicode_ci', // Collation ensures proper sorting for Unicode
   }
 );
 
@@ -176,10 +179,13 @@ const DialysisReadingsTranslations = sequelize.define(
       },
     },
     title: {
-      type: DataTypes.STRING(255),
+      type: Sequelize.STRING(255),  
       allowNull: false,
       collate: "utf8mb4_general_ci",
     },
+  },{
+    charset: 'utf8mb4', // Enables support for full Unicode (e.g., multi-language, emojis)
+    collate: 'utf8mb4_unicode_ci', // Collation ensures proper sorting for Unicode
   }
 );
 
