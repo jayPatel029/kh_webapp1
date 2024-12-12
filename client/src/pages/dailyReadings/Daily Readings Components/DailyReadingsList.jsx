@@ -157,7 +157,8 @@ function DailyForm() {
       <div className=" bg-white md:p-6 border p-2 rounded-md border-t-primary border-t-4 shadow-md">
         <div className="border-b-gray border-b-2 p-2 pt-4 md:pb-4 font-semibold text-primary tracking-wide text-xl">
           Readings Master
-          <Link to="/dailyReadingsCsv" className="mx-5">Or BulkUpload Question</Link>
+            <Link to="/dailyReadingsCsv"  className="border md:ml-2 ml-0 text-white bg-primary font-semibold tracking-wide text-lg border-gray-300  md:w-1/4 rounded-lg  p-1.5"> BulkUpload Question</Link>
+
         </div>
         <div className="p-5">
           {modelOpen && (
