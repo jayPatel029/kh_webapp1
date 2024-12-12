@@ -75,6 +75,10 @@ const AddRole = () => {
   };
 
   const handleSubmit = async () => {
+    if(roleName === ""){
+      alert("Role Name is required");
+      return;
+    }
     const auth_arr = Object.values(permissions).map((pagePermissions) => {
       const binaryString = `${Number(pagePermissions.delete)}${Number(
         pagePermissions.edit

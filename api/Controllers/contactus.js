@@ -6,6 +6,7 @@ const insertContactUs = async (req, res) => {
   try {
     const contactus = await ContactUs.create({ phoneno, email, message });
     const insertedId = contactus.dataValues.id;
+    console.log("insert",insertedId);
     const type = "patient";
     const category = "Contact Us";
     const date = new Date().toISOString().slice(0, 19).replace("T", " ");
