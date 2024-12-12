@@ -737,6 +737,25 @@ const createDoctorPatientsTable = async () => {
     console.error("Error creating doctor patients table:", error);
   }
 };
+// const createAilmenttranslationTable = async () => {
+//   const query = `
+//     CREATE TABLE IF NOT EXISTS ailmentTranslations (
+//       id INT(11) NOT NULL AUTO_INCREMENT,
+//       ailmentId INT(11) NOT NULL,
+//       languageId INT(11) NOT NULL,
+//       name NVARCHAR(255) NOT NULL,
+//       PRIMARY KEY (id) USING BTREE,
+//       FOREIGN KEY (ailmentId) REFERENCES ailments (id) ON DELETE CASCADE ON UPDATE CASCADE,
+//       FOREIGN KEY (languageId) REFERENCES languages (id) ON DELETE CASCADE ON UPDATE CASCADE
+//     )
+//     COLLATE='utf8mb4_general_ci';
+//   `;
+//   try {
+//     await pool.query(query  );
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
 
 const createalertsReadingTable = async () => {
   const query = `
@@ -799,6 +818,7 @@ const createTables = async () => {
   await creatCommentsReadTable();
   await createappAlertsTable();
   await createDocLogTable();
+  // await createAilmenttranslationTable();
 };
 
 module.exports = createTables;

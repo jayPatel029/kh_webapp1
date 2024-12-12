@@ -1,4 +1,4 @@
-const { DataTypes } = require("sequelize");
+const { DataTypes, Sequelize } = require("sequelize");
 const { sequelize } = require("../databaseConn/database");
 const { Language } = require("./language");
 
@@ -42,10 +42,14 @@ const AilmentTranslation = sequelize.define("ailmentTranslation", {
     },
   },
   name: {
-    type: DataTypes.TEXT,
+    type: Sequelize.STRING(255),
     allowNull: false,
   },
+}, {
+  charset: 'utf8mb4', // Enables support for full Unicode (e.g., multi-language, emojis)
+  collate: 'utf8mb4_unicode_ci', // Collation ensures proper sorting for Unicode
 });
+
 
 AilmentTranslation.belongsTo(Ailment, { foreignKey: "ailmentId" });
 Ailment.hasMany(AilmentTranslation, { foreignKey: "ailmentId" });
