@@ -42,7 +42,8 @@ const QuestionTranslation = sequelize.define('question_translations', {
     },
     name: {
         type: Sequelize.STRING(255),
-        allowNull: false
+        allowNull: false,
+        // Remove `collate` here — collations are set at the table level, not column level
     },
     options: {
         type: DataTypes.TEXT,
@@ -50,8 +51,7 @@ const QuestionTranslation = sequelize.define('question_translations', {
     }
 }, {
     tableName: 'question_translations',
-    timestamps: false
-}, {
+    timestamps: false,
     charset: 'utf8mb4', // Enables support for full Unicode (e.g., multi-language, emojis)
     collate: 'utf8mb4_unicode_ci' // Collation ensures proper sorting for Unicode
 });
