@@ -5,12 +5,12 @@ import { Link, useParams } from "react-router-dom";
 
 import { calculateAge } from "../../helpers/utils";
 import {  addDialysisReading } from "../../ApiCalls/readingsApis";
-
+import { getLanguages } from "../../ApiCalls/languageApis";
 
 function DailyquestionCsv() {
-  const [patients, setPatients] = useState([]);
+  const [patients, setPatients] = useState([]); const [translations, setTranslations] = useState({});
   const [viewPrescription, setViewPrescription] = useState(false);
-  const [labReportData, setLabReportData] = useState([]);
+  const [labReportData, setLabReportData] = useState([]); const [languages, setLanguages] = useState([]);
   const [patientData, setPatientData] = useState([
     {
       
@@ -44,6 +44,23 @@ function DailyquestionCsv() {
     gender: patient.gender,
   }));
 
+useEffect(() => { 
+getLanguages().then((resultLanguage) => {
+          if (resultLanguage.success && resultLanguage.data) {
+            setLanguages(resultLanguage.data);
+            let transaltiondict = {};
+            resultLanguage.data.forEach((lang) => {
+              if (lang.id !== 1) {
+                transaltiondict[lang.id] = lang.language_name;
+              }
+            });
+            console.log("tran",transaltiondict);
+            setTranslations(transaltiondict);
+          } else {
+            console.error("Failed to fetch Languages:", resultLanguage);
+          }
+        });
+}, []);
 
   const calculate = async () => {
     for (const data of patientData) { // Use for...of instead of forEach
@@ -78,7 +95,7 @@ function DailyquestionCsv() {
         unit: row.unit,
         sendAlert: row.sendAlert,
         alertTextDoc: row.alertTextDoc,
-
+       readingsTranslations: row.languageTranslation,
       }));
   
       setPatientData(formattedData);
@@ -105,10 +122,12 @@ function DailyquestionCsv() {
       </div>
       <div>
         <CSVReader
-          
-          setData={setCsvData}
-          setSuccess={setSuccess}
-          success={success}
+           translations={translations}
+           setTranslations={setTranslations}
+           setData={setCsvData}
+           setSuccess={setSuccess}
+           success={success}
+           languages={languages}
         />
       </div>
      

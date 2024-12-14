@@ -105,6 +105,7 @@ function DailyForm() {
     // console.log(payload)
     if (validateForm()) {
       if (!editMode) {
+        console.log("Payload:", payload);
         const response = await addDailyReading(payload);
         if (response.success) {
           let transaltiondict = {};
@@ -125,6 +126,7 @@ function DailyForm() {
           setSuccessful("");
         }
       } else {
+        console.log("Payload:", payload);
         const response = await updateDailyReading(payload);
         if (response.success) {
           let transaltiondict = {};

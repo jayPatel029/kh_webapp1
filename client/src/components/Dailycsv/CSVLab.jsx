@@ -16,8 +16,9 @@ const REMOVE_HOVER_COLOR_LIGHT = lightenDarkenColor(
 );
 const GREY_DIM = "#686868";
 
-export default function CSVReader({ setData, setSuccess, success }) {
+export default function CSVReader({ setData, setSuccess, success,languages }) {
   const { CSVReader } = useCSVReader();
+ 
   const [zoneHover, setZoneHover] = useState(false);
   const [removeHoverColor, setRemoveHoverColor] = useState(
     DEFAULT_REMOVE_HOVER_COLOR
@@ -34,6 +35,16 @@ export default function CSVReader({ setData, setSuccess, success }) {
     unit:"",
     sendAlert:"",
     alertTextDoc:"",
+    Hindi:"",
+     Gujarati:"",
+      Kannada:"",
+       Assamese:"",
+        Marathi:"",
+         Tamil:"",
+          Punjabi:"",
+           Telugu:"",
+            Malayalam:"",
+             Bangali:"",
 
   });
 
@@ -42,52 +53,132 @@ export default function CSVReader({ setData, setSuccess, success }) {
 
   const handleSubmit = () => {
     const mappedData = csvData
-      .map((row) => ({
-          // Directly using the provided patientId
-        title: columnMappings.title
-          ? row[columnOptions.indexOf(columnMappings.title)]
-          : undefined,
-        type: columnMappings.type
-          ? row[columnOptions.indexOf(columnMappings.type)]
-          : undefined,
-        assign_range: columnMappings.assign_range
-          ? row[columnOptions.indexOf(columnMappings.assign_range)]
-          : undefined,
-        ailments: columnMappings.ailments
-          ? row[columnOptions.indexOf(columnMappings.ailments)]
-          : undefined,
-        low_range: columnMappings.low_range
-          ? row[columnOptions.indexOf(columnMappings.low_range)]
-          : undefined,
-        high_range: columnMappings.high_range
-          ? row[columnOptions.indexOf(columnMappings.high_range)]
-          : undefined,
-        isGraph: columnMappings.isGraph
-          ? row[columnOptions.indexOf(columnMappings.isGraph)]
-          : undefined,
-        unit: columnMappings.unit
-          ? row[columnOptions.indexOf(columnMappings.unit)]
-          : undefined,
-        sendAlert: columnMappings.sendAlert
-          ? row[columnOptions.indexOf(columnMappings.sendAlert)]
-          : undefined,  
-        alertTextDoc: columnMappings.alertTextDoc
-          ? row[columnOptions.indexOf(columnMappings.alertTextDoc)]
-          : undefined,
+      .map((row) => {
+        // Indexes for Hindi and Assamese columns
+        const hindiColumnIndex = columnOptions.indexOf(columnMappings.Hindi);
+        const asameseColumnIndex = columnOptions.indexOf(columnMappings.Assamese);
+        const gujaratiColumnIndex = columnOptions.indexOf(columnMappings.Gujarati);
+        const kannadaColumnIndex = columnOptions.indexOf(columnMappings.Kannada);
 
+        const marathiColumnIndex = columnOptions.indexOf(columnMappings.Marathi);
+        const tamilColumnIndex = columnOptions.indexOf(columnMappings.Tamil);
+        const punjabiColumnIndex = columnOptions.indexOf(columnMappings.Punjabi);
+        const teluguColumnIndex = columnOptions.indexOf(columnMappings.Telugu);
+        const malayalamColumnIndex = columnOptions.indexOf(columnMappings.Malayalam);
+        const bangaliColumnIndex = columnOptions.indexOf(columnMappings.Bangali);
+        
+        let filterLanguages= languages.filter((language) => language.id !== 1)
+        // Create the languageTranslations object
+        let languageTranslations = {};
+        filterLanguages.forEach((language) => {
+        if(language.language_name === "Hindi"){
+          languageTranslations[language.id] = row[hindiColumnIndex];
+        }else if(language.language_name === "Assamese"){
+          languageTranslations[language.id] = row[asameseColumnIndex];
+        }else if(language.language_name === "Gujarati"){
+          languageTranslations[language.id] = row[gujaratiColumnIndex];
+        }
+        else if(language.language_name === "Kannada"){
+          languageTranslations[language.id] = row[kannadaColumnIndex];
+        }
+        else if(language.language_name === "Marathi"){
+          languageTranslations[language.id] = row[marathiColumnIndex];
+        }
+        else if(language.language_name === "Tamil"){
+          languageTranslations[language.id] = row[tamilColumnIndex];
+        }
+        else if(language.language_name === "Punjabi"){
+          languageTranslations[language.id] = row[punjabiColumnIndex];
+        }
+        else if(language.language_name === "Telugu"){
+          languageTranslations[language.id] = row[teluguColumnIndex];
+        }
+        else if(language.language_name === "Malayalam"){
+          languageTranslations[language.id] = row[malayalamColumnIndex];
+        }
+        else if(language.language_name === "Bangali"){
+          languageTranslations[language.id] = row[bangaliColumnIndex];
+        }
 
-      }))
+        });
+
+  
+        return {
+          title: columnMappings.title
+            ? row[columnOptions.indexOf(columnMappings.title)]
+            : undefined,
+          type: columnMappings.type
+            ? row[columnOptions.indexOf(columnMappings.type)]
+            : undefined,
+          assign_range: columnMappings.assign_range
+            ? row[columnOptions.indexOf(columnMappings.assign_range)]
+            : undefined,
+          ailments: columnMappings.ailments
+            ? row[columnOptions.indexOf(columnMappings.ailments)]
+            : undefined,
+          low_range: columnMappings.low_range
+            ? row[columnOptions.indexOf(columnMappings.low_range)]
+            : undefined,
+          high_range: columnMappings.high_range
+            ? row[columnOptions.indexOf(columnMappings.high_range)]
+            : undefined,
+          isGraph: columnMappings.isGraph
+            ? row[columnOptions.indexOf(columnMappings.isGraph)]
+            : undefined,
+          unit: columnMappings.unit
+            ? row[columnOptions.indexOf(columnMappings.unit)]
+            : undefined,
+          sendAlert: columnMappings.sendAlert
+            ? row[columnOptions.indexOf(columnMappings.sendAlert)]
+            : undefined,
+          alertTextDoc: columnMappings.alertTextDoc
+            ? row[columnOptions.indexOf(columnMappings.alertTextDoc)]
+            : undefined,
+          hindi: columnMappings.Hindi
+            ? row[columnOptions.indexOf(columnMappings.Hindi)]
+            : undefined,
+          asameese: columnMappings.Assamese
+            ? row[columnOptions.indexOf(columnMappings.Assamese)]
+            : undefined,
+          gujarati: columnMappings.Gujarati
+            ? row[columnOptions.indexOf(columnMappings.Gujarati)]
+            : undefined,
+          kannada: columnMappings.Kannada
+            ? row[columnOptions.indexOf(columnMappings.Kannada)]
+            : undefined,
+          marathi: columnMappings.Marathi
+            ? row[columnOptions.indexOf(columnMappings.Marathi)]
+            : undefined,
+          tamil: columnMappings.Tamil
+            ? row[columnOptions.indexOf(columnMappings.Tamil)]
+            : undefined,
+          punjabi: columnMappings.Punjabi
+            ? row[columnOptions.indexOf(columnMappings.Punjabi)]
+            : undefined,
+          telugu: columnMappings.Telugu
+            ? row[columnOptions.indexOf(columnMappings.Telugu)]
+            : undefined,
+          malayalam: columnMappings.Malayalam
+            ? row[columnOptions.indexOf(columnMappings.Malayalam)]
+            : undefined,
+          bangali: columnMappings.Bangali
+            ? row[columnOptions.indexOf(columnMappings.Bangali)]
+            : undefined,
+          languageTranslation: languageTranslations, // Map language translations
+        };
+      })
       .filter((item) => Object.values(item).some((value) => value !== undefined));
-
-    const trimmedMappedData = mappedData.slice(1);
+  
+    const trimmedMappedData = mappedData.slice(1); // Remove header row
     setData(trimmedMappedData);
     setSuccess(!success);
-
+  
     let data = { data: trimmedMappedData };
-      console.log("Data:", data);
-    console.log("typeof",typeof(data.data[0].low_range))
+    console.log("Mapped Data:", data);
+    console.log("Language Translations:", data.data.map((item) => item.languageTranslation));
   };
-
+  
+  
   return (
     <CSVReader
       onUploadAccepted={(results) => {

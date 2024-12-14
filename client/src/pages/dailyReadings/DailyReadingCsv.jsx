@@ -8,12 +8,14 @@ import axiosInstance from "../../helpers/axios/axiosInstance";
 import { server_url } from "../../constants/constants";
 import { calculateAge } from "../../helpers/utils";
 import { addDailyReading } from "../../ApiCalls/readingsApis";
+import { getLanguages } from "../../ApiCalls/languageApis";
 
 
 function DailyquestionCsv() {
   const [patients, setPatients] = useState([]);
   const [viewPrescription, setViewPrescription] = useState(false);
   const [labReportData, setLabReportData] = useState([]);
+    const [languages, setLanguages] = useState([]);
   const [patientData, setPatientData] = useState([
     {
       
@@ -37,7 +39,7 @@ function DailyquestionCsv() {
   const [kfre, setKfre] = useState();
   const [lab_id,setLab_id]=useState();
   const id = useParams();
-
+ const [translations, setTranslations] = useState({});
 
 
   const patientOptions = patients.map((patient) => ({
@@ -66,7 +68,23 @@ function DailyquestionCsv() {
     alert("Data Added Successfully")
   };
   
-
+useEffect(() => { 
+getLanguages().then((resultLanguage) => {
+          if (resultLanguage.success && resultLanguage.data) {
+            setLanguages(resultLanguage.data);
+            let transaltiondict = {};
+            resultLanguage.data.forEach((lang) => {
+              if (lang.id !== 1) {
+                transaltiondict[lang.id] = lang.language_name;
+              }
+            });
+            console.log("tran",transaltiondict);
+            setTranslations(transaltiondict);
+          } else {
+            console.error("Failed to fetch Languages:", resultLanguage);
+          }
+        });
+}, []);
 
   useEffect(() => {
     if (csvData) {
@@ -81,7 +99,7 @@ function DailyquestionCsv() {
         unit: row.unit,
         sendAlert: row.sendAlert,
         alertTextDoc: row.alertTextDoc,
-
+        readingsTranslations: row.languageTranslation,
       }));
   
       setPatientData(formattedData);
@@ -108,10 +126,12 @@ function DailyquestionCsv() {
       </div>
       <div>
         <CSVReader
-          
+          translations={translations}
+          setTranslations={setTranslations}
           setData={setCsvData}
           setSuccess={setSuccess}
           success={success}
+          languages={languages}
         />
       </div>
      
