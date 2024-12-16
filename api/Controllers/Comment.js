@@ -100,7 +100,7 @@ const addComment = async (req, res, next) => {
     const date = new Date().toISOString().slice(0, 19).replace('T', ' ');
     var uid = 0;
     let commentingUserId=userId;
-    let commentingDoctorId=null;
+    let commentingDoctorId=0;
     if (iSDoctor === 1) {
         const query = `SELECT * FROM doctors WHERE email='${docId}'`;
         try {

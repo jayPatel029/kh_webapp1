@@ -13,6 +13,7 @@ const getDoctorComments = async (email,name) => {
             comments: comments,
             count: count
         }
+        console.log(data);
         return data;
         
     } catch (error) {

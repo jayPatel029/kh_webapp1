@@ -277,8 +277,8 @@ const generateNewPrescriptionAlarmAlert = async (obj, did) => {
     var patientName = patientNameResult[0].name;
     var patientProfilePhoto = patientNameResult[0].profile_photo;
 
-    // console.log("PatientName", patientName
-    // )
+    console.log("PatientName", patientName
+    )
     const getAlarmQuery = `SELECT * FROM alarm WHERE id = ${alarmId} AND doctorId = ${did}`;
     let alarm;
     try {
