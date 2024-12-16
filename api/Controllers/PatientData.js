@@ -495,7 +495,7 @@ const PdfTextFunction = async (pdfUrl) => {
 // Function to extract readings
 const extractReadings = async(lines) => {
   const readings = {};
-  const params = `select title from labreadings `;
+  const params = `select title from labReadings `;
   const Dbparameters = await pool.query(params);
   console.log("para",Dbparameters);
   const parameters = [
