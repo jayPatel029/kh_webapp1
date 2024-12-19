@@ -7,7 +7,7 @@ function getIndexesFromString(daysString) {
     Mon: 1,
     Tues: 2,
     Wed: 3,
-    Thur: 4,
+    Thurs: 4,
     Fri: 5,
     Sat: 6,
   };

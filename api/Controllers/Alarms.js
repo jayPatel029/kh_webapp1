@@ -26,7 +26,7 @@ async function insertAlarm(req, res) {
     status=status
   }else{status="Approved";}
   if (frequency === "Daily/Weekly" && !weekdays) {
-    weekdays = "Mon,Tues,Wed,Thur,Fri,Sat,Sun";
+    weekdays = "Mon,Tues,Wed,Thurs,Fri,Sat,Sun";
   }
 
   const query =
@@ -131,7 +131,7 @@ async function updateAlarm(req, res) {
   console.log(alarmId);
 
   if (frequency === "Daily/Weekly" && !weekdays) {
-    weekdays = "Mon,Tues,Wed,Thur,Fri,Sat,Sun";
+    weekdays = "Mon,Tues,Wed,Thurs,Fri,Sat,Sun";
   }
 
   const query = `UPDATE alarm SET doctorId = ?, type = ?, parameter = ?, description = ?, frequency = ?, timesamonth = ?, weekdays = ?, timesaday = ?, time = ?, status = ?, reason = ?, dateofmonth = ?, patientid = ?, prescriptionid = ?, dateadded = ?, messagefordoctor = ? WHERE id = ?
