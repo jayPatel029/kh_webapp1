@@ -228,7 +228,7 @@ const EditAlarmModal = ({ closeModal, alarmData,pid,dosesData}) => {
               Mon
             </label>
             <input
-              checked={weekdays.includes("Tue") || false}
+              checked={weekdays.includes("Tues") || false}
               type="checkbox"
               id="Tues"
               className="mr-2"
@@ -250,7 +250,7 @@ const EditAlarmModal = ({ closeModal, alarmData,pid,dosesData}) => {
               Wed
             </label>
             <input
-              checked={weekdays.includes("Thu") || false}
+              checked={weekdays.includes("Thurs") || false}
               type="checkbox"
               id="Thurs"
               className="mr-2"

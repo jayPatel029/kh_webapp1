@@ -98,7 +98,7 @@ const UserCard = ({ user }) => {
       navigate(`/ShowAlarms/${alert.patientId}`);
     } else if (
       alert.type === "patient" &&
-      (alert.category === "New Program Enrollment" ||
+      (alert.category.includes("New Program Enrollment")  ||
         alert.category === "Change In Program")
     ) {
       navigate(`/userProgramSelection/${alert.patientId}`);
