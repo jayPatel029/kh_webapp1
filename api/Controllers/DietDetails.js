@@ -130,76 +130,7 @@ const getPatientDietDetailsAdmin = async (req, res) => {
   res.status(200).json({ data: result });
 };
 
-const getPatientDietDetails = async (req, res) => {
-  const { userID } = req.body;
 
-  const query = `SELECT * FROM dietdetails WHERE patient_id = ${userID}`;
-  const response = await pool.query(query);
-  // console.log(response.length);
-
-  // if (response.length > 0) {
-  //   res.status(200).json({
-  //     result: true,
-  //     message: "No Data Found",
-  //     data: null,
-  //   });
-  // } else {
-  //   res.status(200).json({
-  //     result: true,
-  //     message: "No Data Found",
-  //     data: null,
-  //   });
-  // }
-
-  if (response.length > 0) {
-    const transformedData = response.reduce((acc, item) => {
-      const existingEntryIndex = acc.findIndex(
-        (entry) => entry.date === item.Date
-      );
-      if (existingEntryIndex === -1) {
-        acc.push({
-          dietID: item.id,
-          date: item.Date,
-          breakfast: item.Meal_Type === "breakfast" ? item.meal_desc : "",
-          lunch: item.Meal_Type === "lunch" ? item.meal_desc : "",
-          snacks: item.Meal_Type === "snacks" ? item.meal_desc : "",
-          dinner: item.Meal_Type === "dinner" ? item.meal_desc : "",
-          others: item.Meal_Type === "others" ? item.meal_desc : "",
-        });
-      } else {
-        const existingEntry = acc[existingEntryIndex];
-        if (item.Meal_Type === "breakfast") {
-          existingEntry.breakfast = item.meal_desc;
-        } else if (item.Meal_Type === "lunch") {
-          existingEntry.lunch = item.meal_desc;
-        } else if (item.Meal_Type === "snacks") {
-          existingEntry.snacks = item.meal_desc;
-        } else if (item.Meal_Type === "dinner") {
-          existingEntry.dinner = item.meal_desc;
-        } else if (item.Meal_Type === "others") {
-          existingEntry.others = item.meal_desc;
-        }
-        // Update the entry in the array
-        acc[existingEntryIndex] = existingEntry;
-      }
-      return acc;
-    }, []);
-
-    res.status(200).json({
-      result: true,
-      message: "Successful",
-      data: transformedData,
-    });
-  } else {
-    const responseJSON = {
-      result: false,
-      message: "Data Not Found",
-      data: null,
-    };
-
-    res.json(responseJSON);
-  }
-};
 
 const deleteDietDetails = async (req, res) => {
   const { id } = req.params;
@@ -216,7 +147,6 @@ const deleteDietDetails = async (req, res) => {
 module.exports = {
   insertDietDetails,
   insertDietDetailsAdmin,
-  getPatientDietDetails,
   getPatientDietDetailsAdmin,
   deleteDietDetails,
 };

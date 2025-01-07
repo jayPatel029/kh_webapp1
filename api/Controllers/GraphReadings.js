@@ -259,7 +259,12 @@ const AddGraphReadingSys = async (req, res, next) => {
         readings,
         readingsDia
     } = req.body;
-
+        if(readingsDia == null){
+            return res.status(500).json({
+                success: false,
+                data: "Diastolic Readings cannot be empty",
+            });
+        }
     const currentDate = new Date().toISOString().slice(0, 10); // Get current date in 'YYYY-MM-DD' format
     const currentTime = new Date().toISOString().slice(11, 19); // Get current time in 'HH:mm:ss' format
     const serverTimestamp = `${currentDate} ${currentTime}`;

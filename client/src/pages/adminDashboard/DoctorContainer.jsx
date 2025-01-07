@@ -187,7 +187,9 @@ const UserCard = ({ title, Alerts }) => {
         
         var commentsCount = 0;
         for (var i = 0; i < data.comments.length; i++) {
-          data.comments[i].fileType = "Lab Report";
+          if(data.comments[i].fileType === "Lab"){
+            data.comments[i].fileType = "Lab Report";
+          }
           if (data.comments[i].isRead === false) {
             commentsCount++;
           }

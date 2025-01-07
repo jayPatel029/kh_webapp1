@@ -207,7 +207,7 @@ const generalParametersByType = async (req, res)=>{
   
       dailyReading.responseCount = Number(responseCount);
   }
-
+    console.log("dailyReadingsResult",dailyReadingsResult)
     res.status(200).json(dailyReadingsResult);
     
   } catch (error) {

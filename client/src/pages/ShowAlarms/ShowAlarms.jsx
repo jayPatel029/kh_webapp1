@@ -138,7 +138,7 @@ function ShowAlarms() {
         </td>
         <td>{alarm.timesamonth ? alarm.timesamonth : "Not specified"}</td>
         <td>{alarm.status}</td>
-        {isDoctor && alarm.type === "Prescription" ? (
+        {isDoctor  ? (
           <></>
         ) : (
           <td className="align-middle">
