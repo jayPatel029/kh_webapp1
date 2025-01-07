@@ -8,6 +8,7 @@ AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 });
+const {sendPushNotification} = require("./app/notification.js");
 async function getSignedURLEndpoint(key, operation) {
   var options = {
     Bucket: process.env.AWS_BUCKET_NAME,
@@ -67,6 +68,20 @@ const addPrescriptionById = async (req, res) => {
     console.log(Number(response.insertId), patient_id);
 
     createNewPrescriptionAlert(Number(response.insertId), patient_id);
+    
+    const pushNotiData = {
+      title: "New Prescription",
+      body: `A new Prescription has been added in by the Doctor`,
+      type: "New Prescription",
+      customField: "This is a custom notification from Firebase.",
+    };
+
+    try {
+      await sendPushNotification(pushNotiData, patient_id);
+      console.log("Push Notification Sent Successfully");
+    } catch (error) {
+      console.error("Error Sending Push Notification:", error);
+    }
 
     res.status(200).json({
       data: Number(response.insertId),
