@@ -4,6 +4,7 @@ const LabReadings = require("../Models/labreadings.js");
 const { where } = require("sequelize");
 const moment = require("moment-timezone");
 const { ReportLog } = require("./log.js");
+const {sendPushNotification} = require("./app/notification.js")
 
 const getLabReports = async (req, res, next) => {
   const id = req.params.id;
@@ -59,6 +60,20 @@ const saveConfirmedData = async (req, res) => {
     // `;
     // await pool.query(logQuery);
 
+     const {sendPushNotification} = require("./app/notification.js")
+      const pushNotiData = {
+      title: "New Lab Report",
+      body: `A Lab Report has been added by the Doctor`,
+      type: "New Lab Report",
+      customField: "This is a custom notification from Firebase.",
+    };
+    try {
+      await sendPushNotification(pushNotiData, patient_id);
+      console.log("Push Notification Sent Successfully");
+    } catch (error) {
+      console.error("Error Sending Push Notification:", error);
+    }
+    
     res.status(200).json({
       success: true,
       message: "Lab Report confirmed and saved successfully",
