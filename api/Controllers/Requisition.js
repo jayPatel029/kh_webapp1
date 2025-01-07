@@ -1,6 +1,7 @@
 const { pool } = require("../databaseConn/database.js");
 const { ReportLog } = require("./log.js");
 
+const {sendPushNotification} = require("./app/notification.js");
 // const getRequisitions = async (req, res) => {
 //   try {
 //     const query = `SELECT * FROM requisition`;
@@ -34,8 +35,21 @@ const addRequisition = async (req, res, next) => {
   const query = `INSERT INTO requisition (Requisition,Patient_id,Date) VALUES ('${Requisition}',${Patient_id},'${Date}')`;
   const result = await pool.query(query);
   const query1=`Insert into report_log(patient_id,report,type,report_id,message,deletedBy) values(${Patient_id},'${Requisition}','Requisition',${ Number(result.insertId)},'Requisition Added','${email}')`
-  const logRes= await pool.query(query1);
+  const logRes= await pool.query(query1);  
   if (result) {
+    const pushNotiData = {
+      title: "New Requisition",
+      body: `A new Requisition has been added by the Doctor`,
+      type: "New Requisition",
+      customField: "This is a custom notification from Firebase.",
+    };
+
+    try {
+      await sendPushNotification(pushNotiData, Patient_id);
+      console.log("Push Notification Sent Successfully");
+    } catch (error) {
+      console.error("Error Sending Push Notification:", error);
+    }
     res.status(200).json({
       data: Number(result.insertId),
       success: true,
