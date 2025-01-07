@@ -96,7 +96,7 @@ export default function DailyTable({
                               assign_range: item.assign_range,
                               lower_assign_range: item.low_range,
                               upper_assign_range: item.high_range,
-                              sendAlert: item.send_alert ? 1 : 0,
+                              sendAlert: item.sendAlert ? 1 : 0,
                               unit : item.unit,
                               isGraph: item.isGraph ? 1 : 0,
                               alertTextDoc: item.alertTextDoc,

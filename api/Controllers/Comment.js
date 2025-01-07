@@ -95,7 +95,7 @@ const updateReadTable = async (req, res) => {
 }
 
 const addComment = async (req, res, next) => {
-    const { content, fileId, fileType, userId, iSDoctor, doctorId:doctorEmail } = req.body;
+    const { content, fileId, fileType, userId, iSDoctor, doctorId:doctorEmail ,docId } = req.body;
     console.log("doctors",req.body);
     const date = new Date().toISOString().slice(0, 19).replace('T', ' ');
     var uid = 0;

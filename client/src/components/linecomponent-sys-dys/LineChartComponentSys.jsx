@@ -808,7 +808,7 @@ const LineChartComponent = ({ aspect, title, questionId, user_id, unit, isPatien
     };
     axiosInstance.get(`${server_url}/readings/get/sys`, { params })
       .then(response => {
-        // console.log("readings",response.data)
+        console.log("readings",response.data)
         const formattedData = response.data.data.map((item, key) => {
           const date = new Date(item.date);
           const formattedDate = date.toISOString().split('T')[0];

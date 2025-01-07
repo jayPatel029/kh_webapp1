@@ -396,6 +396,7 @@ const updateDoctor = async (req, res, next) => {
       dailyReadingsAlerts: doctor_old_details[0].daily_update, // Match the key to `dailyReadingsAlerts`
       can_export: doctor_old_details[0].can_export,
     };
+    console.log("dailyReadings", dailyReadings);
     
     // Compare the two objects and log changes
     const changedFields = Object.keys(doctor).filter((key) => {
