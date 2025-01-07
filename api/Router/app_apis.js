@@ -61,6 +61,12 @@ const { submitUserFeedback } = require("../Controllers/app/feedback.js");
 const { sendPushNotification } = require("../Controllers/app/notification.js");
 const { verifyToken } = require("../Helpers/middlewares/roles.js");
 const router = require("express").Router();
+const {
+  getPatientDietDetails,
+  addDietComment,
+  fetchDietComments,
+} = require("../Controllers/app/diet_details.js");
+
 // Set storage engine
 // const storage = multer.diskStorage({
 //   destination: function (req, file, cb) {
