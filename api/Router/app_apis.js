@@ -141,11 +141,15 @@ router.post(
   upload.single("image"),
   answerDialysisParameters
 );
+
 router.post(
   "/dialysisHealth/fetchDialysisParametersById",
   fetchDialysisParametersById
 );
-
+//diet
+router.post("/dietdetails/fetchDietComments", fetchDietComments);
+router.post("/dietdetails/getPatientDiet", getPatientDietDetails);
+router.post("/dietdetails/addDietComment", addDietComment);
 // APP ALERTS
 router.post("/appAlerts/insertAlert", insertAlert);
 
