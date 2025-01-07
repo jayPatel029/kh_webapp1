@@ -356,7 +356,7 @@ const updateAlarm = async (req, res) => {
 
   console.log("Alarm updating: for", alarmID);
 
-  const query = `UPDATE alarm SET doctorId=?, type=?, parameter=?, description=?, frequency=?, timesamonth=?, weekdays=?, timesaday=?, time=?, status=?, reason=?, dateofmonth=?, patientid=?, prescriptionid=?, dateadded=?, isWeek=?, daysOFWeek=? WHERE id = ?`;
+  const query = `UPDATE alarm SET type=?, parameter=?, description=?, frequency=?, timesamonth=?, weekdays=?, timesaday=?, time=?, status=?, reason=?, dateofmonth=?, patientid=?, prescriptionid=?, dateadded=?, isWeek=?, daysOFWeek=? WHERE id = ?`;
   const values = [
     userParameterID,
     convertAlarmTypeFromInt(alarmType) || null,
