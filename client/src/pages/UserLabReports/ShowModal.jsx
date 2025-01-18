@@ -34,12 +34,23 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
         setIsExtracting(false);
         return;
       }
-
+      const data ={
+        patient_id: user_id,
+        date: selectedDate,
+        Report_Type: selectedReportType,
+        email,
+        Lab_Report: pdfUrl,
+        
+      }
       const extractRes = await axiosInstance.post(
-        `${server_url}/labReport/extract`,
-        { Lab_Report: pdfUrl }
+        `${server_url}/labReport/extract`,  data
       );
-
+      console.log(extractRes.data.message);
+      if(extractRes.data.message === "Lab Report confirmed and saved successfully"){
+        alert("Data saved successfully.");
+        onSuccess();
+        closeModal();
+      }
       setExtractedValues(extractRes.data.extractedValues);
     } catch (error) {
       console.error("Error during extraction:", error);
