@@ -102,7 +102,7 @@ function UploadedFileModal({ closeModal, file, user_id, file_id }) {
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-opacity-50 bg-black">
       <div className="p-7 ml-4 mr-4 mt-4 bg-white w-3/5 h-4/5 shadow-md border-t-4 border-teal-500 rounded z-50 overflow-auto">
-        <div className="header flex justify-between items-center border-b pb-2 mb-4">
+        <div className="header flex justify-between sticky top-0 bg-white items-center border-b pb-2 mb-4">
           <h1 className="text-2xl font-bold">Uploaded Image</h1>
           <button
             onClick={closeModal}

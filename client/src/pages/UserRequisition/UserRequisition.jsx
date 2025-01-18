@@ -151,8 +151,8 @@ const UserRequisition = () => {
                         `}>
                           <td>
                             {
-                              (requisitionItem.Date = formatDate(
-                                requisitionItem.Date
+                              (requisitionItem.date = formatDate(
+                                requisitionItem?.Date
                               ))
                             }
                           </td>

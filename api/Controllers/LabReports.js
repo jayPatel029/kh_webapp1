@@ -90,23 +90,60 @@ const saveConfirmedData = async (req, res) => {
 
 
 const addLabReport = async (req, res) => {
-  const { Lab_Report } = req.body;
+  const { patient_id, date, Report_Type, Lab_Report } = req.body;
+  console.log("req.body",req.body)
+  if(Report_Type !== "Lab"){
+    try {
+      // Insert the lab report details
+      const reportQuery = `
+        INSERT INTO labreport (Date, patient_id,Lab_Report, Report_Type)
+        VALUES ('${date}', '${patient_id}','${Lab_Report}', '${Report_Type}')
+      `;
+      const reportResult = await pool.query(reportQuery);
+  
+      const reportId =Number(reportResult.insertId);
+  
+      // Insert each confirmed medical parameter into the database
+      // const success = await insertMedicalDataDB(confirmedValues, patient_id, date);
+  
+      // Log the operation
+      // const logQuery = `
+      //   INSERT INTO report_log (patient_id, type, report_id, message, deletedBy)
+      //   VALUES ('${patient_id}', '${Report_Type}', '${reportId}', 'Lab Report confirmed and saved', '${email}')
+      // `;
+      // await pool.query(logQuery);
+  
+      res.status(200).json({
+        success: true,
+        message: "Lab Report confirmed and saved successfully",
+        reportId: reportId,
+      });
+    } catch (error) {
+      console.error("Error saving confirmed data:", error);
+      res.status(400).json({
+        success: false,
+        message: "Error saving confirmed data",
+      });
+    }
+  }
 
-  try {
-    // Extract data from the PDF
-    const medicalData = await PdfTextFunction(Lab_Report);
-
-    res.status(200).json({
-      success: true,
-      message: "Extracted data from Lab Report successfully",
-      extractedValues: medicalData, // Send extracted values to the frontend
-    });
-  } catch (error) {
-    console.error("Error processing lab report:", error);
-    res.status(400).json({
-      success: false,
-      message: "Error extracting data from Lab Report",
-    });
+  else{
+    try {
+      // Extract data from the PDF
+      const medicalData = await PdfTextFunction(Lab_Report);
+  
+      res.status(200).json({
+        success: true,
+        message: "Extracted data from Lab Report successfully",
+        extractedValues: medicalData, // Send extracted values to the frontend
+      });
+    } catch (error) {
+      console.error("Error processing lab report:", error);
+      res.status(400).json({
+        success: false,
+        message: "Error extracting data from Lab Report",
+      });
+    }
   }
 };
 
