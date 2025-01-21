@@ -119,11 +119,11 @@ const translations = require("./translation.json");
 //               // const answerQuery = `SELECT readings FROM graph_readings WHERE question_id = ${readingID} AND user_id = ${userID} AND date = '${date}';`;
 //               // const answerResp = await pool.query(answerQuery);
 
-//               const answerQuery = `SELECT readings FROM graph_readings 
-//                                    WHERE question_id = ${readingID} 
-//                                      AND user_id = ${userID} 
+//               const answerQuery = `SELECT readings FROM graph_readings
+//                                    WHERE question_id = ${readingID}
+//                                      AND user_id = ${userID}
 //                                      AND date = '${date}'
-//                                    ORDER BY id DESC 
+//                                    ORDER BY id DESC
 //                                    LIMIT 1;`;
 //               const answerResp = await pool.query(answerQuery);
 
@@ -214,8 +214,6 @@ const translations = require("./translation.json");
 //   }
 // };
 
-
-
 const fetchDailyParameters = async (req, res) => {
   const { userID, date, language } = req.body;
   console.log("Request received with:", { userID, date, language });
@@ -260,7 +258,10 @@ const fetchDailyParameters = async (req, res) => {
             console.log("Determined reading ID:", readingID2);
 
             const query3 = `SELECT * FROM daily_readings WHERE id = ${readingID2}`;
-            console.log("Executing query to fetch daily reading details:", query3);
+            console.log(
+              "Executing query to fetch daily reading details:",
+              query3
+            );
             const resp3 = await pool.query(query3);
             console.log("Daily reading details fetched:", resp3);
 
@@ -285,14 +286,30 @@ const fetchDailyParameters = async (req, res) => {
                 SELECT daysOFWeek, dateofmonth 
                 FROM alarm 
                 WHERE description = '${dailyTitle}' AND patientid = ${userID};`;
-              console.log("Executing query to fetch alarm details:", alarmQuery);
+              console.log(
+                "Executing query to fetch alarm details:",
+                alarmQuery
+              );
               const alarmResp = await pool.query(alarmQuery);
               console.log("Alarm details fetched:", alarmResp);
 
-              const daysOfWeek = alarmResp.length > 0 ? alarmResp[0].daysOFWeek : "1,2,3,4,5,6,7";
-              const dateOfMonth = alarmResp.length > 0 ? alarmResp[0].dateofmonth ? null : "" : "";
+              const daysOfWeek =
+                alarmResp.length > 0
+                  ? alarmResp[0].daysOFWeek
+                  : "1,2,3,4,5,6,7";
+              const dateOfMonth =
+                alarmResp.length > 0
+                  ? alarmResp[0].dateofmonth
+                    ? null
+                    : ""
+                  : "";
 
-              console.log("Determined daysOfWeek:", daysOfWeek, "and dateOfMonth:", dateOfMonth);
+              console.log(
+                "Determined daysOfWeek:",
+                daysOfWeek,
+                "and dateOfMonth:",
+                dateOfMonth
+              );
 
               const parameterName = dailyReadings.title;
               const parameterTranslation = translations[parameterName];
@@ -320,6 +337,95 @@ const fetchDailyParameters = async (req, res) => {
 
               respOut.push(responseObj);
               processedDailyReadings.add(readingID2);
+
+              //check for diastolic!!
+              // Check for diastolic if systolic is present
+              if (parameterName.toLowerCase().includes("systolic")) {
+                const systolicVariants = parameterName.match(/Systolic/gi); // Match all occurrences of "Systolic"
+                console.log(
+                  "Systolic variants found in parameter name:",
+                  systolicVariants
+                );
+
+                if (systolicVariants) {
+                  for (const systolicVariant of systolicVariants) {
+                    // Replace each "Systolic" with "Diastolic"
+                    const diastolicTitle = parameterName.replace(
+                      new RegExp(systolicVariant, "gi"),
+                      "Diastolic"
+                    );
+                    console.log(
+                      `Checking for corresponding Diastolic title: ${diastolicTitle}`
+                    );
+
+                    const diastolicQuery = `SELECT * FROM daily_readings WHERE title = '${diastolicTitle}'`;
+                    console.log(
+                      "Executing query to fetch diastolic parameter:",
+                      diastolicQuery
+                    );
+
+                    const diastolicResp = await pool.query(diastolicQuery);
+                    console.log("Diastolic parameter fetched:", diastolicResp);
+
+                    if (diastolicResp.length > 0) {
+                      const diastolicReadings = diastolicResp[0];
+
+                      const diastolicAnswerQuery = `SELECT readings FROM graph_readings 
+                                      WHERE question_id = ${diastolicReadings.id} 
+                                        AND user_id = ${userID} 
+                                        AND date = '${date}'
+                                      ORDER BY id DESC 
+                                      LIMIT 1;`;
+                      console.log(
+                        "Executing query to fetch diastolic answer:",
+                        diastolicAnswerQuery
+                      );
+
+                      const diastolicAnswerResp = await pool.query(
+                        diastolicAnswerQuery
+                      );
+                      console.log(
+                        "Diastolic answer fetched:",
+                        diastolicAnswerResp
+                      );
+
+                      let diastolicAnswer = "";
+                      if (diastolicAnswerResp.length > 0) {
+                        diastolicAnswer = diastolicAnswerResp[0].readings;
+                      }
+
+                      const diastolicResponseObj = {
+                        userParameterID: parseInt(doctor["doctor_id"]),
+                        parameterID: diastolicReadings.id,
+                        parameterName: diastolicReadings.title,
+                        parameterNameTranslation: translations[
+                          diastolicReadings.title
+                        ]
+                          ? translations[diastolicReadings.title][language]
+                          : diastolicReadings.title,
+                        parameterType: diastolicReadings["type"],
+                        unitOfMeasure: diastolicReadings.unit,
+                        unitOfMeasureTranslation: diastolicReadings.unit,
+                        daysOfWeek: "1,2,3,4,5,6,7",
+                        daysOfMonth: "",
+                        answer: diastolicAnswer.toString(),
+                        date: date,
+                      };
+
+                      console.log(
+                        "Constructed response object for diastolic:",
+                        diastolicResponseObj
+                      );
+                      respOut.push(diastolicResponseObj);
+                      processedDailyReadings.add(diastolicReadings.id);
+                    } else {
+                      console.log(
+                        `No diastolic counterpart found for title: ${diastolicTitle}`
+                      );
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -349,11 +455,6 @@ const fetchDailyParameters = async (req, res) => {
     });
   }
 };
-
-
-
-
-
 
 const answerDailyParameters = async (req, res) => {
   const { parameterid, userid, userparameterid, date, isimage, answer } =
