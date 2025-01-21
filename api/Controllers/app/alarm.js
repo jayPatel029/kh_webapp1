@@ -90,7 +90,7 @@ const getAlarmOfPatient = async (req, res) => {
             getIndexesFromString(result[i]["weekdays"]),
           datesOFMonth: result[i]["dateofmonth"] || "",
           timeInADay: parseInt(result[i]["timesaday"]),
-          timeInMonth: result[i]["timesaday"],
+          timeInMonth: result[i]["timesamonth"],
           timeDoses: timeDoses,
         };
         respData.push(obj);
