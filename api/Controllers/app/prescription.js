@@ -130,6 +130,7 @@ const addPrescriptionComment = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error adding prescription comments",
+      error: error.message,
     });
   }
 };
