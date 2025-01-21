@@ -42,27 +42,21 @@ const fetchUserLabReports = async (req, res) => {
 };
 
 const addLabReportFromApp = async (req, res) => {
-  const { userid, Authorization, date, reporttype } = req.headers;
+  const { userid, date, reporttype } = req.headers;
   const image = req.file;
   try {
-    // Assuming report is a file uploaded
     let phtotolocation = "";
 
     if (image != null) {
-      // Extract file extension from originalname
       const fileExtension = image.originalname.split(".").pop();
 
-      // Construct the S3 object key with file extension
       const fileName = `profilephoto${Math.floor(
         Math.random() * 100000
       )}.${fileExtension}`;
-      // console.log(image);
       phtotolocation = await uploadFile(fileName, image.path);
-      // console.log(phtotolocation);
     } else {
       phtotolocation = "";
     }
-    // the date should be in form 24-Mar-2024, we are getting in the form 24 Mar 2024, thus modifiying the date
     const date2 = date.replaceAll(" ", "-");
     const query = `INSERT INTO labreport (Report_Type, Lab_Report, Date, patient_id) VALUES (?, ?, ?, ?)`;
     await pool.query(query, [reporttype, phtotolocation, date2, userid]);
@@ -115,7 +109,7 @@ const addReportComments = async (req, res) => {
   const { labReportID, comment, userID } = req.body;
   var formattedDate = getCurrentFormattedDate();
   try {
-    const query2 = `INSERT INTO comments (content, userId, typeId, isDoctor, date, type) VALUES (? , ? , ? , ? , ? , ?);`;
+    const query2 = `INSERT INTO comments (content, userId, typeId, isDoctor, date, type, doctorId) VALUES (? , ? , ? , ? , ? , ?, ?);`;
     const resp2 = await pool.query(query2, [
       comment,
       userID,
@@ -123,6 +117,7 @@ const addReportComments = async (req, res) => {
       0,
       formattedDate,
       "Lab Report",
+      0,
     ]);
 
     cid = Number(resp2.insertId);
@@ -182,5 +177,5 @@ module.exports = {
   addLabReportFromApp,
   fetchReportComments,
   addReportComments,
-  deleteLabReport
+  deleteLabReport,
 };
