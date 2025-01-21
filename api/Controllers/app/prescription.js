@@ -92,7 +92,7 @@ const addPrescriptionComment = async (req, res) => {
 
   var formattedDate = getCurrentFormattedDate();
   try {
-    const query2 = `INSERT INTO comments (content, userId, typeId, isDoctor, date, type) VALUES (? , ? , ? , ? , ? , ?);`;
+    const query2 = `INSERT INTO comments (content, userId, typeId, isDoctor, date, type, doctorId) VALUES (? , ? , ? , ? , ? , ?, ?);`;
     const resp2 = await pool.query(query2, [
       comment,
       userID,
@@ -100,6 +100,7 @@ const addPrescriptionComment = async (req, res) => {
       0,
       formattedDate,
       "Prescription",
+      0,
     ]);
 
     cid = Number(resp2.insertId);
