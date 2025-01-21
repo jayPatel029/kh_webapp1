@@ -100,7 +100,7 @@ const addDietComment = async (req, res) => {
 
   var formattedDate = getCurrentFormattedDate();
   try {
-    const query2 = `INSERT INTO comments (content, userId, typeId, isDoctor, date, type) VALUES (? , ? , ? , ? , ? , ?);`;
+    const query2 = `INSERT INTO comments (content, userId, typeId, isDoctor, date, type, doctorId) VALUES (? , ? , ? , ? , ? , ?, ?);`;
     const resp2 = await pool.query(query2, [
       comment,
       userID,
@@ -108,6 +108,7 @@ const addDietComment = async (req, res) => {
       isDoctor,
       formattedDate,
       "Diet",
+      0,
     ]);
 
     cid = Number(resp2.insertId);
