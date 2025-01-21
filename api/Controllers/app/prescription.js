@@ -17,29 +17,21 @@ const addToReadTable = async (doctorId, commentId) => {
 
 const addPrescriptionFromApp = async (req, res) => {
   const { userid, Authorization, date } = req.headers;
-  // console.log(date);
   const image = req.file;
   try {
-    // Assuming prescription is a file uploaded
-    // const image = req.file.path; // Assuming multer middleware is used for file upload
     let phtotolocation = "";
 
     if (image != null) {
-      // Extract file extension from originalname
       const fileExtension = image.originalname.split(".").pop();
 
-      // Construct the S3 object key with file extension
       const fileName = `profilephoto${Math.floor(
         Math.random() * 100000
       )}.${fileExtension}`;
-      // console.log(image);
       phtotolocation = await uploadFile(fileName, image.path);
     } else {
       phtotolocation = "";
     }
-    // the date should be in form 24-Mar-2024, we are getting in the form 24 Mar 2024, thus modifiying the date
     const date2 = convertDateFormatYYYYmmDD(date);
-    // console.log(date2);
     const query = `INSERT INTO prescriptions (Prescription, Date, patient_id) VALUES (?, ?, ?)`;
     await pool.query(query, [phtotolocation, date2, userid]);
 
@@ -87,10 +79,65 @@ const fetchPrescriptionComments = async (req, res) => {
   }
 };
 
+// const addPrescriptionComment = async (req, res) => {
+//   const { priscriptionID, comment, userID } = req.body;
+
+//   var formattedDate = getCurrentFormattedDate();
+//   try {
+//     const query2 = `INSERT INTO comments (content, userId, typeId, isDoctor, date, type) VALUES (? , ? , ? , ? , ? , ?);`;
+//     const resp2 = await pool.query(query2, [
+//       comment,
+//       userID,
+//       priscriptionID,
+//       0,
+//       formattedDate,
+//       "Prescription",
+//     ]);
+
+//     cid = Number(resp2.insertId);
+
+//     const query1 = `SELECT * FROM doctor_patients WHERE patient_id=${userID}`;
+//     try {
+//       const doctors = await pool.query(query1);
+//       for (let i = 0; i < doctors.length; i++) {
+//         const doctor = doctors[i];
+//         await addToReadTable(doctor.doctor_id, cid);
+//       }
+//     } catch (error) {
+//       // console.error("Error adding to read table:", error);
+//       throw "Error adding to read table:";
+//       // res.status(400).json({
+//       //   success: false,
+//       //   message: "Something went wrong",
+//       // });
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       // data: resp.toString(),
+//       message: "Prescription Comments added Successfully",
+//     });
+//   } catch (error) {
+//     console.error("Error adding prescription comments!", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Error adding prescription comments",
+//     });
+//   }
+// };
+
 const addPrescriptionComment = async (req, res) => {
   const { priscriptionID, comment, userID } = req.body;
 
-  var formattedDate = getCurrentFormattedDate();
+  if (!priscriptionID || !comment || !userID) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing required fields",
+    });
+  }
+
+  const formattedDate = getCurrentFormattedDate();
+
   try {
     const query2 = `INSERT INTO comments (content, userId, typeId, isDoctor, date, type, doctorId) VALUES (? , ? , ? , ? , ? , ?, ?);`;
     const resp2 = await pool.query(query2, [
@@ -102,32 +149,27 @@ const addPrescriptionComment = async (req, res) => {
       "Prescription",
       0,
     ]);
+    console.log("Comment added successfully:", resp2);
 
-    cid = Number(resp2.insertId);
-
+    const cid = Number(resp2.insertId);
     const query1 = `SELECT * FROM doctor_patients WHERE patient_id=${userID}`;
-    try {
-      const doctors = await pool.query(query1);
-      for (let i = 0; i < doctors.length; i++) {
-        const doctor = doctors[i];
-        await addToReadTable(doctor.doctor_id, cid);
-      }
-    } catch (error) {
-      // console.error("Error adding to read table:", error);
-      throw "Error adding to read table:";
-      // res.status(400).json({
-      //   success: false,
-      //   message: "Something went wrong",
-      // });
+    const doctors = await pool.query(query1);
+
+    if (doctors.length === 0) {
+      console.log("No doctors found for userID:", userID);
+    }
+
+    for (const doctor of doctors) {
+      console.log("Adding to read table for doctor:", doctor.doctor_id);
+      await addToReadTable(doctor.doctor_id, cid);
     }
 
     res.status(200).json({
       success: true,
-      // data: resp.toString(),
       message: "Prescription Comments added Successfully",
     });
   } catch (error) {
-    console.error("Error adding prescription comments!", error);
+    console.error("Error occurred:", error);
     res.status(500).json({
       success: false,
       message: "Error adding prescription comments",
