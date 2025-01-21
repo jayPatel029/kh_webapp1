@@ -25,9 +25,9 @@ const { addToReadTable } = require("./prescription.js");
 //         message: "Successful",
 //         data: out,
 //       });
-      
+
 //       console.log("response", res);
-      
+
 //     } else {
 //       res.status(200).json({
 //         result: false,
@@ -45,39 +45,119 @@ const { addToReadTable } = require("./prescription.js");
 //   }
 // };
 
+// const getRequisitionInApp = async (req, res, next) => {
+//   const { id } = req.body;
+//   try {
+//     const query = `SELECT * FROM requisition WHERE Patient_id = ${id}`;
+//     const requisition = await pool.query(query);
 
+//     if (requisition.length > 0) {
+//       var out = [];
 
+//       for (var i in requisition) {
+//         let formattedDate = "Invalid Date";
+//         const dateStr = requisition[i]["Date"];
+
+//         if (dateStr) {
+//           try {
+//             // Manually parse the date in YYYY-DD-MM format to YYYY-MM-DD
+//             const [year, day, month] = dateStr.split("-");
+//             const parsedDate = new Date(`${year}-${month}-${day}`);
+//             formattedDate = formatDate(parsedDate).replaceAll(" ", "-");
+//           } catch (dateError) {
+//             console.log("Invalid Date format for requisition ID:", requisition[i]["id"], dateError);
+//           }
+//         }
+
+//         out.push({
+//           requisitionID: requisition[i]["id"],
+//           image: requisition[i]["Requisition"],
+//           date: requisition[i]['Date'],
+//         });
+//       }
+
+//       res.status(200).json({
+//         result: true,
+//         message: "Successful",
+//         data: out,
+//       });
+
+//       console.log("response", res);
+
+//     } else {
+//       res.status(200).json({
+//         result: false,
+//         message: "Data Not Found",
+//         data: null,
+//       });
+//     }
+//   } catch (err) {
+//     console.log("error: ", err);
+//     res.status(500).json({
+//       result: false,
+//       message: "Unsuccessful",
+//       error: "error while fetching user requisitions",
+//     });
+//   }
+// };
 
 const getRequisitionInApp = async (req, res, next) => {
   const { id } = req.body;
+
+  console.log("Received request with Patient ID:", id);
+
   try {
     const query = `SELECT * FROM requisition WHERE Patient_id = ${id}`;
+    console.log("Executing query:", query);
+
     const requisition = await pool.query(query);
 
-    if (requisition.length > 0) {
-      var out = [];
+    console.log("Query result:", requisition);
 
-      for (var i in requisition) {
+    if (requisition.length > 0) {
+      console.log("Requisitions found:", requisition.length);
+
+      const out = requisition.map((item) => {
         let formattedDate = "Invalid Date";
-        const dateStr = requisition[i]["Date"];
-        
+
+        const dateStr = item["Date"];
+        console.log(
+          `Processing requisition ID ${item["id"]}, Date: ${dateStr}`
+        );
+
         if (dateStr) {
           try {
-            // Manually parse the date in YYYY-DD-MM format to YYYY-MM-DD
-            const [year, day, month] = dateStr.split("-");
-            const parsedDate = new Date(`${year}-${month}-${day}`);
-            formattedDate = formatDate(parsedDate).replaceAll(" ", "-");
+            const parsedDate = new Date(dateStr);
+            if (!isNaN(parsedDate.getTime())) {
+              const day = String(parsedDate.getDate()).padStart(2, "0");
+              const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+              const year = parsedDate.getFullYear();
+              formattedDate = `${day}-${month}-${year}`;
+              console.log(
+                `Formatted date for requisition ID ${item["id"]}: ${formattedDate}`
+              );
+            } else {
+              console.log(
+                `Invalid date parsed for requisition ID ${item["id"]}: ${dateStr}`
+              );
+            }
           } catch (dateError) {
-            console.log("Invalid Date format for requisition ID:", requisition[i]["id"], dateError);
+            console.log(
+              "Error parsing date for requisition ID:",
+              item["id"],
+              dateError
+            );
           }
         }
 
-        out.push({
-          requisitionID: requisition[i]["id"],
-          image: requisition[i]["Requisition"],
+        return {
+          requisitionID: item["id"],
+          image: item["Requisition"],
           date: formattedDate,
-        });
-      }
+        };
+      });
+
+      console.log("Final output data:", out);
 
       res.status(200).json({
         result: true,
@@ -85,9 +165,10 @@ const getRequisitionInApp = async (req, res, next) => {
         data: out,
       });
 
-      console.log("response", res);
-
+      console.log("Response sent successfully.");
     } else {
+      console.log("No requisitions found for Patient ID:", id);
+
       res.status(200).json({
         result: false,
         message: "Data Not Found",
@@ -95,17 +176,15 @@ const getRequisitionInApp = async (req, res, next) => {
       });
     }
   } catch (err) {
-    console.log("error: ", err);
+    console.log("Error during database operation:", err);
+
     res.status(500).json({
       result: false,
       message: "Unsuccessful",
-      error: "error while fetching user requisitions",
+      error: "Error while fetching user requisitions",
     });
   }
 };
-
-
-
 
 const fetchRequisitionComments = async (req, res) => {
   const { requisitionID } = req.body;
@@ -141,7 +220,7 @@ const addRequisitionComment = async (req, res) => {
   const { requisitionID, comment, userID } = req.body;
   var formattedDate = getCurrentFormattedDate();
   try {
-    const query2 = `INSERT INTO comments (content, userId, typeId, isDoctor, date, type) VALUES (? , ? , ? , ? , ? , ?);`;
+    const query2 = `INSERT INTO comments (content, userId, typeId, isDoctor, date, type, doctorId) VALUES (? , ? , ? , ? , ? , ?, ?);`;
     const resp2 = await pool.query(query2, [
       comment,
       userID,
@@ -149,6 +228,7 @@ const addRequisitionComment = async (req, res) => {
       0,
       formattedDate,
       "Requisition",
+      0,
     ]);
     cid = Number(resp2.insertId);
 
@@ -173,7 +253,6 @@ const addRequisitionComment = async (req, res) => {
       // data: resp.toString(),
       message: "Requisition Comments added Successfully",
     });
-
   } catch (error) {
     console.error("Error adding Requisition comments!", error);
     res.status(500).json({
