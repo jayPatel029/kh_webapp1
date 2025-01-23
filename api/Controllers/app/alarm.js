@@ -356,30 +356,70 @@ const updateAlarm = async (req, res) => {
 
   console.log("Alarm updating: for", alarmID);
 
-  const query = `UPDATE alarm SET type=?, parameter=?, description=?, frequency=?, timesamonth=?, weekdays=?, timesaday=?, time=?, status=?, reason=?, dateofmonth=?, patientid=?, prescriptionid=?, dateadded=?, isWeek=?, daysOFWeek=? WHERE id = ?`;
-  const values = [
-    userParameterID,
-    convertAlarmTypeFromInt(alarmType) || null,
-    parameter || null,
-    shortDesc || null,
-    timeDoses[0]["doses"] || null,
-    timeInMonth || null,
-    weekdays || null,
-    timeInADay || null,
-    timeDoses[0]["time"] || null,
-    status || "Approved",
-    reason || null,
-    datesOFMonth || null,
-    userID,
-    prescriptionid || null,
-    new Date().toISOString().slice(0, 19).replace("T", " "),
-    // currentSetByUser,
-    // setByuser,
-    isWeek,
-    daysOFWeek,
-    alarmID, // alarmID for update
-  ];
+  // const query = `UPDATE alarm SET type=?, parameter=?, description=?, frequency=?, timesamonth=?, weekdays=?, timesaday=?, time=?, status=?, reason=?, dateofmonth=?, patientid=?, prescriptionid=?, dateadded=?, isWeek=?, daysOFWeek=? WHERE id = ?`;
+  // const values = [
+  //   userParameterID,
+  //   convertAlarmTypeFromInt(alarmType) || null,
+  //   parameter || null,
+  //   shortDesc || null,
+  //   timeDoses[0]["doses"] || null,
+  //   timeInMonth || null,
+  //   weekdays || null,
+  //   timeInADay || null,
+  //   timeDoses[0]["time"] || null,
+  //   status || "Approved",
+  //   reason || null,
+  //   datesOFMonth || null,
+  //   userID,
+  //   prescriptionid || null,
+  //   new Date().toISOString().slice(0, 19).replace("T", " "),
+  //   // currentSetByUser,
+  //   // setByuser,
+  //   isWeek,
+  //   daysOFWeek,
+  //   alarmID, // alarmID for update
+  // ];
+const query = `
+  UPDATE alarm 
+  SET 
+    type=?,              -- 1
+    parameter=?,         -- 2
+    description=?,       -- 3
+    frequency=?,         -- 4
+    timesamonth=?,       -- 5
+    weekdays=?,          -- 6
+    timesaday=?,         -- 7
+    time=?,              -- 8
+    status=?,            -- 9
+    reason=?,            -- 10
+    dateofmonth=?,       -- 11
+    patientid=?,         -- 12
+    prescriptionid=?,    -- 13
+    dateadded=?,         -- 14
+    isWeek=?,            -- 15
+    daysOFWeek=?         -- 16
+  WHERE id = ?           -- 17
+`;
 
+const values = [
+  convertAlarmTypeFromInt(alarmType) || null,            // type
+  parameter || null,                                     // parame
+  shortDesc || null,                                     // desc 
+  frequency || null,                                     // freq 
+  timeInMonth || null,                                   // timesam 
+  convertWeekdays || null,                               // weekd 
+  timeInADay || null,                                    // timesaday
+  timeDoses[0]?.["time"] || null,                        // time
+  status || "Approved",                                  // status
+  reason || null,                                        // reason
+  datesOFMonth || null,                                  // dateofmonth
+  userID,                                                // patientid
+  prescriptionid || null,                                // prescriptionid
+  new Date().toISOString().slice(0, 19).replace("T", " "), // dateadded
+  isWeek || null,                                        // isWeek
+  daysOFWeek || null,                                    // daysOFWeek
+  alarmID,                                               // id
+];
   try {
     const result = await pool.query(query, values);
     const existingDosesQuery = `DELETE FROM alarm_doses WHERE alarmID = ?`;
