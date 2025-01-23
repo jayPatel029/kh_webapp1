@@ -318,7 +318,7 @@ const createAlarm = async (req, res) => {
         console.log("Dose added with ID:", result2.insertId);
       } catch (err) {
         console.error("Error inserting dose:", err);
-        return res.status(500).json({ error: "Error adding doses" });
+        return res.status(500).json({ error: "Error adding doses"});
       }
     }
 
@@ -406,7 +406,7 @@ const updateAlarm = async (req, res) => {
         a.push(result2.insertId);
       } catch (err) {
         console.error(err);
-        res.status(500).send("Error adding doses");
+        res.status(500).send("Error adding doses", err);
         break;
       }
     }
@@ -419,7 +419,8 @@ const updateAlarm = async (req, res) => {
     console.error(error);
     res.status(500).json({
       result: false,
-      message: "Error updating the doses",
+      message: `Error updating the doses/alarm ${error.message}`,
+      
     });
   }
 };
