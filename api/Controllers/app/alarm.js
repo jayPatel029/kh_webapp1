@@ -332,29 +332,29 @@ const createAlarm = async (req, res) => {
   }
 };
 
-const updateAlarm = async (req, res) => {
-  const {
-    alarmID,
-    userID,
-    userParameterID,
-    alarmType,
-    parameter,
-    shortDesc,
-    frequency,
-    timeInMonth,
-    weekdays,
-    timeInADay,
-    timeDoses,
-    status,
-    reason,
-    datesOFMonth,
-    prescriptionid,
-    // setByuser,
-    isWeek,
-    daysOFWeek,
-  } = req.body;
+// const updateAlarm = async (req, res) => {
+//   const {
+//     alarmID,
+//     userID,
+//     userParameterID,
+//     alarmType,
+//     parameter,
+//     shortDesc,
+//     frequency,
+//     timeInMonth,
+//     weekdays,
+//     timeInADay,
+//     timeDoses,
+//     status,
+//     reason,
+//     datesOFMonth,
+//     prescriptionid,
+//     // setByuser,
+//     isWeek,
+//     daysOFWeek,
+//   } = req.body;
 
-  console.log("Alarm updating: for", alarmID);
+//   console.log("Alarm updating: for", alarmID);
 
   // const query = `UPDATE alarm SET type=?, parameter=?, description=?, frequency=?, timesamonth=?, weekdays=?, timesaday=?, time=?, status=?, reason=?, dateofmonth=?, patientid=?, prescriptionid=?, dateadded=?, isWeek=?, daysOFWeek=? WHERE id = ?`;
   // const values = [
@@ -379,60 +379,124 @@ const updateAlarm = async (req, res) => {
   //   daysOFWeek,
   //   alarmID, // alarmID for update
   // ];
-const query = `
-  UPDATE alarm 
-  SET 
-    type=?,              -- 1
-    parameter=?,         -- 2
-    description=?,       -- 3
-    frequency=?,         -- 4
-    timesamonth=?,       -- 5
-    weekdays=?,          -- 6
-    timesaday=?,         -- 7
-    time=?,              -- 8
-    status=?,            -- 9
-    reason=?,            -- 10
-    dateofmonth=?,       -- 11
-    patientid=?,         -- 12
-    prescriptionid=?,    -- 13
-    dateadded=?,         -- 14
-    isWeek=?,            -- 15
-    daysOFWeek=?         -- 16
-  WHERE id = ?           -- 17
-`;
 
-const values = [
-  convertAlarmTypeFromInt(alarmType) || null,            // type
-  parameter || null,                                     // parame
-  shortDesc || null,                                     // desc 
-  frequency || null,                                     // freq 
-  timeInMonth || null,                                   // timesam 
-  convertWeekdays || null,                               // weekd 
-  timeInADay || null,                                    // timesaday
-  timeDoses[0]?.["time"] || null,                        // time
-  status || "Approved",                                  // status
-  reason || null,                                        // reason
-  datesOFMonth || null,                                  // dateofmonth
-  userID,                                                // patientid
-  prescriptionid || null,                                // prescriptionid
-  new Date().toISOString().slice(0, 19).replace("T", " "), // dateadded
-  isWeek || null,                                        // isWeek
-  daysOFWeek || null,                                    // daysOFWeek
-  alarmID,                                               // id
-];
+
+//   try {
+//     const result = await pool.query(query, values);
+//     const existingDosesQuery = `DELETE FROM alarm_doses WHERE alarmID = ?`;
+//     try {
+//       await pool.query(existingDosesQuery, [alarmID]);
+//     } catch (error) {
+//       console.error(error);
+//       throw "error deleting doses";
+//     }
+
+//     var a = [];
+//     for (var i in timeDoses) {
+//       const query2 = `INSERT INTO alarm_doses (alarmID, time, doses, unitType, createdAt, updatedAt) VALUES (? , ? , ? , ? , ? , ?)`;
+//       const values2 = [
+//         alarmID,
+//         timeDoses[i]["time"],
+//         timeDoses[i]["doses"],
+//         timeDoses[i]["unitType"],
+//         new Date().toISOString().slice(0, 19).replace("T", " "),
+//         new Date().toISOString().slice(0, 19).replace("T", " "),
+//       ];
+//       try {
+//         const result2 = await pool.query(query2, values2);
+//         a.push(result2.insertId);
+//       } catch (err) {
+//         console.error(err);
+//         res.status(500).send("Error adding doses", err);
+//         break;
+//       }
+//     }
+
+//     res.status(200).json({
+//       result: true,
+//       message: a.join(","),
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       result: false,
+//       message: `Error updating the doses/alarm ${error.message}`,
+      
+//     });
+//   }
+// };
+const updateAlarm = async (req, res) => {
+  const {
+    alarmID,
+    userID,
+    userParameterID,
+    alarmType,
+    parameter,
+    shortDesc,
+    frequency,
+    timeInMonth,
+    weekdays,
+    timeInADay,
+    timeDoses,
+    status,
+    reason,
+    datesOFMonth,
+    prescriptionid,
+    isWeek,
+    daysOFWeek,
+  } = req.body;
+
+  console.log("Starting updateAlarm process...");
+  console.log("Alarm updating for ID:", alarmID);
+
+  const convertWeekdays = convertDaysOfWeekToWeekdays(daysOFWeek);
+  console.log("Converted weekdays:", convertWeekdays);
+ 
+
+  const query = UPDATE alarm SET type=?,parameter=?,description=?,frequency=?,timesamonth=?,weekdays=?,timesaday=?,time=?,status=?,reason=?,dateofmonth=?,patientid=?,prescriptionid=?,dateadded=?,isWeek=?,daysOFWeek=? WHERE id = ?;
+
+  const values = [
+    convertAlarmTypeFromInt(alarmType) || null,
+    parameter || null,
+    shortDesc || null,
+    frequency || null,
+    timeInMonth || null,
+    convertWeekdays || null,
+    timeInADay || null,
+    timeDoses[0]?.["time"] || null,
+    status || "Approved",
+    reason || null,
+    datesOFMonth || null,
+    userID,
+    prescriptionid || null,
+    new Date().toISOString().slice(0, 19).replace("T", " "),
+    isWeek || null,
+    daysOFWeek || null,
+    alarmID,
+  ];
+
+  console.log("Prepared SQL values for alarm update:", values);
+
   try {
     const result = await pool.query(query, values);
-    const existingDosesQuery = `DELETE FROM alarm_doses WHERE alarmID = ?`;
+    console.log("Alarm updated successfully:", result);
+
+    const existingDosesQuery = DELETE FROM alarm_doses WHERE alarmID = ?;
     try {
-      await pool.query(existingDosesQuery, [alarmID]);
+      const deleteResult = await pool.query(existingDosesQuery, [alarmID]);
+      console.log("Existing doses deleted successfully:", deleteResult);
     } catch (error) {
-      console.error(error);
-      throw "error deleting doses";
+      console.error("Error deleting doses:", error);
+      throw "Error deleting doses"; // 
     }
 
-    var a = [];
+    var doseInsertIds = [];
+    console.log("Inserting new doses for alarm...");
     for (var i in timeDoses) {
-      const query2 = `INSERT INTO alarm_doses (alarmID, time, doses, unitType, createdAt, updatedAt) VALUES (? , ? , ? , ? , ? , ?)`;
+      const query2 = `
+        INSERT INTO alarm_doses (alarmID, time, doses, unitType, createdAt, updatedAt) 
+        VALUES (? , ? , ? , ? , ? , ?)
+      `;
       const values2 = [
         alarmID,
         timeDoses[i]["time"],
@@ -441,26 +505,26 @@ const values = [
         new Date().toISOString().slice(0, 19).replace("T", " "),
         new Date().toISOString().slice(0, 19).replace("T", " "),
       ];
+      console.log("Prepared dose values for insertion:", values2);
       try {
         const result2 = await pool.query(query2, values2);
-        a.push(result2.insertId);
+        console.log("Dose inserted successfully:", result2);
+        doseInsertIds.push(result2.insertId);
       } catch (err) {
-        console.error(err);
+        console.error("Error adding doses:", err);
         res.status(500).send("Error adding doses", err);
         break;
       }
     }
-
     res.status(200).json({
       result: true,
-      message: a.join(","),
+      message: doseInsertIds.join(","),
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error in updateAlarm:", error);
     res.status(500).json({
       result: false,
-      message: `Error updating the doses/alarm ${error.message}`,
-      
+      message: Error updating the doses/alarm ${error.message},
     });
   }
 };
