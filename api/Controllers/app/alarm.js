@@ -425,6 +425,21 @@ const createAlarm = async (req, res) => {
 //     });
 //   }
 // };
+// convert daysofweek to weekdays
+
+function convertDaysOfWeekToWeekdays(daysOFWeek) {
+  const dayMapping = {
+    1: "Mon",2: "Tues",3: "Wed",4: "Thurs",5: "Fri",6: "Sat",7: "Sun",
+  };
+
+  if (!daysOFWeek) return "";
+
+  return daysOFWeek
+    .split(",")
+    .map((day) => dayMapping[day.trim()])
+    .filter(Boolean)
+    .join(",");
+}
 const updateAlarm = async (req, res) => {
   const {
     alarmID,
