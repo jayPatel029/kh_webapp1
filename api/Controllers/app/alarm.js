@@ -453,7 +453,7 @@ const updateAlarm = async (req, res) => {
   console.log("Converted weekdays:", convertWeekdays);
  
 
-  const query = UPDATE alarm SET type=?,parameter=?,description=?,frequency=?,timesamonth=?,weekdays=?,timesaday=?,time=?,status=?,reason=?,dateofmonth=?,patientid=?,prescriptionid=?,dateadded=?,isWeek=?,daysOFWeek=? WHERE id = ?;
+  const query = `UPDATE alarm SET type=?,parameter=?,description=?,frequency=?,timesamonth=?,weekdays=?,timesaday=?,time=?,status=?,reason=?,dateofmonth=?,patientid=?,prescriptionid=?,dateadded=?,isWeek=?,daysOFWeek=? WHERE id = ?`;
 
   const values = [
     convertAlarmTypeFromInt(alarmType) || null,
@@ -481,7 +481,7 @@ const updateAlarm = async (req, res) => {
     const result = await pool.query(query, values);
     console.log("Alarm updated successfully:", result);
 
-    const existingDosesQuery = DELETE FROM alarm_doses WHERE alarmID = ?;
+    const existingDosesQuery = `DELETE FROM alarm_doses WHERE alarmID = ?`;
     try {
       const deleteResult = await pool.query(existingDosesQuery, [alarmID]);
       console.log("Existing doses deleted successfully:", deleteResult);
@@ -524,7 +524,7 @@ const updateAlarm = async (req, res) => {
     console.error("Error in updateAlarm:", error);
     res.status(500).json({
       result: false,
-      message: Error updating the doses/alarm ${error.message},
+      message: `Error updating the doses/alarm ${error.message}`,
     });
   }
 };
