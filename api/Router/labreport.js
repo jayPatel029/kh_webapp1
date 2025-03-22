@@ -11,7 +11,9 @@ const {
   addLabReadings,
   getRange,
   saveConfirmedData,
-  getColoumnName
+  getColoumnName,
+  deleteLabReading,
+  updateLabReadingTitle
 } = require("../Controllers/LabReports.js");
 const { verifyToken } = require("../Helpers/middlewares/roles.js");
 
@@ -31,6 +33,8 @@ router.delete("/deleteLabReport/:id",verifyToken, deleteLabReport);
 router.post("/addBulkIndividual",verifyToken, uploadBulkLabReportIndividual);
 router.get("/LabReadings",verifyToken,fetchLabReadings)
 router.get("/getColumnNames",verifyToken,getColoumnName)
+router.delete("/deleteLabReading/:id",verifyToken,deleteLabReading)
+router.put("/updateLabReadingTitle/:readingId",verifyToken,updateLabReadingTitle)
 
 
 

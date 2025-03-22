@@ -2,6 +2,7 @@ const { pool } = require("../../databaseConn/database.js");
 const {
   formatDate,
   getCurrentFormattedDate,
+  formatDateNew,
 } = require("../../Helpers/date_formatter.js");
 const { addToReadTable } = require("./prescription.js");
 
@@ -172,7 +173,7 @@ const getRequisitionInApp = async (req, res, next) => {
       res.status(200).json({
         result: false,
         message: "Data Not Found",
-        data: null,
+        data: {},
       });
     }
   } catch (err) {
@@ -218,7 +219,7 @@ const fetchRequisitionComments = async (req, res) => {
 
 const addRequisitionComment = async (req, res) => {
   const { requisitionID, comment, userID } = req.body;
-  var formattedDate = getCurrentFormattedDate();
+  var date = formatDateNew();
   try {
     const query2 = `INSERT INTO comments (content, userId, typeId, isDoctor, date, type, doctorId) VALUES (? , ? , ? , ? , ? , ?, ?);`;
     const resp2 = await pool.query(query2, [
@@ -226,7 +227,7 @@ const addRequisitionComment = async (req, res) => {
       userID,
       requisitionID,
       0,
-      formattedDate,
+      date,
       "Requisition",
       0,
     ]);

@@ -211,6 +211,8 @@ const getAllChats = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+//admin
 const getAllByEMailChats = async (req, res) => {
   try {
     const pid = req.params.pid;

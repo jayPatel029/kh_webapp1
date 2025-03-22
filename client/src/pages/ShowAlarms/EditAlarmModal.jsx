@@ -7,6 +7,7 @@ import {
   getDailyReadings,
   getDialysisReadings,
 } from "../../ApiCalls/readingsApis";
+import { se } from "date-fns/locale";
 
 const EditAlarmModal = ({ closeModal, alarmData,pid,dosesData}) => {
   // Define alarmTypeOptions and state variables
@@ -44,7 +45,7 @@ const EditAlarmModal = ({ closeModal, alarmData,pid,dosesData}) => {
 
   const validate = () => {
     if (
-      selectedAlarmType === "Dialysis" ||
+   
       selectedAlarmType === "Health Reading"
     ) {
       if (selectedHealthParameter === "") {
@@ -100,7 +101,7 @@ const EditAlarmModal = ({ closeModal, alarmData,pid,dosesData}) => {
         description: description,
         message: messageToDoctor,
         frequency: selectTimings,
-        status: "Pending",
+        status:  selectedAlarmType === "Prescription" ? "Pending" : "Approved",
         reason: "",
         pid: pid,
         prescriptionid: null,
@@ -552,7 +553,9 @@ const EditAlarmModal = ({ closeModal, alarmData,pid,dosesData}) => {
                         (type) => type.label === selectedAlarmType
                       )?.title}
                   </label>
-                  <select
+                 {
+                  selectedAlarmType != "Dialysis" && (
+                    <select
                     value={selectedHealthParameter}
                     onChange={(e) => setSelectedHealthParameter(e.target.value)}
                     disabled={!selectedAlarmType}
@@ -571,6 +574,11 @@ const EditAlarmModal = ({ closeModal, alarmData,pid,dosesData}) => {
                           </option>
                         ))}
                   </select>
+
+                  )
+                 }
+
+
                 </div>
               )}
 
@@ -632,7 +640,7 @@ const EditAlarmModal = ({ closeModal, alarmData,pid,dosesData}) => {
               </div>
             )}
             {selectedAlarmType === "Diet Details" ||
-            selectedAlarmType === "Prescription" ? (
+            selectedAlarmType === "Prescription" || selectedAlarmType === "Dialysis" ? (
               <div className="mb-4">
                 <label>Short Description*</label>
                 <input

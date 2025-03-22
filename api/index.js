@@ -7,7 +7,7 @@ const cors = require("cors");
 const createTables = require("./Models/tables.js");
 const http = require("http");
 const cron = require("node-cron");
-const {pool} = require("./databaseConn/database.js")
+const { pool } = require("./databaseConn/database.js");
 const {
   createNewAlertForPatientDoctors,
   check_missed_dr_readings,
@@ -26,7 +26,6 @@ createTables();
 
 // createNewAlertForPatientDoctors();
 
-
 app.use(body_parser.json());
 app.use(body_parser.urlencoded({ extended: true }));
 app.use(cors());
@@ -36,7 +35,7 @@ const server = http.createServer(app);
 const io = require("socket.io")(server, {
   // cors: {
   //   origin: "http://localhost:3000",
-  //   // origin: 'https://doctortest.kifaytihealth.com', 
+  //   // origin: 'https://doctortest.kifaytihealth.com',
   //   // methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   //   // allowedHeaders: ['Content-Type', 'Authorization'],
   //   // credentials: true,
@@ -89,7 +88,7 @@ io.on("connection", (socket) => {
 });
 
 // 9 PM cron job
-cron.schedule("0 21 * * *", async () => {
+cron.schedule("00 21 * * *", async () => {
   createNewAlertForPatientDoctors();
   await checkMissedAlarmsForDoctors();
   await check_missed_dr_readings();
@@ -104,14 +103,11 @@ cron.schedule("0 0 * * *", () => {
   deleteExpiredOTPs();
 });
 
-// 12 AM cron job
-cron.schedule("0 0 * * *", () => {
-  sendEmails()
+// 12 AM cron job //todo update time
+cron.schedule("10 18 * * *", () => {
+  sendEmails();
 });
 
 server.listen(8080, () => {
   console.log("Server is running on port 8080");
 });
-
-
-

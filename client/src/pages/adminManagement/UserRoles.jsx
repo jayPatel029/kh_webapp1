@@ -23,6 +23,7 @@ const UserRoles = () => {
   }, []);
 
   const deleteRole = (role_name) => {
+    console.log("object", role_name);
     axiosInstance
       .delete(`${server_url}/roles/byName/${role_name}`)
       .then((res) => {

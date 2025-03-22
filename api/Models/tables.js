@@ -563,6 +563,7 @@ async function createChatTable() {
       user1 VARCHAR(255),
       user2 VARCHAR(255),
       patientid INT(11),
+      type ENUM('Admin', 'Doctor'),
       FOREIGN KEY (patientid) REFERENCES patients(id) ON DELETE CASCADE ON UPDATE CASCADE
 
     )

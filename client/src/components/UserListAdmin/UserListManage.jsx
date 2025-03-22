@@ -18,16 +18,21 @@ function UserListManage() {
     const fetchAdmins = async () => {
       try {
         // Fetch admins with role Admin
-        const adminResponse = await axiosInstance.get(`${server_url}/users/byRole/Admin`);
-        console.log("Admins data:", adminResponse.data.data);
+        // const adminResponse = await axiosInstance.get(`${server_url}/users/byRole/Admin`);
+        // console.log("Admins data:", adminResponse.data.data);
         
-        // Fetch admins with role PSadmin
-        const psAdminResponse = await axiosInstance.get(`${server_url}/users/byRole/PSadmin`);
-        console.log("PSadmin data:", psAdminResponse.data.data);
-        const dialysisTech= await axiosInstance.get(`${server_url}/users/byRole/Dialysis Technician`);
-        console.log("Dialysis Technician data:", dialysisTech.data.data);
+        // // Fetch admins with role PSadmin
+        // const psAdminResponse = await axiosInstance.get(`${server_url}/users/byRole/PSadmin`);
+        // console.log("PSadmin data:", psAdminResponse.data.data);
+        // const dialysisTech= await axiosInstance.get(`${server_url}/users/byRole/Dialysis Technician`);
+        // console.log("Dialysis Technician data:", dialysisTech.data.data);
+
+        const allAdmins = await axiosInstance.get(`${server_url}/users/admins`);
+        console.log("al admins data:", allAdmins.data.data);
+
         // Combine both sets of data if needed or handle separately
-        const combinedAdmins = [...adminResponse.data.data, ...psAdminResponse.data.data, ...dialysisTech.data.data];
+        // const combinedAdmins = [...adminResponse.data.data, ...psAdminResponse.data.data, ...dialysisTech.data.data];
+        const combinedAdmins = [...allAdmins.data.data];
   
         // Update state with combined admins or handle separately
         setAdmins(combinedAdmins);

@@ -121,6 +121,7 @@ const UserLabReports = () => {
   useEffect(() => {
     fetchData();
     console.log(labReportData);
+    console.log("pat data", patientData);
   }, [showModal]);
 
   const handleDelete = async (id) => {
@@ -180,6 +181,7 @@ const UserLabReports = () => {
                       user_id={location.state.id}
                       file_id={uploadedFile.id}
                       file={uploadedFile}
+                      patient_id = {id}
                     />
                   )}
                 </div>

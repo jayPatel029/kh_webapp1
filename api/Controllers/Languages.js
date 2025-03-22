@@ -67,8 +67,10 @@ const updateLanguage = async (req, res) => {
 const getAllLanguages = async (req, res) => {
   try {
     const result = await Language.findAll();
+    // console.log("fetching langs: ",result);
     res.status(200).json(result);
   } catch (error) {
+    console.log("error in langs",error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

@@ -25,6 +25,7 @@ const LineChartDialysisSys = ({ aspect, title, questionId, user_id, unit, isPati
   const role = useSelector(state => state.permission);
   const [showModalEnterReadings, setShowModalEnterReadings] = useState(false);
   const [showModalUpdateRange, setShowModalUpdateRange] = useState(false);
+  const userRole = localStorage.getItem("role");
 
   const [highRange, setHighRange] = useState(0);
   const [lowRange, setLowRange] = useState(0);
@@ -1554,12 +1555,14 @@ const LineChartDialysisSys = ({ aspect, title, questionId, user_id, unit, isPati
           />
         )}
 
-        <button
-          className="block rounded-lg text-primary border-2 border-primary w-40 py-2"
-          onClick={() => openModalUpdateRange()}
-        >
-          Update Range
-        </button>
+{userRole == "Admin" && (
+          <button
+            className="block rounded-lg text-primary border-2 border-primary w-40 py-2"
+            onClick={() => openModalUpdateRange()}
+          >
+            Update Range
+          </button>
+        )}
         {showModalUpdateRange && (
           <UpdateRangeModel
             closeModal={closeModalUpdateRange}

@@ -36,6 +36,7 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
   const handleApproveAll = async (presId) => {
     await approveAllAlerts(presId);
     closeModal();
+    window.location.reload();
   };
 
   const handleDiapproveAll = () => {

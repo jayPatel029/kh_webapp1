@@ -2,8 +2,10 @@ import axiosInstance from "../helpers/axios/axiosInstance";
 import { server_url } from "../constants/constants";
 
 export async function createQuestion(questionData) {
+  console.log("in create ques");
   try {
     const token = localStorage.getItem("token"); // Fetch token from local storage
+    console.log("sending this data: ",questionData);
     const response = await axiosInstance.post(server_url + "/questions", questionData, {
       headers: {
         Authorization: `Bearer ${token}`, // Send token in headers
@@ -14,7 +16,7 @@ export async function createQuestion(questionData) {
     return { success: false, data: error.response.data.message };
   }
 }
-
+ 
 export async function getQuestions() {
   try {
     const token = localStorage.getItem("token"); // Fetch token from local storage

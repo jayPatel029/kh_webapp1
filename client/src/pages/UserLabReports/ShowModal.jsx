@@ -28,6 +28,9 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
     try {
       const uploadRes = await getFileRes(selectedImage);
       const pdfUrl = uploadRes.data.objectUrl;
+      console.log("pdf url", pdfUrl);
+
+  
 
       if (!pdfUrl) {
         alert("Failed to upload the document.");
@@ -42,6 +45,8 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
         Lab_Report: pdfUrl,
         
       }
+
+    
       const extractRes = await axiosInstance.post(
         `${server_url}/labReport/extract`,  data
       );
@@ -59,6 +64,7 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
       setIsExtracting(false);
     }
   };
+
 
   const handleSave = async () => {
     if (!extractedValues) {
@@ -127,7 +133,7 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
               className="w-full border-2 py-2 px-3 rounded focus:outline-none"
               value={selectedReportType}
               onChange={(e) => setSelectedReportType(e.target.value)}>
-              {["Select", "Lab", "Ultrasound", "X-Ray"].map((type) => (
+              {["Select", "Lab", "Ultrasound", "X-Ray", "Echo", "MRI", "Angiography", "CT Scan"].map((type) => (
                 <option key={type} value={type}>
                   {type}
                 </option>
@@ -152,6 +158,13 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
             className="bg-primary text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline">
             {isExtracting ? "Extracting..." : "Extract Data"}
           </button>
+
+          <button
+              onClick={closeModal}
+              className="border-2 border-primary text-primary py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2"
+            >
+              Cancel
+            </button>
 
           {extractedValues && (
             <div className="mt-6">

@@ -30,6 +30,22 @@ export default function PatientList({ data, patientId }) {
     }
   }
 
+  const ConditionComponent = ({ condition }) => (
+    <p
+      className={`${
+        condition === "stable"
+          ? "text-green-500"
+          : condition === "unstable"
+          ? "text-yellow-500"
+          : condition === "critical"
+          ? "text-red-500"
+          : "text-gray-500"
+      }`}
+    >
+      {condition}
+    </p>
+  );
+
   useEffect(() => {
     setFilteredData(data);
     setCurrentPage(1);
@@ -179,8 +195,12 @@ export default function PatientList({ data, patientId }) {
       <div className="flex justify-between items-center mb-4 space-x-4">
         <div className="flex flex-wrap justify-between items-center">
           {role?.canDeletePatients && (
-            <Link to="/DeletedPatient" className="mt-2 sm:mt-0 ml-0 mx-2 sm:ml-2 px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:bg-indigo-600 w-full sm:w-auto" >DeletedPatient 
-          </Link>
+            <Link
+              to="/DeletedPatient"
+              className="mt-2 sm:mt-0 ml-0 mx-2 sm:ml-2 px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:bg-indigo-600 w-full sm:w-auto"
+            >
+              DeletedPatient
+            </Link>
           )}
           <input
             type="text"
@@ -203,7 +223,8 @@ export default function PatientList({ data, patientId }) {
                 className="p-2 rounded-md text-center block bg-primary text-white w-full sm:w-28 sm:px-2 sm:py-2 md:w-32 md:h-10"
                 onClick={() => {
                   handleDownloadAll();
-                }}>
+                }}
+              >
                 Export All
               </button>
             </div>
@@ -247,11 +268,13 @@ export default function PatientList({ data, patientId }) {
               <tr
                 class="bg-white lg:hover:bg-gray-100 flex lg:table-row flex-row lg:flex-row flex-wrap lg:flex-no-wrap mb-10 lg:mb-0"
                 key={row?.id}
-                onClick={() => handleRowClick(row)}>
+                onClick={() => handleRowClick(row)}
+              >
                 <td className="w-full lg:w-auto p-3 text-gray-800 text-center border border-b block lg:table-cell relative lg:static flex items-center justify-center">
                   <span className="lg:hidden absolute top-0 left-0 bg-gray-200 px-2 py-1 text-xs font-bold uppercase">
                     Profile
                   </span>
+
                   <div className="items-center justify-center">
                     <img
                       className="rounded-full object-cover"
@@ -259,6 +282,24 @@ export default function PatientList({ data, patientId }) {
                       alt="Profile"
                       style={{ width: "75px", height: "75px" }} // Adjust size as needed
                     />
+                    {/*                     
+                    <p>
+                      {row?.condition} 
+                    </p> */}
+
+                    <p
+                      className={`${
+                        row?.condition == "stable"
+                          ? "text-green-500"
+                          : row?.condition == "unstable"
+                          ? "text-yellow-500"
+                          : row?.condition == "critical"
+                          ? "text-red-500 font-bold"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      {row?.condition}
+                    </p>
                   </div>
                 </td>
                 <td class="w-full lg:w-auto p-3 text-gray-800  border border-b text-center block lg:table-cell relative lg:static">
@@ -303,7 +344,8 @@ export default function PatientList({ data, patientId }) {
                             state: row,
                           });
                         }}
-                        className="bg-primary text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">
+                        className="bg-primary text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline"
+                      >
                         MANAGE
                       </button>
                     )}
@@ -326,7 +368,8 @@ export default function PatientList({ data, patientId }) {
                             state: row,
                           });
                         }}
-                        className="bg-primary text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">
+                        className="bg-primary text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline"
+                      >
                         MANAGE
                       </button>
                     )}
@@ -342,7 +385,8 @@ export default function PatientList({ data, patientId }) {
                         className="text-primary inline-block mx-2"
                         onClick={() => {
                           handleDownload(row);
-                        }}>
+                        }}
+                      >
                         <BsCloudDownload />
                       </button>
                     )}
@@ -352,7 +396,8 @@ export default function PatientList({ data, patientId }) {
                           e.stopPropagation(); // Prevent row click event from triggering
                           handleDelete(row?.id);
                         }}
-                        className="text-[#ff0000] inline-block mx-2">
+                        className="text-[#ff0000] inline-block mx-2"
+                      >
                         <BsTrash />
                       </button>
                     )}
@@ -368,13 +413,15 @@ export default function PatientList({ data, patientId }) {
         <div className="pagination mt-4 flex items-center justify-end">
           <button
             onClick={() => setCurrentPage((prev) => prev - 1)}
-            disabled={currentPage === 1}>
+            disabled={currentPage === 1}
+          >
             {"\u2190"}
           </button>
           <span>{`Page ${currentPage} of ${pageCount}`}</span>
           <button
             onClick={() => setCurrentPage((prev) => prev + 1)}
-            disabled={currentPage === pageCount}>
+            disabled={currentPage === pageCount}
+          >
             {"\u2192"}
           </button>
         </div>

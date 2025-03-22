@@ -57,6 +57,16 @@ const Role = sequelize.define('role', {
         type: DataTypes.INTEGER(11),
         allowNull: true,
         defaultValue: null
+    },
+    can_vud_docr: {
+        type: DataTypes.INTEGER(11),
+        allowNull: true,
+        defaultValue: null
+    },
+    can_vud_fb: {
+        type: DataTypes.INTEGER(11),
+        allowNull: true,
+        defaultValue: null
     }
 }, {
     tableName: 'roles',
@@ -79,6 +89,8 @@ async function createAndAddRoles() {
             can_vud_dir: 7,
             can_vud_cp: 7,
             can_vud_ups: 7,
+            can_vud_docr: 7,
+            can_vud_fb: 7,
         },
         {
             role_name: "Doctor",
@@ -92,6 +104,8 @@ async function createAndAddRoles() {
             can_vud_dir: 0,
             can_vud_cp: 0,
             can_vud_ups: 0,
+            can_vud_docr: 0,
+            can_vud_fb: 0,
         },
         {
             role_name: "Medical Staff",
@@ -100,11 +114,29 @@ async function createAndAddRoles() {
             can_vud_ca: 0,
             can_vud_cd: 0,
             can_vud_pq: 0,
-            can_vud_p: 0,
-            can_vud_dr: 3,
-            can_vud_dir: 3,
+            can_vud_p: 3,
+            can_vud_dr: 0,
+            can_vud_dir: 0,
+            can_vud_cp: 0,
+            can_vud_ups: 0,       
+            can_vud_docr: 0,       
+            can_vud_fb: 0,       
+        },
+
+        {
+            role_name: "Dialysis Technician",
+            can_vud_mr: 0,
+            can_vud_am: 0,
+            can_vud_ca: 0,
+            can_vud_cd: 0,
+            can_vud_pq: 0,
+            can_vud_p: 3,
+            can_vud_dr: 0,
+            can_vud_dir: 0,
             can_vud_cp: 0,
             can_vud_ups: 0,
+            can_vud_docr: 0,
+            can_vud_fb: 0,
         },
     ];
 

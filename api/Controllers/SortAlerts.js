@@ -564,9 +564,7 @@ const getAdminAlerts = async (req, res) => {
     );
 
     // Fetch doctors assigned to patients
-    const doctorsQuery = `SELECT doctor_id, patient_id FROM doctor_patients WHERE patient_id IN (${assignedPatients.join(
-      ","
-    )})`;
+    const doctorsQuery = `SELECT doctor_id, patient_id FROM doctor_patients WHERE patient_id IN (${assignedPatients.join(",")})`;
     const doctorsResult = await pool.query(doctorsQuery);
     // console.log("doctorsResult", doctorsResult);
     const doctorPatientMap = {};

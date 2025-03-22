@@ -5,6 +5,7 @@ import {
   deleteDailyReading,
   getDailyReadings,
 } from "../../../ApiCalls/readingsApis";
+import { useSelector } from "react-redux";
 
 export default function DailyTable({
   setEditMode,
@@ -16,16 +17,19 @@ export default function DailyTable({
   const [searchTerm, setSearchTerm] = useState("");
   const [tableData, setTableData] = useState([]);
   const [resetter, setResetter] = useState(false);
-
+  const role = useSelector((state) => state.permission);
   useEffect(() => {
+    console.log("role here", role);
     getDailyReadings()
       .then((data) => setTableData(data.data))
       .catch((error) => console.error("Error fetching data:", error));
+      console.log('data', tableData);
   }, [successful, resetter]);
 
   const filteredData = tableData.filter((item) =>
     item.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  // console.log('data',filteredData);
 
   return (
     <>
@@ -63,7 +67,10 @@ export default function DailyTable({
                 Ailment
               </th>
               <th scope="col" className="px-6 py-3">
-                Assign Range
+                Condition
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Acion
               </th>
             </tr>
           </thead>
@@ -78,8 +85,11 @@ export default function DailyTable({
                     <td className="px-6 py-4">{item.title}</td>
                     <td className="px-6 py-4">{item.alertTextDoc}</td>
                     <td className="px-6 py-4">{displayAilment}</td>
+                   <td className="px-6 py-4">{item.condition}</td>
                     <td className="px-6 py-4 text-2xl">
-                      <button
+                  
+                      {role.canEditDailyReadings ? (
+                        <button
                         className="text-primary inline-block mx-2"
                         onClick={() => {
                           setSuccessful("");
@@ -99,6 +109,7 @@ export default function DailyTable({
                               unit: item.unit,
                               isGraph: item.is_graph ? 1 : 0,
                               alertTextDoc: item.alertTextDoc,
+                              condition: item.condition,
                             },
                           });
                           if (item.daily_readings_translations) {
@@ -121,18 +132,28 @@ export default function DailyTable({
                         }}>
                         <BsPencilSquare />
                       </button>
-                      <button
-                        className="text-[#ff0000] inline-block mx-2 "
-                        onClick={() => {
-                          setSuccessful("");
-                          deleteDailyReading(item.id).then(() => {
-                            setSuccessful("Reading Deleted Successful!");
-                            setResetter(!resetter);
-                          });
-                        }}>
-                        <BsTrash />
-                      </button>
+                  
+                      ) : null} 
+                      
+                      {role.canDeleteDailyReadings ?(
+                           <button
+                           className="text-[#ff0000] inline-block mx-2 "
+                           onClick={() => {
+                             setSuccessful("");
+                             deleteDailyReading(item.id).then(() => {
+                               setSuccessful("Reading Deleted Successful!");
+                               setResetter(!resetter);
+                             });
+                           }}>
+                           <BsTrash />
+                         </button>
+                      
+                      ):null} 
+                   
+                   
                     </td>
+
+
                   </tr>
                 );
               }

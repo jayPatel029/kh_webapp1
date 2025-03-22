@@ -33,7 +33,7 @@ const getAlertbyType = async (req, res) => {
       WHERE ap.admin_id=? AND a.type = ?
       ORDER BY a.id DESC`;
     const response = await pool.execute(query,[userId,type]);
-    console.log("res",response);
+    // console.log("res",response);
     const alert= response.filter((alert) => alert.category != 'New Prescription Alarm' );
     res.status(200).json(alert);
   } catch (error) {
@@ -233,7 +233,7 @@ const createChangeInProgramAlert = async (req, res) => {
 };
 
 const createNewLabReportAlert = async (req, res) => {
-  const type = "patient";
+  const type = "doctor";
   const category = "New Lab Report";
   const { labReportId, patient_id } = req.body;
   console.log(labReportId);
@@ -364,12 +364,13 @@ const approveOrDisapprovePrescription = async (req, res) => {
 };
 
 const dissapproveAllAlerts = async (req, res) => {
+  console.log("disaprving alerts");
   const { presId, reason } = req.body;
   const query = `UPDATE alarm SET status = 'Rejected', reason = '${reason}' WHERE prescriptionid = ${presId}`;
   const deleteAlertsQuery = `DELETE FROM alerts WHERE alarmId IN (SELECT id FROM alarm WHERE prescriptionid = ${presId})`;
   const getAlarmQuery = `SELECT * FROM alarm WHERE prescriptionid = ${presId}`;
   const alarms = await pool.query(getAlarmQuery);
-  const type = "patient";
+  const type = "doctor";
   const category = "Prescription Disapproved";
   const date = new Date().toISOString().slice(0, 19).replace("T", " ");
 
@@ -380,9 +381,10 @@ const dissapproveAllAlerts = async (req, res) => {
       const query2 = `INSERT INTO alerts (type, category, alarmId,date,patientId) VALUES ('${type}', '${category}', ${alarm.id},'${date}',${alarm.patientid})`;
       const res3 = await pool.execute(query2);
     });
+    console.log("all disaprved");
     res.status(200).json("Alerts disapproved");
   } catch (error) {
-    console.log(error);
+    console.log("errror disaproving", error);
     res.status(500).json(error);
   }
 };
@@ -395,7 +397,7 @@ const apporoveAlert = async (req, res) => {
   const getAlarm = `SELECT * FROM alarm WHERE id = ${alarmId}`;
   const alarm = await pool.query(getAlarm);
   const patientId = alarm[0].patientid;
-  const type = "patient";
+  const type = "doctor";
   const category = "Prescription Approved";
   const date = new Date().toISOString().slice(0, 19).replace("T", " ");
   const query2 = `INSERT INTO alerts (type, category, alarmId,date,patientId) VALUES ('${type}', '${category}', ${alarmId},'${date}',${patientId})`;
@@ -403,7 +405,7 @@ const apporoveAlert = async (req, res) => {
   try {
     const response = await pool.execute(query);
     const res2 = await pool.execute(deleteAlertQuery);
-    const res3 = await pool.execute(query2);
+    // const res3 = await pool.execute(query2);
     console.log("Alert approved");
     res.status(200).json("Alert approved");
   } catch (error) {
@@ -425,12 +427,13 @@ const deleAlertbyID = async (req, res) => {
 };
 
 const approveAllAlerts = async (req, res) => {
+  console.log("approve all clicked");
   const { presId } = req.body;
   const query = `UPDATE alarm SET status = 'Approved' WHERE prescriptionid = ${presId}`;
   const deleteAlertsQuery = `DELETE FROM alerts WHERE alarmId IN (SELECT id FROM alarm WHERE prescriptionid = ${presId})`;
   const getAlarmQuery = `SELECT * FROM alarm WHERE prescriptionid = ${presId}`;
   const alarms = await pool.query(getAlarmQuery);
-  const type = "patient";
+  const type = "doctor";
   const category = "Prescription Approved";
   const date = new Date().toISOString().slice(0, 19).replace("T", " ");
 
@@ -439,18 +442,19 @@ const approveAllAlerts = async (req, res) => {
     const res2 = await pool.execute(deleteAlertsQuery);
     alarms.forEach(async (alarm) => {
       const query2 = `INSERT INTO alerts (type, category, alarmId,date) VALUES ('${type}', '${category}', ${alarm.id},'${date}')`;
-      const res3 = await pool.execute(query2);
+      // const res3 = await pool.execute(query2);
     });
+    console.log("all approved");
     res.status(200).json("Alerts approved");
   } catch (error) {
-    console.log(error);
+    console.log("error approving all alarms",error);
     res.status(500).json(error);
   }
 };
 
 const createNewPrescriptionAlert = async (prescriptionId, patientId) => {
   try {
-    const type = "patient";
+    const type = "doctor";
     const category = "New Prescription";
     const date = new Date().toISOString().slice(0, 19).replace("T", " ");
     const query = `INSERT INTO alerts (type, category, prescriptionId,date,patientId) VALUES ('${type}', '${category}', ${prescriptionId},'${date}',${patientId})`;

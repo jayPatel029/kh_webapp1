@@ -4,6 +4,7 @@ const {
   getCurrentFormattedDate,
   formatDate,
   convertDateFormatYYYYmmDD,
+  formatDateNew,
 } = require("../../Helpers/date_formatter.js");
 
 const addToReadTable = async (doctorId, commentId) => {
@@ -63,6 +64,7 @@ const fetchPrescriptionComments = async (req, res) => {
         dateTime: i["date"],
       });
     }
+    console.log("response pres comments: ", respObj);
     res.status(200).json({
       dietId: 0,
       image: "",
@@ -136,7 +138,7 @@ const addPrescriptionComment = async (req, res) => {
     });
   }
 
-  const formattedDate = getCurrentFormattedDate();
+  var date = formatDateNew();
 
   try {
     const query2 = `INSERT INTO comments (content, userId, typeId, isDoctor, date, type, doctorId) VALUES (? , ? , ? , ? , ? , ?, ?);`;
@@ -145,7 +147,7 @@ const addPrescriptionComment = async (req, res) => {
       userID,
       priscriptionID,
       0,
-      formattedDate,
+      date,
       "Prescription",
       0,
     ]);
@@ -178,32 +180,74 @@ const addPrescriptionComment = async (req, res) => {
   }
 };
 
+// const getPrescriptionsByIdFromApp = async (req, res) => {
+//   try {
+//     const { patient_id } = req.body;
+//     const query = `SELECT * FROM prescriptions WHERE patient_id = '${patient_id}'`;
+//     const prescriptions = await pool.query(query);
+//     // console.log(prescriptions);
+//     var out = [];
+//     for (var i in prescriptions) {
+//       out.push({
+//         priscritionID: prescriptions[i]["id"],
+//         image: prescriptions[i]["Prescription"],
+//         date: formatDate(prescriptions[i]["Date"]).replaceAll(" ", "-"),
+//       });
+//     }
+//     res.status(200).json({
+//       result: true,
+//       message: "Successful",
+//       data: out,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       result: false,
+//       data: "could not get prescription..!!",
+//     });
+//   }
+// };
+
+
 const getPrescriptionsByIdFromApp = async (req, res) => {
   try {
     const { patient_id } = req.body;
-    const query = `SELECT * FROM prescriptions WHERE patient_id = '${patient_id}'`;
+
+    // Fetch prescriptions along with the doctor's name if available
+    const query = `
+      SELECT p.id, p.Prescription, p.Date, p.prescriptionGivenBy, 
+             d.name AS doctorName
+      FROM prescriptions p
+      LEFT JOIN doctors d ON p.prescriptionGivenBy = d.id
+      WHERE p.patient_id = '${patient_id}'
+      ORDER BY p.Date DESC
+    `;
+
     const prescriptions = await pool.query(query);
-    // console.log(prescriptions);
-    var out = [];
-    for (var i in prescriptions) {
-      out.push({
-        priscritionID: prescriptions[i]["id"],
-        image: prescriptions[i]["Prescription"],
-        date: formatDate(prescriptions[i]["Date"]).replaceAll(" ", "-"),
-      });
-    }
+
+    let out = prescriptions.map((prescription) => ({
+      prescriptionID: prescription.id,
+      image: prescription.Prescription,
+      date: formatDate(prescription.Date).replaceAll(" ", "-"),
+      givenBy: prescription.prescriptionGivenBy 
+        ? prescription.doctorName || "Unknown Doctor" // If doctor found, use name; else "Unknown Doctor"
+        : "USER", // If NULL, it means given by the USER
+    }));
+
     res.status(200).json({
       result: true,
       message: "Successful",
       data: out,
     });
   } catch (error) {
+    console.error("Error fetching prescriptions:", error);
     res.status(500).json({
       result: false,
-      data: "could not get prescription..!!",
+      data: `Could not get prescription..!! ${error}`,
     });
   }
 };
+
+
 
 const deletePrescription = async (req, res, next) => {
   const { PrescriptionIdParam } = req.body;

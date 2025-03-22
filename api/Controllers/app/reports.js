@@ -3,6 +3,7 @@ const { uploadFile } = require("../../Helpers/auth/uploadDataHelper.js");
 const {
   formatDate,
   getCurrentFormattedDate,
+  formatDateNew,
 } = require("../../Helpers/date_formatter.js");
 const { addToReadTable } = require("./prescription.js");
 
@@ -105,9 +106,12 @@ const fetchReportComments = async (req, res) => {
   }
 };
 
+
 const addReportComments = async (req, res) => {
   const { labReportID, comment, userID } = req.body;
   var formattedDate = getCurrentFormattedDate();
+  // const date = new Date().toISOString().slice(0, 19).replace('T', ' ');
+  var date = formatDateNew();
   try {
     const query2 = `INSERT INTO comments (content, userId, typeId, isDoctor, date, type, doctorId) VALUES (? , ? , ? , ? , ? , ?, ?);`;
     const resp2 = await pool.query(query2, [
@@ -115,7 +119,7 @@ const addReportComments = async (req, res) => {
       userID,
       labReportID,
       0,
-      formattedDate,
+      date,
       "Lab Report",
       0,
     ]);

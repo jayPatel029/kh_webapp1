@@ -14,8 +14,10 @@ import {
 import { getAilments } from "../../ApiCalls/ailmentApis";
 import { getLanguages } from "../../ApiCalls/languageApis";
 import TranslationModal from "../../components/modals/TranslationModel";
+import OptTranslationModal from "../../components/modals/OptionTranslationModal";
 import Select from "react-select";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 function ProfileQuestions() {
   const [editMode, setEditMode] = useState(false);
@@ -28,10 +30,18 @@ function ProfileQuestions() {
 
   const [languages, setLanguages] = useState([]);
   const [modelOpen, setModelOpen] = useState(false);
+  const [modelOpenOpt, setModelOpenOpt] = useState(false);
   const [translations, setTranslations] = useState({});
+  const [optTranslations, setOptTranslations] = useState({});
+  const role = useSelector((state) => state.permission);
 
   const closeModal = () => {
     setModelOpen(false);
+  };
+
+  const closeModalOpt = () => {
+    console.log("object", optTranslations );
+    setModelOpenOpt(false);
   };
 
   useEffect(() => {
@@ -69,6 +79,7 @@ function ProfileQuestions() {
                 transaltiondict[lang.id] = "";
               }
             });
+            console.log("translation dict: ", transaltiondict);
             setTranslations(transaltiondict);
           } else {
             console.error("Failed to fetch Languages:", resultLanguage);
@@ -106,7 +117,6 @@ function ProfileQuestions() {
   }
 
   const [newQuestion, newQuestionDispatch] = useReducer(newQuestionReducer, {
-    
     ailment: [],
     type: questionTypes[0].value,
     name: "",
@@ -139,6 +149,7 @@ function ProfileQuestions() {
   async function handleSubmit() {
     if (validateForm()) {
       if (!editMode) {
+
         const payload = {
           ailment: newQuestion.ailment?.map((x) => x.value),
           type: newQuestion.type,
@@ -210,9 +221,15 @@ function ProfileQuestions() {
           <div className=" bg-white md:p-6 border p-2 rounded-md border-t-primary border-t-4 shadow-md">
             <div className="border-b-gray border-b-2 p-2 pt-4 md:pb-4 font-semibold text-primary tracking-wide text-xl">
               Question Master
-                      <Link to="/ProfileQuestionCsv"  className="border md:ml-2 ml-0 text-white bg-primary font-semibold tracking-wide text-lg border-gray-300  md:w-1/4 rounded-lg  p-1.5">Bulkupload Question </Link>
+              <Link
+                to="/ProfileQuestionCsv"
+                className="border md:ml-2 ml-0 text-white bg-primary font-semibold tracking-wide text-lg border-gray-300  md:w-1/4 rounded-lg  p-1.5"
+              >
+                {" "}
+                Bulkupload Question
+              </Link>
             </div>
-            
+
             <div className="p-5">
               {modelOpen && (
                 <TranslationModal
@@ -223,6 +240,17 @@ function ProfileQuestions() {
                   languages={languages}
                 />
               )}
+              
+              {modelOpenOpt && (
+                <OptTranslationModal
+                  closeModal={closeModalOpt}
+                  translations={optTranslations}
+                  setTranslations={setOptTranslations}
+                  setLanguages={setLanguages}
+                  languages={languages}
+                />
+              )}
+
               <label className="block mb-2 text-sm font-medium text-gray-500 pt-6">
                 Ailment*
               </label>
@@ -282,6 +310,15 @@ function ProfileQuestions() {
                   className="border md:ml-2 ml-0 text-white bg-primary font-semibold tracking-wide text-lg border-gray-300 w-full md:w-1/4 rounded-lg block p-1.5"
                 >
                   Set Translations
+                </button>
+
+                <button
+                  onClick={() => {
+                    setModelOpenOpt(true);
+                  }}
+                  className="border md:ml-2 ml-0 text-white bg-primary font-semibold tracking-wide text-lg border-gray-300 w-full md:w-1/4 rounded-lg block p-1.5"
+                >
+                  Set Options Translations
                 </button>
               </div>
               {newQuestion.type === "MultipleChoice" ||
@@ -395,6 +432,9 @@ function ProfileQuestions() {
                           </td>
                           <td className="px-6 py-4">{displayAilment}</td>
                           <td className="px-6 py-4 text-2xl">
+                           
+                          {role.canEditProfileQuestions ? (
+
                             <button
                               className="text-primary inline-block mx-2"
                               onClick={() => {
@@ -413,14 +453,18 @@ function ProfileQuestions() {
                                 });
                                 if (q.question_translations) {
                                   let translationDict = {};
+                                  let translationOptDict = {};
 
-                                  q.question_translations.forEach(
-                                    (element) => {
-                                      translationDict[element.language_id] =
-                                        element.name;
-                                    }
-                                  );
+                                  q.question_translations.forEach((element) => {
+                                    translationDict[element.language_id] =
+                                      element.name;
+                                  });
+                                  q.question_translations.forEach((element) => {
+                                    translationOptDict[element.language_id] =
+                                      element.options;
+                                  });
                                   setTranslations(translationDict);
+                                  setOptTranslations(translationOptDict);
                                 }
                                 setEditMode(true);
                                 window.scrollTo({
@@ -432,6 +476,10 @@ function ProfileQuestions() {
                             >
                               <BsPencilSquare />
                             </button>
+                          ) : null} 
+
+                            {role.canDeleteProfileQuestions ?(
+
                             <button
                               className="text-[#ff0000] inline-block mx-2 "
                               onClick={() => {
@@ -440,6 +488,9 @@ function ProfileQuestions() {
                             >
                               <BsTrash />
                             </button>
+                                                ):null} 
+
+                          
                           </td>
                         </tr>
                       );

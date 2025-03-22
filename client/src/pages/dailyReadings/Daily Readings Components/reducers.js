@@ -74,7 +74,13 @@ export function newQuestionReducer(state, action) {
         alertTextDoc: action.payload,
       };
     }
-    
+
+    case 'condition': {
+      return{
+        ...state,
+        condition: action.payload,
+      }
+    }
     case "all": {
       return {
         id: null,
@@ -86,6 +92,7 @@ export function newQuestionReducer(state, action) {
         upper_assign_range: 100,
         alertTextDoc:"",
         isGraph: 0,
+        condition: "",
         ...action.payload,
       };
     }

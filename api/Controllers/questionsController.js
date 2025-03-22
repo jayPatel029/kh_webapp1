@@ -29,7 +29,8 @@ const isAdmin = async (req, res, next) => {
 const addQuestion = async (req, res) => {
   try {
     const { ailment, type, name, options, translations } = req.body;
-    console.log("options",options)
+    console.log("options", options);
+    console.log("data reveived: ", req.body);
     const question = await Question.create({
       type,
       name,
@@ -43,16 +44,29 @@ const addQuestion = async (req, res) => {
         });
       }
     });
+    console.log("ailment inserted!!.");
+    // const translationsInserted = Object.entries(translations).map(
+    //   ([language, translation, translationOpt]) => ({
+    //     question_id: question.id,
+    //     language_id: parseInt(language),
+    //     name: translation,
+    //     options: translationOpt,
+    //   })
+    // );
     const translationsInserted = Object.entries(translations).map(
-      ([language, translation]) => ({
-        question_id: question.id,
-        language_id: parseInt(language),
-        name: translation,
-      })
+      ([languageId, translationData]) => {
+        return {
+          question_id: question.id,
+          language_id: parseInt(languageId),
+          name: translationData.text,
+          options: translationData.options,
+        };
+      }
     );
     await QuestionTranslation.bulkCreate(translationsInserted);
     res.status(201).json({ message: "Question added" });
-  } catch (error) {
+  } catch (error) { 
+    console.error("Error in addQuestion:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -117,13 +131,15 @@ const fetchQuestions = async (req, res) => {
 const updateQuestion = async (req, res) => {
   try {
     const { ailment, type, name, options, translations } = req.body;
-    
-    const query =`select id from ailments where name='${ailment[0].label}'`
+
+    const query = `select id from ailments where name='${ailment[0].label}'`;
     const ailmentId = await pool.execute(query);
-    console.log(ailmentId[0].id)
-    console.log("id",req.body.id)
+    console.log(ailmentId[0].id);
+    console.log("id", req.body.id);
     const id = req.body.id;
-    const question = await pool.execute( ` UPDATE questions SET type='${type}', name='${name}', options='${options}' WHERE id=${id};`);
+    const question = await pool.execute(
+      ` UPDATE questions SET type='${type}', name='${name}', options='${options}' WHERE id=${id};`
+    );
     console.log(question);
     await QuestionAilments.destroy({
       where: {
@@ -165,14 +181,14 @@ const fetchQuestionsByType = async (req, res) => {
   }
 };
 
-const generalParametersByType = async (req, res)=>{
+const generalParametersByType = async (req, res) => {
   try {
-    const patientId=req.query.user
-    if(!patientId){
-      res.status(500).json("enter valid patient id!")
-      return
+    const patientId = req.query.user;
+    if (!patientId) {
+      res.status(500).json("enter valid patient id!");
+      return;
     }
-    const query1=`
+    const query1 = `
     SELECT DISTINCT dr.*
     FROM daily_readings dr
     JOIN daily_reading_ailments dra ON dr.id = dra.dr_id
@@ -183,50 +199,45 @@ const generalParametersByType = async (req, res)=>{
         SELECT dailyReadingId
         FROM doctor_daily_readings
     );
-    `
-    
+    `;
 
     var dailyReadingsResult = await pool.query(query1, [patientId]);
 
-    const query2 = `select * from daily_readings where showUser =${patientId}`
+    const query2 = `select * from daily_readings where showUser =${patientId}`;
     var customParams = await pool.query(query2);
 
-    dailyReadingsResult=[...dailyReadingsResult,...customParams];
+    dailyReadingsResult = [...dailyReadingsResult, ...customParams];
 
     for (const dailyReading of dailyReadingsResult) {
-      const questionId = dailyReading.id;   
+      const questionId = dailyReading.id;
       const countQuery = `
           SELECT COUNT(*) AS response_count
           FROM graph_readings
           WHERE question_id = ${questionId} AND user_id = ${patientId};
       `;
-  
+
       // Assuming pool.query returns a Promise
       const responseCountResult = await pool.query(countQuery);
       const responseCount = responseCountResult[0].response_count;
-  
+
       dailyReading.responseCount = Number(responseCount);
-  }
-    console.log("dailyReadingsResult",dailyReadingsResult)
+    }
+    console.log("dailyReadingsResult", dailyReadingsResult);
     res.status(200).json(dailyReadingsResult);
-    
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
+};
 
-}
-
-
-
-const dialysisParametersByType = async (req, res)=>{
+const dialysisParametersByType = async (req, res) => {
   try {
-    const patientId=req.query.user
-    if(!patientId){
-      res.status(500).json("enter valid patient id!")
-      return
+    const patientId = req.query.user;
+    if (!patientId) {
+      res.status(500).json("enter valid patient id!");
+      return;
     }
-    const query1=`
+    const query1 = `
     SELECT DISTINCT dr.*
     FROM dialysis_readings dr
     JOIN dialysis_reading_ailments dra ON dr.id = dra.dr_id
@@ -237,121 +248,117 @@ const dialysisParametersByType = async (req, res)=>{
         SELECT dialysisReadingId
         FROM doctor_dialysis_readings
     ) ORDER BY dr.isGraph DESC;
-    `
+    `;
 
     var dialysis_readings = await pool.query(query1, [patientId]);
-    const query2 = `select * from dialysis_readings where showUser =${patientId}`
+    const query2 = `select * from dialysis_readings where showUser =${patientId}`;
     var customParams = await pool.query(query2);
 
-    dialysis_readings=[...dialysis_readings,...customParams];
+    dialysis_readings = [...dialysis_readings, ...customParams];
 
     for (const dialysisReading of dialysis_readings) {
-      const questionId = dialysisReading.id;   
+      const questionId = dialysisReading.id;
       const countQuery = `
           SELECT COUNT(*) AS response_count
           FROM graph_readings_dialysis
           WHERE question_id = ${questionId} AND user_id = ${patientId};
       `;
-  
+
       // Assuming pool.query returns a Promise
       const responseCountResult = await pool.query(countQuery);
       const responseCount = responseCountResult[0].response_count;
-  
+
       dialysisReading.responseCount = Number(responseCount);
-  }
+    }
     res.status(200).json(dialysis_readings);
-    
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
-
-}
+};
 
 const generalParametersByTypeWithResponse = async (req, res) => {
   const ailment = req.query.ailment;
   const user = req.query.user_id;
-  if(ailment =="Generic Profile"){
-    
-      const query =  `select id from questions`
-      const questionIds = await pool.execute(query);
-      const questionsQuery =
-      `
+  if (ailment == "Generic Profile") {
+    const query = `select id from questions`;
+    const questionIds = await pool.execute(query);
+    const questionsQuery = `
       SELECT q.*
 FROM questions q
 LEFT JOIN question_ailments qa ON q.id = qa.question_id
 WHERE qa.question_id IS NULL;
-`
-      const questionsRows = await pool.execute(questionsQuery);
-      console.log("questionsRows",questionsRows)
-      const questions = questionsRows.map((row) => ({
-        ...row,
-        response: "", // Initialize an empty string to store the response for each question
-      }));
-  
-      // Fetch responses for each question
-      for (const question of questions) {
-        const responseQuery = `
-          SELECT response FROM user_responses 
-          WHERE question_id=${question.id} AND user_id=${user};
-        `;
-        const responseRows = await pool.execute(responseQuery);
-        if (responseRows.length > 0) {
-          // If response exists, append it to the corresponding question
-          question.response = responseRows[0].response;
-        }
-      }
-  
-      res.status(200).json({
-        success: true,
-        data: questions,
-      });
-    }
-    else{
-
-      try {
-        const query = `select id from ailments where name='${ailment}'`;
-        const ailmentId = await pool.execute(query);
-        
-    const ailmentIdValue = ailmentId[0].id;
-   
-    const query1 = `SELECT question_id as id from question_ailments where ailment_id=${ailmentIdValue}`;
-    const questionIds = await pool.execute(query1);
-    
-    // Fetch questions for the specified user
-    const questionsQuery = `SELECT * FROM questions WHERE id IN (${questionIds.map((q) => q.id).join(",")})`;
+`;
     const questionsRows = await pool.execute(questionsQuery);
-    console.log(questionsRows)
-    
+    console.log("questionsRows", questionsRows);
     const questions = questionsRows.map((row) => ({
       ...row,
       response: "", // Initialize an empty string to store the response for each question
     }));
-    
+
     // Fetch responses for each question
     for (const question of questions) {
       const responseQuery = `
-      SELECT response FROM user_responses 
-      WHERE question_id=${question.id} AND user_id=${user};
-      `;
+          SELECT response FROM user_responses 
+          WHERE question_id=${question.id} AND user_id=${user};
+        `;
       const responseRows = await pool.execute(responseQuery);
       if (responseRows.length > 0) {
         // If response exists, append it to the corresponding question
-        console.log("responseRows",responseRows)
         question.response = responseRows[0].response;
       }
     }
-    
+
     res.status(200).json({
       success: true,
       data: questions,
     });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      data: error.message,
-    });
-  }
+  } else {
+    try {
+      const query = `select id from ailments where name='${ailment}'`;
+      const ailmentId = await pool.execute(query);
+
+      const ailmentIdValue = ailmentId[0].id;
+
+      const query1 = `SELECT question_id as id from question_ailments where ailment_id=${ailmentIdValue}`;
+      const questionIds = await pool.execute(query1);
+
+      // Fetch questions for the specified user
+      const questionsQuery = `SELECT * FROM questions WHERE id IN (${questionIds
+        .map((q) => q.id)
+        .join(",")})`;
+      const questionsRows = await pool.execute(questionsQuery);
+      console.log(questionsRows);
+
+      const questions = questionsRows.map((row) => ({
+        ...row,
+        response: "", // Initialize an empty string to store the response for each question
+      }));
+
+      // Fetch responses for each question
+      for (const question of questions) {
+        const responseQuery = `
+      SELECT response FROM user_responses 
+      WHERE question_id=${question.id} AND user_id=${user};
+      `;
+        const responseRows = await pool.execute(responseQuery);
+        if (responseRows.length > 0) {
+          // If response exists, append it to the corresponding question
+          console.log("responseRows", responseRows);
+          question.response = responseRows[0].response;
+        }
+      }
+
+      res.status(200).json({
+        success: true,
+        data: questions,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        data: error.message,
+      });
+    }
   }
 };
 

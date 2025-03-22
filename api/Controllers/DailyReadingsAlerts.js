@@ -400,18 +400,44 @@ const AddDailyReadingsAlerts = async (question_id,user_id,date,readings) => {
 }
 
 const AddDialysisReadingsAlerts = async (question_id,user_id,date,readings) => {
+  console.log("param id here",question_id);
+  console.log("readings here", readings);
     const checkQuery = `SELECT * FROM dialysis_readings WHERE id = '${question_id}'`
     const query = `select sendAlert from dialysis_readings where id = '${question_id}'`
-        let sendAlert = await pool.query(query);
-        console.log("sendAlert",sendAlert);
-        sendAlert = sendAlert[0].sendAlert;
-        if(sendAlert == 0){
-        return res.status(200).json({
+        // let sendAlert = await pool.query(query);
+        // console.log("sendAlert res is",sendAlert);
+        // sendAlert = sendAlert[0].sendAlert;
+        // console.log("my send alert",sendAlert);
+        // if(sendAlert == 0){
+        // return res.status(200).json({
+        //     success: true,
+        //     data: "Alerts are not enabled for this reading",
+        // });
+        // }
+
+        let result = await pool.query(query);
+        console.log("sendAlert res is", result);
+    
+        // Ensure result is not empty
+        if (!result || result.length === 0) {
+          return {
+            success: false,
+            message: "No record found for the given question_id",
+          };
+        }
+    
+        let sendAlert = result[0]?.sendAlert ?? 0; // Default to 0 if undefined
+        console.log("my send alert", sendAlert);
+    
+        if (sendAlert == 0) {
+          return  {
             success: true,
             data: "Alerts are not enabled for this reading",
-        });
+          };
         }
+        
     try {
+
         var dr = await pool.query(checkQuery);
         dr = dr[0];
         var type = dr.type;

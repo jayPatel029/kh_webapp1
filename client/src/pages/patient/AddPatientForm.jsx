@@ -13,6 +13,9 @@ const PatientRegistration = () => {
     medical_team: "",
     program: "",
     pushNotificationId: "",
+    address: "",
+    pincode: "",
+    state: "",
   });
 
   const handleChange = (e) => {

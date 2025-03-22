@@ -30,6 +30,28 @@ const getUsersbyRole = async (req, res, next) => {
   }
 };
 
+
+
+const getUsersAdmins = async (req, res, next) => {
+  try {
+    const query = "SELECT * FROM users WHERE role NOT IN ('Doctor', 'Medical Staff')";
+    const users = await pool.query(query);
+
+    res.status(200).json({
+      success: true,
+      data: users,
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+
+
 const getTotalUsers = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -191,11 +213,11 @@ const getTotalUsersThisWeekPSadmin = async (req, res, next) => {
         FROM patients p
         JOIN admin_patients ap ON p.id = ap.patient_id
         WHERE ap.admin_id = ? 
-        AND registered_date > DATE_SUB(NOW(), INTERVAL 1 WEEK) AND patients.name IS NOT NULL AND name <> ''
+        AND p.registered_date > DATE_SUB(NOW(), INTERVAL 1 WEEK) AND p.name IS NOT NULL AND p.name <> ''
       `;
       queryParams = [userId];
     }
-
+      
     // Execute the query
     const users = [];
     const response = await pool.query(query, queryParams);
@@ -384,4 +406,5 @@ module.exports = {
   getTotalUsersThisWeekPSadmin,
   getidbyEmail,
   getUserbyEmailDoctor,
+  getUsersAdmins,
 };

@@ -29,6 +29,7 @@ export async function getDoctorsChat(patientId) {
 }
 export async function updateDoctor(doctorId, doctorData) {
   try {
+    console.log("update doc", doctorData);
     const response = await axiosInstance.put(server_url + "/doctor/" + doctorId, doctorData);
     return { success: true, data: response.data };
   } catch (error) {

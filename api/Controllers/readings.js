@@ -79,12 +79,13 @@ async function addDailyReading(req, res) {
       alertTextDoc,
       readingsTranslations,
       sendAlert,
-      unit
+      unit,
+      condition,
     } = req.body;
     
-    console.log(title, type, assign_range, low_range, high_range,isGraph,unit, alertTextDoc)
-
+    console.log(title, type, assign_range, low_range, high_range,isGraph,unit, alertTextDoc, condition)
     console.log("ailments",ailments);
+    console.log("this body: ", req.body);
     const query=`select id from ailments where name in (${ailments.map((ailment)=>`'${ailment}'`).join(",")})`;
     const ailmentIds=await pool.query(query );
     console.log("ailmentIds",ailmentIds.map((ailment) => ailment.id));
@@ -99,6 +100,7 @@ async function addDailyReading(req, res) {
       unit,
       alertTextDoc,
       sendAlert,
+      condition,
     });
   
 
@@ -109,6 +111,7 @@ async function addDailyReading(req, res) {
       });
     });
     // Insert translations for the new reading
+    console.log("readings translation here: ",readingsTranslations);
    if(readingsTranslations && readingsTranslations!==undefined){
     const translations = Object.entries(readingsTranslations).map(
       ([language, translation]) => ({
@@ -169,6 +172,7 @@ async function updateDailyReading(req, res) {
       unit,
       readingsTranslations,
       sendAlert,
+      condition,
     } = req.body;
 
     // Update the daily reading with the new values
@@ -182,6 +186,7 @@ async function updateDailyReading(req, res) {
         isGraph,
         unit,
         alertTextDoc,
+        condition,
       },
       {
         where: { id },
@@ -301,10 +306,11 @@ async function addDialysisReading(req, res) {
       alertTextDoc,
       readingsTranslations,
       sendAlert,
+      condition,
     } = req.body;
 
     console.log("ailments",ailments);
-
+    console.log("body here", req.body);
     // Insert a new record into the Dialysis_readings table
     const newReading = await DialysisReadings.create({
       title,
@@ -316,6 +322,7 @@ async function addDialysisReading(req, res) {
       alertTextDoc,
       sendAlert,
       unit,
+      condition,
     });
     const query=`select id from ailments where name in (${ailments.map((ailment)=>`'${ailment}'`).join(",")})`;
     const ailmentIds=await pool.query(query );
@@ -388,10 +395,11 @@ async function updateDialysisReading(req, res) {
       alertTextDoc,
       readingsTranslations,
       sendAlert,
-      unit
+      unit,
+      condition
     } = req.body;
 
-    console.log(type, assign_range, low_range, high_range, isGraph, alertTextDoc, readingsTranslations)
+    console.log(type, assign_range, low_range, high_range, isGraph, alertTextDoc, readingsTranslations, condition)
 
     // Update the Dialysis reading with the new values
     await DialysisReadings.update(
@@ -403,7 +411,8 @@ async function updateDialysisReading(req, res) {
         high_range,
         isGraph,
         alertTextDoc,
-        unit
+        unit,
+        condition
       },
       {
         where: { id },

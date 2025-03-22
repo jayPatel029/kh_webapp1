@@ -331,7 +331,7 @@ const getReadingsInterDialyticsResponseGraph = async (question_id, user_id) => {
     const interId=`
     SELECT id
     FROM dialysis_readings
-    WHERE LOWER(title) = 'interDialysisGraph'
+    WHERE LOWER(title) = 'inter dialysis weight'
     `
     const [beforeResult, afterResult,inter] = await Promise.all([
       pool.query(beforeDialysisQuery),
@@ -383,9 +383,15 @@ const getReadingsInterDialyticsResponseGraph = async (question_id, user_id) => {
         dateMap[date] = { before: null, after: after.readings };  // Initialize 'before' as null
       }
     });
-    for(let i=0;i<remaining.length;i++){
+    // for(let i=0;i<remaining.length;i++){
+    //   const date = new Date(remaining[i].date).toISOString().split('T')[0];
+    //   dateMap[date] = { before: null, after: null };  // Initialize 'before' as null
+    // }
+    for (let i = 0; i < remaining.length; i++) {
       const date = new Date(remaining[i].date).toISOString().split('T')[0];
-      dateMap[date] = { before: null, after: null };  // Initialize 'before' as null
+      if (!dateMap[date]) {  // Only add if date is not already in dateMap
+        dateMap[date] = { before: null, after: null };
+      }
     }
     const interDialyticResponses = [];
     let previousDate = null;
@@ -401,7 +407,7 @@ const getReadingsInterDialyticsResponseGraph = async (question_id, user_id) => {
         // Skip the first day, since no calculation is possible
         interDialyticResponses.push({
           date: currentDate,
-          readings: 'No calculation for first day'
+          readings: 'No readings found'
         });
       } else {
         const previousDateData = dateMap[sortedDates[i - 1]];
@@ -410,13 +416,13 @@ const getReadingsInterDialyticsResponseGraph = async (question_id, user_id) => {
           // Case 1: No "Before" reading for the current day
           interDialyticResponses.push({
             date: currentDate,
-            readings: 'Reading Not found (Before missing)'
+            readings: 'Reading of weight before dialysis is missing'
           });
         } else if (!previousDateData.after) {
           // Case 2: No "After" reading for the previous day
           interDialyticResponses.push({
             date: currentDate,
-            readings: 'Reading Not found (After missing for previous day)'
+            readings: 'Reading of weight after dialysis for the previous dialysis session is missing'
           });
         } else {
           // Case 3: Both "Before" reading for current day and "After" reading for previous day exist

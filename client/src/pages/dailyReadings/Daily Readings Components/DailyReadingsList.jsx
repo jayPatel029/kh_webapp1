@@ -32,9 +32,10 @@ function DailyForm() {
     lower_assign_range: null,
     upper_assign_range: null,
     isGraph: 0,
-    unit:"",
+    unit: "",
     sendAlert: 0,
     alertTextDoc: "",
+    condition: "",
   });
 
   const [ailments, setAilments] = useState([]);
@@ -59,6 +60,7 @@ function DailyForm() {
                 transaltiondict[lang.id] = "";
               }
             });
+            console.log("translation dict: ",transaltiondict);
             setTranslations(transaltiondict);
           } else {
             console.error("Failed to fetch Languages:", resultLanguage);
@@ -100,8 +102,9 @@ function DailyForm() {
       readingsTranslations: translations,
       alertTextDoc: newReading.alertTextDoc,
       sendAlert: newReading.sendAlert,
+      condition: newReading.condition,
     };
-    
+
     // console.log(payload)
     if (validateForm()) {
       if (!editMode) {
@@ -159,8 +162,13 @@ function DailyForm() {
       <div className=" bg-white md:p-6 border p-2 rounded-md border-t-primary border-t-4 shadow-md">
         <div className="border-b-gray border-b-2 p-2 pt-4 md:pb-4 font-semibold text-primary tracking-wide text-xl">
           Readings Master
-            <Link to="/dailyReadingsCsv"  className="border md:ml-2 ml-0 text-white bg-primary font-semibold tracking-wide text-lg border-gray-300  md:w-1/4 rounded-lg  p-1.5"> BulkUpload Question</Link>
-
+          <Link
+            to="/dailyReadingsCsv"
+            className="border md:ml-2 ml-0 text-white bg-primary font-semibold tracking-wide text-lg border-gray-300  md:w-1/4 rounded-lg  p-1.5"
+          >
+            {" "}
+            BulkUpload Question
+          </Link>
         </div>
         <div className="p-5">
           {modelOpen && (
@@ -221,44 +229,44 @@ function DailyForm() {
             </button>
           </div>
           <label className="block mb-2 text-sm font-medium text-gray-500 pt-6">
-  Send Alerts
-</label>
-<select
-  value={newReading.sendAlert}
-  onChange={(event) => {
-    console.log(event.target.value);
-    newReadingDsipatch({
-      type: "sendAlert",
-      payload: event.target.value,
-    });
-  }}
-  className="border border-gray-300 text-gray-500 text-sm rounded-lg block w-full p-2.5 focus:outline-primary"
->
-  <option value="0">No</option>
-  <option value="1">Yes</option>
-</select>
+            Send Alerts
+          </label>
+          <select
+            value={newReading.sendAlert}
+            onChange={(event) => {
+              console.log(event.target.value);
+              newReadingDsipatch({
+                type: "sendAlert",
+                payload: event.target.value,
+              });
+            }}
+            className="border border-gray-300 text-gray-500 text-sm rounded-lg block w-full p-2.5 focus:outline-primary"
+          >
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
 
-{newReading.sendAlert == 1 && (
-  <>
-    <label className="block mb-2 text-sm font-medium text-gray-500 pt-6">
-      Alert Text
-    </label>
-    <div className="block md:flex w-full">
-      <input
-        type="text"
-        placeholder="Alert Text for doctors"
-        value={newReading.alertTextDoc}
-        onChange={(event) => {
-          newReadingDsipatch({
-            type: "alertTextDoc",
-            payload: event.target.value,
-          });
-        }}
-        className=" border border-gray-300 text-gray-500 text-sm rounded-lg block md:w-3/4 w-full p-2.5 focus:outline-primary"
-      />
-    </div>
-  </>
-)}
+          {newReading.sendAlert == 1 && (
+            <>
+              <label className="block mb-2 text-sm font-medium text-gray-500 pt-6">
+                Alert Text
+              </label>
+              <div className="block md:flex w-full">
+                <input
+                  type="text"
+                  placeholder="Alert Text for doctors"
+                  value={newReading.alertTextDoc}
+                  onChange={(event) => {
+                    newReadingDsipatch({
+                      type: "alertTextDoc",
+                      payload: event.target.value,
+                    });
+                  }}
+                  className=" border border-gray-300 text-gray-500 text-sm rounded-lg block md:w-3/4 w-full p-2.5 focus:outline-primary"
+                />
+              </div>
+            </>
+          )}
 
           <div>
             <label className="block mb-2 text-sm font-medium text-gray-500 pt-6">
@@ -368,6 +376,26 @@ function DailyForm() {
               </select>
             </>
           ) : null}
+
+          <label className="block mb-2 text-sm font-medium text-gray-500 pt-6">
+            Condition
+          </label>
+          <select
+            value={newReading.condition}
+            onChange={(event) => {
+              console.log(event.target.value);
+              newReadingDsipatch({
+                type: "condition",
+                payload: event.target.value,
+              });
+            }}
+            className="border border-gray-300 text-gray-500 text-sm rounded-lg block w-full p-2.5 focus:outline-primary"
+          >
+            <option value="stable">stable</option>
+            <option value="unstable">unstable</option>
+            <option value="critical">critical</option>
+          </select>
+
           {editMode ? (
             <>
               <button

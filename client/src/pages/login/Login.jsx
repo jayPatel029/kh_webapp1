@@ -45,13 +45,14 @@ function Login() {
         setErrMsg([]);
 
         const userResponse = await getUserByEmail(email);
-        // console.log(userResponse)
+        console.log("user resp",userResponse.data)
         localStorage.setItem(
           "firstname",
           userResponse?.data?.data[0]?.firstname
         );
         localStorage.setItem("email", userResponse?.data?.data[0]?.email);
         localStorage.setItem("token", response?.data?.token);
+        localStorage.setItem("role", userResponse?.data?.data[0]?.role);
         try {
           const role = await identifyRole();
           if (role.success) {

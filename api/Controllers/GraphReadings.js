@@ -432,7 +432,7 @@ const AddGraphReadingSysDia = async (req, res, next) => {
         readings,
         readingsDia
     } = req.body;
-
+    console.log("adding readings", req.body);
     const currentDate = new Date().toISOString().slice(0, 10); // Get current date in 'YYYY-MM-DD' format
     const currentTime = new Date().toISOString().slice(11, 19); // Get current time in 'HH:mm:ss' format
     const serverTimestamp = `${currentDate} ${currentTime}`;

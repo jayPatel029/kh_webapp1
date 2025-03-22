@@ -10,7 +10,7 @@ const UserCard = ({ user }) => {
   // console.log("from UserCard", user);
   const navigate = useNavigate();
   const [patientName, setPatientName] = useState("");
-
+  
   useEffect(() => {
     const fetchPatientName = async () => {
       if (user.patientId) {
@@ -84,11 +84,11 @@ const UserCard = ({ user }) => {
     ) {
       navigate(`/patient/${alert.patientId}`);
     } else if (
-      alert.type === "patient" &&
-      alert.category === "New Lab Report"
+      alert.type == "doctor" &&
+      alert.category == "New Lab Report "
     ) {
       navigate(`/UserLabReports/${alert.patientId}`);
-    }else if (alert.category === "New Feedback") {
+    }else if (alert.category === "New Feedback" || alert.category ==="Contact Us") {
       navigate(`/contactus/${alert?.contactUsId}`);} 
     else if (
       alert.type === "doctor" &&
