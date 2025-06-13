@@ -36,7 +36,7 @@ createTables();
 app.use(body_parser.json());
 app.use(body_parser.urlencoded({ extended: true }));
 app.use(cors());
-app.use("/api/app1", indexRouter);
+app.use("/api", indexRouter);
 
 // Error logging middleware
 app.use((err, req, res, next) => {
