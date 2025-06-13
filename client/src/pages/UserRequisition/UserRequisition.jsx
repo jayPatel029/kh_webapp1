@@ -10,6 +10,7 @@ import { BsTrash } from "react-icons/bs";
 import { useParams, Link } from "react-router-dom";
 import UploadedFileModal from "./UploadedFileModal";
 import { FaFilePdf } from "react-icons/fa6";
+import { useSelector } from "react-redux";
 
 const UserRequisition = () => {
   const [showModal, setShowModal] = useState(false);
@@ -21,6 +22,7 @@ const UserRequisition = () => {
   const openModal = () => {
     setShowModal(true);
   };
+  const role = useSelector((state) => state.permission);
 
   const closeModal = (data) => {
     setShowModal(false);
@@ -37,13 +39,15 @@ const UserRequisition = () => {
   };
   const location = useLocation();
 
-  const deleteRequisition = async (id,email) => {
+  const deleteRequisition = async (id, email) => {
     const isConfirmed = window.confirm(
       "Are you sure you want to delete this requisition?"
     );
     if (isConfirmed) {
       try {
-        await axiosInstance.delete(`${server_url}/requisition/${id}`,{data:{email}});
+        await axiosInstance.delete(`${server_url}/requisition/${id}`, {
+          data: { email },
+        });
         await fetchData();
       } catch (error) {
         console.error("Error deleting requisition:", error);
@@ -58,7 +62,7 @@ const UserRequisition = () => {
       const response = await axiosInstance.get(
         `${server_url}/requisition/getRequisition/${patient_id}`
       );
-      console.log("requ",response.data.data);
+      console.log("requ", response.data.data);
       setUserRequisitionData(response.data.data);
       console.log(response.data.data);
     } catch (error) {
@@ -93,7 +97,8 @@ const UserRequisition = () => {
             <div className="manage-roles-container p-7 ml-4 mr-4 mt-4 bg-white shadow-md border-t-4 border-primary">
               <Link
                 to={`/userProfile/${id}`}
-                className="text-primary border-b-2 border-primary">
+                className="text-primary border-b-2 border-primary"
+              >
                 go back
               </Link>
               <div className="mt-4 mb-4 flex items-center justify-end">
@@ -103,11 +108,15 @@ const UserRequisition = () => {
               <div className="flex justify-between items-center border-b pb-2 mb-4">
                 <h2 className="text-2xl font-bold">Requisition</h2>
                 <div className="flex items-center justify-end">
-                  <button
-                    className="block rounded-lg text-primary border-2 border-primary w-40 py-2"
-                    onClick={() => openModal()}>
-                    Upload Requisition
-                  </button>
+                  {role.role_name != "Dialysis Technician" && (
+                    <button
+                      className="block rounded-lg text-primary border-2 border-primary w-40 py-2"
+                      onClick={() => openModal()}
+                    >
+                      Upload Requisition
+                    </button>
+                  )}
+
                   {showModal && (
                     <RequisitionModal
                       closeModal={closeModal}
@@ -148,7 +157,8 @@ const UserRequisition = () => {
                              : ""
                          }
                          border-b border-gray-200 
-                        `}>
+                        `}
+                        >
                           <td>
                             {
                               (requisitionItem.date = formatDate(
@@ -189,8 +199,9 @@ const UserRequisition = () => {
                               className="text-red-500 "
                               style={{ fontSize: "1.5rem" }}
                               onClick={() =>
-                                deleteRequisition(requisitionItem.id,email)
-                              }>
+                                deleteRequisition(requisitionItem.id, email)
+                              }
+                            >
                               <BsTrash />
                             </button>
                           </td>

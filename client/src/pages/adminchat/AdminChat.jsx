@@ -118,16 +118,19 @@ const ChatApp = () => {
         const patientRes = await getPatientById(pid);
         console.log(patientRes);
         const userEmail = localStorage.getItem("email");
-        console.log(userEmail)
+        console.log(userEmail);
         setPatient(patientRes.data.data);
         setSender(userEmail);
-        if (roleResult.data.data.role_name === "Admin" || roleResult.data.data.role_name==="PSadmin") {
+        if (
+          roleResult.data.data.role_name === "Admin" ||
+          roleResult.data.data.role_name === "PSadmin"
+        ) {
           const chatResult = await getAllChatsAdmin(pid);
-          console.log("CHAT",chatResult.data)
+          console.log("CHAT", chatResult.data);
           const emailArray = chatResult?.data.map((a) => a.receiverEmail);
-          console.log(emailArray)
+          console.log(emailArray);
           const result = await getPatientMedicalTeam(pid);
-          console.log("CHAT1",result.data.data)
+          console.log("CHAT1", result.data.data);
 
           if (result.success && chatResult.success) {
             setChats(
@@ -188,30 +191,40 @@ const ChatApp = () => {
   // }, [location.search]);
 
   const sendCurrentMessage = async () => {
-    try {
-      const messageData = {
-        message: currentMessage,
-        receiver: activeReciever,
-        pid: pid,
-      };
-      const response = await sendMessage(messageData);
-      if (response.success) {
-        if (role === "Doctor") {
-          await createMessageAlert(response.data.chatId, currentMessage, pid);
-        }
-        socket.current.emit("send-message", {
-          currentMessage,
-          receiverId: activeReciever,
-          senderId: sender,
-          chatId: response.data.chatId,
-        });
-        setCurrentMessage("");
-        loadMessages(response.data.chatId);
-      } else {
-        console.error("Failed to send message:", response.data);
+    const validate = () => {
+      if (currentMessage.trim() === "") {
+        alert("Please enter a message");
+        return false;
       }
-    } catch (error) {
-      console.error("Error sending message:", error);
+      return true;
+    };
+    
+    if (validate()) {
+      try {
+        const messageData = {
+          message: currentMessage.trim(),
+          receiver: activeReciever,
+          pid: pid,
+        };
+        const response = await sendMessage(messageData);
+        if (response.success) {
+          if (role === "Doctor") {
+            await createMessageAlert(response.data.chatId, currentMessage, pid);
+          }
+          socket.current.emit("send-message", {
+            currentMessage,
+            receiverId: activeReciever,
+            senderId: sender,
+            chatId: response.data.chatId,
+          });
+          setCurrentMessage("");
+          loadMessages(response.data.chatId);
+        } else {
+          console.error("Failed to send message:", response.data);
+        }
+      } catch (error) {
+        console.error("Error sending message:", error);
+      }
     }
   };
 
@@ -227,7 +240,8 @@ const ChatApp = () => {
         <div className="bg-gray-100 p-4">
           <Link
             to={`/userProfile/${pid}`}
-            className="text-primary border-b-2 border-primary">
+            className="text-primary border-b-2 border-primary"
+          >
             go back
           </Link>
         </div>
@@ -250,50 +264,49 @@ const ChatApp = () => {
               </div>
             </div>
             <div className="flex h-[72vh]">
-              {role === "Admin" || role==="PSadmin"? (
-               <div className="bg-white w-[35%] rounded-bl-lg h-full border-r-2 border-gray-300">
-               
-               {chats.map((chat, index) => {
-                 // Check if the chat's receiver email is in the medical team
-                 const isInMedicalTeam = medicalTeam.some(
-                   (member) => member.email === chat.receiverEmail
-                 );
-             
-                 return (
-                   <div
-                     key={index}
-                     className={
-                       chat.receiverEmail === activeReciever
-                         ? "w-full p-3 border-b-2 border-gray-300 bg-gray-100"
-                         : "w-full p-3 border-b-2 cursor-pointer border-gray-300 bg-white"
-                     }
-                     onClick={async () => {
-                       serActiveReciever(chat.receiverEmail);
-                       setLoading(true);
-                       loadMessages(chat.id).then((res) => {
-                         setLoading(false);
-                       });
-                     }}>
-                     <img className="inline-block h-12 w-12 mx-4" src={dummyAdmin} />
-                     {chat.firstname} {chat.lastname}
-                     
-                     {!isInMedicalTeam && (
-                       <span className="text-sm text-red-500 ml-4">
-                         (This user is not Assigned)
-                       </span>
-                     )}
-             
-                     {chat.unreadCount > 0 && (
-                       <span className="rounded-full inline-flex justify-center w-6 h-6 items-center text-xs p-0 text-center ml-2 bg-primary text-white">
-                         {chat.unreadCount}
-                       </span>
-                     )}
-                   </div>
-                 );
-               })}
-             </div>
-             
+              {role === "Admin" || role === "PSadmin" ? (
+                <div className="bg-white w-[35%] rounded-bl-lg h-full border-r-2 border-gray-300">
+                  {chats.map((chat, index) => {
+                    // Check if the chat's receiver email is in the medical team
+                    const isInMedicalTeam = medicalTeam.some(
+                      (member) => member.email === chat.receiverEmail
+                    );
 
+                    return (
+                      <div
+                        key={index}
+                        className={
+                          chat.receiverEmail === activeReciever
+                            ? "w-full p-3 border-b-2 border-gray-300 bg-gray-100"
+                            : "w-full p-3 border-b-2 cursor-pointer border-gray-300 bg-white"
+                        }
+                        onClick={async () => {
+                          serActiveReciever(chat.receiverEmail);
+                          setLoading(true);
+                          loadMessages(chat.id).then((res) => {
+                            setLoading(false);
+                          });
+                        }}
+                      >
+                        <img
+                          className="inline-block h-12 w-12 mx-4"
+                          src={dummyAdmin}
+                        />
+                        {chat.firstname} {chat.lastname}
+                        {!isInMedicalTeam && (
+                          <span className="text-sm text-red-500 ml-4">
+                            (This user is not Assigned)
+                          </span>
+                        )}
+                        {chat.unreadCount > 0 && (
+                          <span className="rounded-full inline-flex justify-center w-6 h-6 items-center text-xs p-0 text-center ml-2 bg-primary text-white">
+                            {chat.unreadCount}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               ) : (
                 <div className="bg-white w-[35%] rounded-bl-lg h-full border-r-2 border-gray-300">
                   <div className="w-full p-3 border-b-2 cursor-pointer border-gray-300 bg-white text-center text-lg text-primary">
@@ -302,7 +315,8 @@ const ChatApp = () => {
                   {adminTeam.map((admin, index) => (
                     <div
                       key={index}
-                      className="w-full p-3 border-b-2 border-gray-300 bg-white">
+                      className="w-full p-3 border-b-2 border-gray-300 bg-white"
+                    >
                       <img
                         className="inline-block h-12 w-12 mx-4"
                         src={dummyAdmin}
@@ -315,7 +329,8 @@ const ChatApp = () => {
               <div className="items-center justify-center w-[65%] bg-gradient-to-br from-gray-200 to-white rounded-br-lg h-full">
                 <div
                   className="w-full h-[88%] overflow-y-scroll p-8"
-                  style={{ transform: "scaleY(-1)" }}>
+                  style={{ transform: "scaleY(-1)" }}
+                >
                   {loading ? (
                     <div className="h-full w-full flex justify-center items-center">
                       <ReactLoading
@@ -346,7 +361,8 @@ const ChatApp = () => {
                               ? "w-full flex justify-end py-2"
                               : "w-full flex py-2"
                           }
-                          style={{ transform: "scaleY(-1)" }}>
+                          style={{ transform: "scaleY(-1)" }}
+                        >
                           <div>
                             <div className="px-2 text-gray-500">
                               {message.firstname} {message.lastname}{" "}
@@ -356,7 +372,8 @@ const ChatApp = () => {
                                 message.sender === sender
                                   ? "p-4 rounded-t-xl rounded-bl-xl bg-yellow-300"
                                   : "p-4 rounded-t-xl rounded-br-xl bg-blue-300"
-                              }>
+                              }
+                            >
                               {message.message}
                             </div>
                             <div className="px-2 text-gray-500">
@@ -391,7 +408,8 @@ const ChatApp = () => {
                       />
                       <button
                         onClick={sendCurrentMessage}
-                        className="bg-primary text-white rounded-lg w-[8%] mx-2 p-2 flex justify-center items-center">
+                        className="bg-primary text-white rounded-lg w-[8%] mx-2 p-2 flex justify-center items-center"
+                      >
                         <MdSend className="text-2xl" />
                       </button>
                     </>

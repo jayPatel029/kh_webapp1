@@ -7,3 +7,9 @@ export const readingTypes = [
     "Upload",
     "Text",
 ]
+
+export const condTypes = [
+    "Stable",
+    "Unstable",
+    "Critical"
+]

@@ -46,6 +46,7 @@ const LineChartComponent = ({
   const [isUpdate, setIsUpdate] = useState(false);
   const [numberOfAbnormalReadings, setNumberOfAbnormalReadings] = useState(0);
   const [showDateRangePicker, setShowDateRangePicker] = useState(false);
+  const userRole = localStorage.getItem("role");
 
   const [selectionRange, setSelectionRange] = useState({
     startDate: new Date(),
@@ -75,7 +76,7 @@ const LineChartComponent = ({
           lowRange2,
           highRange2
         );
-        
+
         if (isCheckedRed && isCheckedOrange) {
           return color === "red" || color === "yellow";
         } else if (isCheckedOrange) {
@@ -101,7 +102,6 @@ const LineChartComponent = ({
     setPatientData(filteredData);
   }, [isCheckedOrange, isCheckedRed]);
 
-
   useEffect(() => {
     const filterBasedOnColorAndTime = () => {
       let filteredDataColor = originalData.slice();
@@ -114,7 +114,7 @@ const LineChartComponent = ({
           lowRange2,
           highRange2
         );
-        
+
         if (isCheckedRed && isCheckedOrange) {
           return color === "red" || color === "yellow";
         } else if (isCheckedOrange) {
@@ -138,7 +138,7 @@ const LineChartComponent = ({
     }
 
     setPatientData(filteredData);
-  }, [ selectionRange]);
+  }, [selectionRange]);
 
   const CustomizedDotOld2 = (props) => {
     const { cx, cy, value } = props;
@@ -880,7 +880,7 @@ const LineChartComponent = ({
     axiosInstance
       .get(`${server_url}/readings/get`, { params })
       .then((response) => {
-        console.log('Response data:', response.data.data);
+        console.log("Response data:", response.data.data);
 
         const formattedData = response.data.data.map((item, key) => {
           const date = new Date(item.date);
@@ -913,16 +913,19 @@ const LineChartComponent = ({
 
   const filterDataByTimeRange = (data) => {
     // Setting start and end date to UTC midnight for accurate comparison
-    const startUTC = new Date(selectionRange.startDate.toISOString().split('T')[0] + "T00:00:00Z");
-    const endUTC = new Date(selectionRange.endDate.toISOString().split('T')[0] + "T23:59:59Z");
+    const startUTC = new Date(
+      selectionRange.startDate.toISOString().split("T")[0] + "T00:00:00Z"
+    );
+    const endUTC = new Date(
+      selectionRange.endDate.toISOString().split("T")[0] + "T23:59:59Z"
+    );
 
     return data.filter((item) => {
       // Parse item date and set it to midnight UTC for comparison
       const itemUTC = new Date(item.date + "T00:00:00Z");
       return itemUTC >= startUTC && itemUTC <= endUTC;
     });
-};
-
+  };
 
   // const filterDataByTimeRange = (data, timeRange) => {
   //   const currentDate = new Date();
@@ -994,16 +997,14 @@ const LineChartComponent = ({
           />
         )}
 
-        {
-          role?.canEditPatients && (
-            <button
-          className="block rounded-lg text-primary border-2 border-primary w-40 py-2"
-          onClick={() => openModalUpdateRange()}
-        >
-          Update Range
-        </button>
-          )
-        }
+        {userRole == "Admin" && (
+          <button
+            className="block rounded-lg text-primary border-2 border-primary w-40 py-2"
+            onClick={() => openModalUpdateRange()}
+          >
+            Update Range
+          </button>
+        )}
         {showModalUpdateRange && (
           <UpdateRangeModel
             closeModal={closeModalUpdateRange}
@@ -1114,8 +1115,8 @@ const LineChartComponent = ({
             <span className="font-bold text-xl animate-pulse">
               {numberOfAbnormalReadings}
             </span>
-            Abnormal Readings between
-            {selectionRange.startDate.toLocaleDateString("en-US", {
+              Abnormal Readings
+            {/* {selectionRange.startDate.toLocaleDateString("en-US", {
               year: "numeric",
               month: "long",
               day: "numeric",
@@ -1125,7 +1126,7 @@ const LineChartComponent = ({
               year: "numeric",
               month: "long",
               day: "numeric",
-            })}
+            })} */}
           </div>
         </div>
       )}

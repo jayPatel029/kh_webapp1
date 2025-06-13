@@ -2,6 +2,7 @@ const { DataTypes, Sequelize } = require("sequelize");
 const { sequelize } = require("../databaseConn/database");
 const { Ailment } = require("./ailment");
 const { Language } = require("./language");
+const { type } = require("os");
 
 const DailyReadings = sequelize.define("daily_readings", {
   id: {
@@ -52,13 +53,17 @@ const DailyReadings = sequelize.define("daily_readings", {
     type: DataTypes.INTEGER(5),
     allowNull: true,
     defaultValue: 0,
-
-  },  
+  },
   alertTextDoc: {
     type: DataTypes.TEXT,
     allowNull: true,
     defaultValue: "",
-  }
+  },
+  condition: {
+    type: DataTypes.ENUM("stable", "unstable", "critical"),
+    allowNull: false,
+    defaultValue: "stable",
+  },
 });
 
 const DialysisReadings = sequelize.define("dialysis_readings", {
@@ -116,7 +121,12 @@ const DialysisReadings = sequelize.define("dialysis_readings", {
     type: DataTypes.TEXT,
     allowNull: true,
     defaultValue: "",
-  }
+  },
+  condition: {
+    type: DataTypes.ENUM("stable", "unstable", "critical"),
+    allowNull: false,
+    defaultValue: "stable",
+  },
 });
 
 const DailyReadingsTranslations = sequelize.define(
@@ -148,9 +158,10 @@ const DailyReadingsTranslations = sequelize.define(
       allowNull: false,
       collate: "utf8mb4_general_ci",
     },
-  },{
-    charset: 'utf8mb4', // Enables support for full Unicode (e.g., multi-language, emojis)
-    collate: 'utf8mb4_unicode_ci', // Collation ensures proper sorting for Unicode
+  },
+  {
+    charset: "utf8mb4", // Enables support for full Unicode (e.g., multi-language, emojis)
+    collate: "utf8mb4_unicode_ci", // Collation ensures proper sorting for Unicode
   }
 );
 
@@ -179,13 +190,14 @@ const DialysisReadingsTranslations = sequelize.define(
       },
     },
     title: {
-      type: Sequelize.STRING(255),  
+      type: Sequelize.STRING(255),
       allowNull: false,
       collate: "utf8mb4_general_ci",
     },
-  },{
-    charset: 'utf8mb4', // Enables support for full Unicode (e.g., multi-language, emojis)
-    collate: 'utf8mb4_unicode_ci', // Collation ensures proper sorting for Unicode
+  },
+  {
+    charset: "utf8mb4", // Enables support for full Unicode (e.g., multi-language, emojis)
+    collate: "utf8mb4_unicode_ci", // Collation ensures proper sorting for Unicode
   }
 );
 
@@ -210,7 +222,7 @@ const DailyReadingAilments = sequelize.define("daily_reading_ailments", {
       model: Ailment,
       key: "id",
     },
-  }
+  },
 });
 
 const DialysisReadingAilments = sequelize.define("dialysis_reading_ailments", {
@@ -234,11 +246,17 @@ const DialysisReadingAilments = sequelize.define("dialysis_reading_ailments", {
       model: Ailment,
       key: "id",
     },
-  }
+  },
 });
 
-DailyReadings.hasMany(DailyReadingAilments, { foreignKey: "dr_id" , onDelete: 'CASCADE'});
-DialysisReadings.hasMany(DialysisReadingAilments, { foreignKey: "dr_id" , onDelete: 'CASCADE'});
+DailyReadings.hasMany(DailyReadingAilments, {
+  foreignKey: "dr_id",
+  onDelete: "CASCADE",
+});
+DialysisReadings.hasMany(DialysisReadingAilments, {
+  foreignKey: "dr_id",
+  onDelete: "CASCADE",
+});
 DailyReadingAilments.belongsTo(DailyReadings, { foreignKey: "dr_id" });
 DialysisReadingAilments.belongsTo(DialysisReadings, { foreignKey: "dr_id" });
 

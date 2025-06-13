@@ -1,28 +1,29 @@
 const xlsx = require("xlsx");
 const { pool } = require("../databaseConn/database");
 const jwt = require("jsonwebtoken");
-const axios = require('axios');
-const pdfParse = require('pdf-parse');
-const LabReadingsModal = require("../Models/labreadings")
-const fs = require('fs');
+const axios = require("axios");
+const pdfParse = require("pdf-parse");
+const LabReadingsModal = require("../Models/labreadings");
+const fs = require("fs");
 
 const PdfText = async (req, res) => {
-
   const pdfUrl = req.body.pdfUrl;
 
   if (!pdfUrl) {
-    return res.status(400).json({ error: 'PDF URL is required' });
+    return res.status(400).json({ error: "PDF URL is required" });
   }
 
   try {
     // Fetch the PDF from the provided URL
-    const response = await axios.get(pdfUrl, { responseType: 'arraybuffer' });
+    const response = await axios.get(pdfUrl, { responseType: "arraybuffer" });
     const pdfBuffer = response.data;
 
     // Parse the PDF and extract text
     const data = await pdfParse(pdfBuffer);
     const extractedText = data.text;
-    const textArray = extractedText.split('\n').filter(line => line.trim() !== '');
+    const textArray = extractedText
+      .split("\n")
+      .filter((line) => line.trim() !== "");
     const kfreData = extractKfreReadings(textArray);
     console.log(kfreData);
     // const text = extractCBCData(extractedText);
@@ -30,13 +31,12 @@ const PdfText = async (req, res) => {
 
     res.json({ text: extractedText, data: kfreData });
   } catch (error) {
-    console.error('Error fetching or parsing PDF:', error);
-    res.status(500).json({ error: 'Failed to fetch or parse PDF' });
+    console.error("Error fetching or parsing PDF:", error);
+    res.status(500).json({ error: "Failed to fetch or parse PDF" });
   }
 };
 
 const addLabTestCSV = async (req, res) => {
-
   try {
     const query = `
     SELECT 
@@ -53,20 +53,18 @@ const addLabTestCSV = async (req, res) => {
 
     const responseText = JSON.stringify(response, null, 2);
 
-    fs.writeFileSync("filePath.txt", responseText, 'utf-8');
+    fs.writeFileSync("filePath.txt", responseText, "utf-8");
 
     return res.status(200).json("response");
-    
   } catch (error) {
     console.log(error);
     res.status(500).json(error);
-    
   }
   // try {
   //   const { data } = req.body;
 
   //   const data2 = data.slice(1, data.length);
-    
+
   //   for (let k in data2) {
 
   //     let key = data[k][0];
@@ -92,15 +90,14 @@ const addLabTestCSV = async (req, res) => {
   //     data: "Error while Inserting Data",
   //   });
   // }
-
 };
 
 async function getQuestionId(questionTitle) {
   try {
     const question = await LabReadings.LabReadings.findOne({
       where: {
-        title: questionTitle
-      }
+        title: questionTitle,
+      },
     });
     if (question) {
       return question.id;
@@ -108,7 +105,9 @@ async function getQuestionId(questionTitle) {
       throw new Error(`Question with title '${questionTitle}' not found.`);
     }
   } catch (error) {
-    throw new Error(`Error fetching questionId for title '${questionTitle}': ${error.message}`);
+    throw new Error(
+      `Error fetching questionId for title '${questionTitle}': ${error.message}`
+    );
   }
 }
 
@@ -124,23 +123,34 @@ const insertMedicalDataDB = async (extractedData, user_id, date) => {
       //   date: date,
       //   readings: extractedData[key],
       // });
-
     }
 
     return true;
-
   } catch (error) {
-    console.log(error.message)
+    console.log(error.message);
     return false;
   }
-
-}
-
-
+};
 
 const getPatientDataSheet = async (patientId) => {
+  console.log("getting data for", patientId);
   const query = `SELECT * FROM patients where id = ${patientId}`;
   const patient_data = await pool.query(query);
+
+  const excludeCols = ["id","profile_photo", "push_notification_id", "fitbit_token"];
+
+  const filterPatientsData = patient_data.map((p) => {
+    let filteredData = {};
+
+    Object.keys(p).forEach((k) => {
+      if(!excludeCols.includes(k)) {
+        filteredData[k] = p[k];
+      }
+    });
+    return filteredData;
+  });
+
+
   const ailmentsQuery = `
     SELECT ailments.name
     FROM patients
@@ -154,8 +164,8 @@ const getPatientDataSheet = async (patientId) => {
   console.log(ailments);
 
   const ws = xlsx.utils.aoa_to_sheet([["Patient Details"]]);
-  delete patient_data[0].id;
-  xlsx.utils.sheet_add_json(ws, patient_data, { skipHeader: false, origin: 2 });
+  // delete patient_data[0].id;
+  xlsx.utils.sheet_add_json(ws, filterPatientsData, { skipHeader: false, origin: 2 });
   xlsx.utils.sheet_add_aoa(ws, [[ailments.join(",")]], {
     skipHeader: true,
     origin: "4C",
@@ -347,7 +357,7 @@ const canRecieveUpdates = async (req, res) => {
     console.error(error);
     res.status(500).json({ message: error.message });
   }
-}
+};
 
 const canDoctorExport = async (req, res) => {
   try {
@@ -361,7 +371,7 @@ const canDoctorExport = async (req, res) => {
     ]);
     console.log(users);
 
-    if (users.role === "Admin" ) {
+    if (users.role === "Admin") {
       return res.status(200).json({ message: "User is an admin" });
     } else if (users.role === "Doctor") {
       const [doctor] = await pool.execute(
@@ -391,13 +401,13 @@ function processLines(lines) {
   const params = [];
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
-    if (line.includes(':') || line === '') continue;
+    if (line.includes(":") || line === "") continue;
 
     if (i + 2 < lines.length) {
       const nextLine = lines[i + 1].trim();
       const nextNextLine = lines[i + 2].trim();
       if (nextLine && !isNaN(nextNextLine)) {
-        const parameterName = line.split(' ')[0];
+        const parameterName = line.split(" ")[0];
         const unit = nextLine;
         const value = nextNextLine;
         params.push({ parameter: parameterName, unit: unit, value: value });
@@ -406,8 +416,8 @@ function processLines(lines) {
       }
     }
 
-    if (line.includes('Total') || line.includes('Platelet')) {
-      const parts = lines[i + 1].split(' ');
+    if (line.includes("Total") || line.includes("Platelet")) {
+      const parts = lines[i + 1].split(" ");
       const value = lines[i + 1]?.slice(8);
       const unit = lines[i + 1]?.slice(0, 8);
       const parameterName = lines[i];
@@ -421,7 +431,7 @@ function processLines2(lines) {
   const params = [];
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
-    if (line.includes(':') || line === '') continue;
+    if (line.includes(":") || line === "") continue;
 
     if (i + 1 < lines.length) {
       const nextLine = lines[i + 1].trim();
@@ -440,17 +450,26 @@ function processLines2(lines) {
 }
 
 function extractCBCData(text) {
-  const lines = text.split('\n');
-  const startIndex = lines.findIndex(line => line.includes("COMPLETE BLOOD COUNT (CBC)"));
-  const endIndex = lines.findIndex(line => line.includes("Advised: Hb HPLC to rule out Thalassemia Minor"));
+  const lines = text.split("\n");
+  const startIndex = lines.findIndex((line) =>
+    line.includes("COMPLETE BLOOD COUNT (CBC)")
+  );
+  const endIndex = lines.findIndex((line) =>
+    line.includes("Advised: Hb HPLC to rule out Thalassemia Minor")
+  );
 
   if (startIndex === -1 || endIndex === -1 || startIndex >= endIndex) {
     return [];
   }
 
   const relevantLines = lines.slice(startIndex, endIndex + 1);
-  const firstNeutrophilsIndex = relevantLines.findIndex(line => line.includes("Neutrophils"));
-  const lastNeutrophilsIndex = relevantLines.slice().reverse().findIndex(line => line.includes("Neutrophils"));
+  const firstNeutrophilsIndex = relevantLines.findIndex((line) =>
+    line.includes("Neutrophils")
+  );
+  const lastNeutrophilsIndex = relevantLines
+    .slice()
+    .reverse()
+    .findIndex((line) => line.includes("Neutrophils"));
   const lastIndex = relevantLines.length - 1 - lastNeutrophilsIndex;
 
   const part1 = relevantLines;
@@ -464,54 +483,57 @@ function extractCBCData(text) {
   return result;
 }
 
-
 const PdfTextFunction = async (pdfUrl) => {
   if (!pdfUrl) {
+    console.log("required data missing", pdfUrl);
     return null;
   }
 
   try {
     // Fetch and parse the PDF
-    const response = await axios.get(pdfUrl, { responseType: 'arraybuffer' });
+    console.log("pdftotextfunction:", pdfUrl);
+    const response = await axios.get(pdfUrl, { responseType: "arraybuffer" });
     const pdfBuffer = response.data;
     const data = await pdfParse(pdfBuffer);
     const extractedText = data.text;
 
     // Split into lines
-    const textArray = extractedText.split('\n').filter(line => line.trim() !== '');
+    const textArray = extractedText
+      .split("\n")
+      .filter((line) => line.trim() !== "");
     // const medicalData= extractMedicalParameters(extractedText);
     // return medicalData;
     const readings = extractReadings(textArray);
 
     console.log("Extracted Readings:", readings);
     return readings;
-
   } catch (error) {
-    console.error('Error fetching or parsing PDF:', error);
+    console.error("Error fetching or parsing PDF:", error);
     return { code: 1, message: "Error processing PDF", error };
   }
 };
 
 // Function to extract readings
-const extractReadings = async(lines) => {
+const extractReadings = async (lines) => {
   const readings = {};
   const params = `select title from labReadings `;
   const Dbparameters = await pool.query(params);
-  console.log("para",Dbparameters);
+  console.log("para", Dbparameters);
   const parameters = [
-    ...Dbparameters.map(item => item.title), // Extract titles from database
-   
+    ...Dbparameters.map((item) => item.title), // Extract titles from database
   ];
   lines.forEach((line, index) => {
     // Check if the line matches a known parameter
-    const parameter = parameters.find(param => line.toLowerCase().includes((param).toLowerCase()));
+    const parameter = parameters.find((param) =>
+      line.toLowerCase().includes(param.toLowerCase())
+    );
     if (parameter) {
       // Try to extract value from the next lines
       const nextLine = lines[index + 1]?.trim();
       const nextNextLine = lines[index + 2]?.trim();
 
       // Combine lines for robust parsing
-      const combinedLine = `${line} ${nextLine || ''} ${nextNextLine || ''}`;
+      const combinedLine = `${line} ${nextLine || ""} ${nextNextLine || ""}`;
 
       // Extract value using a regex
       const match = combinedLine.match(/([\d.]+)/);
@@ -525,7 +547,6 @@ const extractReadings = async(lines) => {
   return readings;
 };
 
-
 const extractKfreReadings = (lines) => {
   const readings = {};
   const parameters = [
@@ -535,19 +556,18 @@ const extractKfreReadings = (lines) => {
     "Albumin",
     "Calcium",
     "Albium_to_Creatinine_Ratio",
-    
   ];
 
   lines.forEach((line, index) => {
     // Check if the line matches a known parameter
-    const parameter = parameters.find(param => line.includes(param));
+    const parameter = parameters.find((param) => line.includes(param));
     if (parameter) {
       // Try to extract value from the next lines
       const nextLine = lines[index + 1]?.trim();
       const nextNextLine = lines[index + 2]?.trim();
 
       // Combine lines for robust parsing
-      const combinedLine = `${line} ${nextLine || ''} ${nextNextLine || ''}`;
+      const combinedLine = `${line} ${nextLine || ""} ${nextNextLine || ""}`;
 
       // Extract value using a regex
       const match = combinedLine.match(/([\d.]+)/);
@@ -564,14 +584,16 @@ const extractKfreReadings = (lines) => {
 function extractMedicalParameters(text) {
   // Define patterns for parameter extraction using regular expressions
   const patterns = {
-    "Hemoglobin": /Hemoglobin\s+([\d.]+)/,
-    "Packed Cell Volume (PCV)": /Packed Cell Volume \(PCV\)\s+[\d.]+ - [\d.]+\s+\S+\s+([\d.]+)/,
+    Hemoglobin: /Hemoglobin\s+([\d.]+)/,
+    "Packed Cell Volume (PCV)":
+      /Packed Cell Volume \(PCV\)\s+[\d.]+ - [\d.]+\s+\S+\s+([\d.]+)/,
     "RBC Count": /RBC Count\s+[\d.]+ - [\d.]+\s+\S+\s+([\d.]+)/,
-    "MCV": /MCV\s+[\d.]+ - [\d.]+\s+\S+\s+([\d.]+)/,
-    "MCH": /MCH\s+[\d.]+ - [\d.]+\s+\S+\s+([\d.]+)/,
-    "MCHC": /MCHC\s+[\d.]+ - [\d.]+\s+\S+\s+([\d.]+)/,
-    "Red Cell Distribution Width (RDW)": /Red Cell Distribution Width \(RDW\)\s+[\d.]+ - [\d.]+\s+\S+\s+([\d.]+)/,
-    "Total Leukocyte Count (TLC)": /Total Leukocyte Count \(TLC\)\s+([\d.]+)/
+    MCV: /MCV\s+[\d.]+ - [\d.]+\s+\S+\s+([\d.]+)/,
+    MCH: /MCH\s+[\d.]+ - [\d.]+\s+\S+\s+([\d.]+)/,
+    MCHC: /MCHC\s+[\d.]+ - [\d.]+\s+\S+\s+([\d.]+)/,
+    "Red Cell Distribution Width (RDW)":
+      /Red Cell Distribution Width \(RDW\)\s+[\d.]+ - [\d.]+\s+\S+\s+([\d.]+)/,
+    "Total Leukocyte Count (TLC)": /Total Leukocyte Count \(TLC\)\s+([\d.]+)/,
   };
 
   // Results object to store extracted data
@@ -581,7 +603,7 @@ function extractMedicalParameters(text) {
   for (const [key, pattern] of Object.entries(patterns)) {
     const match = text.match(pattern);
     if (match) {
-      results[key] = match[1];  // Store the captured group (first match)
+      results[key] = match[1]; // Store the captured group (first match)
     }
   }
 
@@ -614,8 +636,6 @@ function extractMedicalParameters(text) {
 
   return results;
 }
-
-
 
 exports.canRecieveUpdates = canRecieveUpdates;
 exports.getPatientData = getPatientData;

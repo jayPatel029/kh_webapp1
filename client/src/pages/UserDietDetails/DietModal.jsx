@@ -13,6 +13,7 @@ const DietModal = ({ closeModal, user_id, onSuccess }) => {
   const [description, setDescription] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
   const { id } = useParams();
+  const [msg, setMsg] = useState("");
 
   const handleImageChange = (e) => {
     // const file = e.target.files[0];
@@ -38,6 +39,10 @@ const DietModal = ({ closeModal, user_id, onSuccess }) => {
   };
 
   const handleSubmit = async () => {
+    // if(!selectedDate || !selectedReportType || !description){
+    //   setMsg("Please fill required fields");
+    //   return;
+    // }
     console.log(user_id);
     if (selectedImage) {
       getFileRes(selectedImage)
@@ -54,6 +59,7 @@ const DietModal = ({ closeModal, user_id, onSuccess }) => {
             desc: description,
             patientId: id,
           };
+    console.log("uploading diet", data);
           // uploadDietDetails(data).then((res) => {
           //   onSuccess();
           //   closeModal();
@@ -110,6 +116,7 @@ const DietModal = ({ closeModal, user_id, onSuccess }) => {
           return;
         });
     }
+    console.log("no image selected!!");
   };
 
   const uploadDietDetails = async (data) => {
@@ -188,6 +195,8 @@ const DietModal = ({ closeModal, user_id, onSuccess }) => {
                 onChange={handleImageChange}
               />
             </div>
+            <div className="text-[#ff0000]">{msg}</div>
+
           </div>
           <div className="flex justify-end p-4">
             <button

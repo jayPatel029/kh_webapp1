@@ -48,7 +48,7 @@ const LineChartDialysis = ({
   const [isUpdate, setIsUpdate] = useState(false);
   const [numberOfAbnormalReadings, setNumberOfAbnormalReadings] = useState(0);
   const [showDateRangePicker, setShowDateRangePicker] = useState(false);
-
+  const userRole = localStorage.getItem("role");
   const [selectionRange, setSelectionRange] = useState({
     startDate: new Date(),
     endDate: new Date(),
@@ -987,7 +987,7 @@ const LineChartDialysis = ({
           />
         )}
 
-        {role?.canEditPatients && (
+        {(role?.canEditPatients && userRole == "Admin") && (
           <button
           className="block rounded-lg text-primary border-2 border-primary w-40 py-2"
           onClick={() => openModalUpdateRange()}
@@ -1105,7 +1105,7 @@ const LineChartDialysis = ({
             <span className="font-bold text-xl animate-pulse">
               {numberOfAbnormalReadings}
             </span>
-            Abnormal Readings between
+             Abnormal Readings between
             {selectionRange.startDate.toLocaleDateString("en-US", {
               year: "numeric",
               month: "long",

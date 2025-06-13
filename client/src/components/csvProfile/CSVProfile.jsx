@@ -6,7 +6,6 @@ import {
 } from "react-papaparse";
 import axiosInstance from "../../helpers/axios/axiosInstance";
 
-
 const GREY = "#CCC";
 const GREY_LIGHT = "rgba(255, 255, 255, 0.4)";
 const DEFAULT_REMOVE_HOVER_COLOR = "#A01919";
@@ -16,7 +15,7 @@ const REMOVE_HOVER_COLOR_LIGHT = lightenDarkenColor(
 );
 const GREY_DIM = "#686868";
 
-export default function CSVReader({ setData, setSuccess, success }) {
+export default function CSVReader({ setData, setSuccess, success, languages }) {
   const { CSVReader } = useCSVReader();
   const [zoneHover, setZoneHover] = useState(false);
   const [removeHoverColor, setRemoveHoverColor] = useState(
@@ -24,47 +23,125 @@ export default function CSVReader({ setData, setSuccess, success }) {
   );
   const [headData, setHeadData] = useState([]);
   const [columnMappings, setColumnMappings] = useState({
-    
-    'Question type': "",
-    'Name': "",
-    'ailments':[],
-    'Options': "",
-    
+    type: "",
+    name: "",
+    ailments: [],
+    options: "",
+    Hindi: "",
+    HindiOpt: "",
+    Marathi: "",
+    MarathiOpt: "",
   });
 
   const [csvData, setCsvData] = useState([]);
   const [columnOptions, setColumnOptions] = useState([]);
 
   const handleSubmit = () => {
+    console.log("these are the langs again:", languages);
+
     const mappedData = csvData
-      .map((row) => ({
-          // Directly using the provided patientId
-       
-        'type': columnMappings["Question type"]
-          ? row[columnOptions.indexOf(columnMappings["Question type"])]
-          : undefined,
-       
-        ailments: columnMappings.ailments
-          ? row[columnOptions.indexOf(columnMappings.ailments)]
-          : undefined,
-        'Name': columnMappings["Name"]
-            ? row[columnOptions.indexOf(columnMappings["Name"])]
+      .map((row) => {
+        const hindiColumnIndex = columnOptions.indexOf(columnMappings.Hindi);
+        const hindiOptColumnIndex = columnOptions.indexOf(
+          columnMappings.HindiOpt
+        );
+        const marathiColumnIndex = columnOptions.indexOf(
+          columnMappings.Marathi
+        );
+        const marathiOptColumnIndex = columnOptions.indexOf(
+          columnMappings.MarathiOpt
+        );
+
+        const filteredLanguages = (languages || []).filter(
+          (language) => language.id !== 1
+        );
+
+        let languageTranslations = {};
+
+        filteredLanguages.forEach((language) => {
+          if (language.language_name === "Hindi") {
+            languageTranslations[language.id] = {
+              text: row[hindiColumnIndex] || "",
+              options: row[hindiOptColumnIndex] || "",
+            };
+          } else if (language.language_name === "Marathi") {
+            languageTranslations[language.id] = {
+              text: row[marathiColumnIndex] || "",
+              options: row[marathiOptColumnIndex] || "",
+            };
+          }
+        });
+
+        return {
+          type: columnMappings.type
+            ? row[columnOptions.indexOf(columnMappings.type)]
             : undefined,
-        'Options': columnMappings.Options
-            ? row[columnOptions.indexOf(columnMappings.Options)]
+          ailments: columnMappings.ailments
+            ? row[columnOptions.indexOf(columnMappings.ailments)]
             : undefined,
-               
-      }))
-      .filter((item) => Object.values(item).some((value) => value !== undefined));
+          name: columnMappings.name
+            ? row[columnOptions.indexOf(columnMappings.name)]
+            : undefined,
+          options: columnMappings.options
+            ? row[columnOptions.indexOf(columnMappings.options)]
+            : undefined,
+          Hindi: columnMappings.Hindi
+            ? row[columnOptions.indexOf(columnMappings.Hindi)]
+            : undefined,
+          HindiOpt: columnMappings.HindiOpt
+            ? row[columnOptions.indexOf(columnMappings.HindiOpt)]
+            : undefined,
+          Marathi: columnMappings.Marathi
+            ? row[columnOptions.indexOf(columnMappings.Marathi)]
+            : undefined,
+          MarathiOpt: columnMappings.MarathiOpt
+            ? row[columnOptions.indexOf(columnMappings.MarathiOpt)]
+            : undefined,
+
+          languageTranslation: languageTranslations,
+        };
+      })
+      .filter((i) => Object.values(i).some((val) => val !== undefined));
+    // const mappedData = csvData
+    //   .map((row) => ({
+    //     // Directly using the provided patientId
+    //     type: columnMappings.type
+    //       ? row[columnOptions.indexOf(columnMappings.type)]
+    //       : undefined,
+
+    //     ailments: columnMappings.ailments
+    //       ? row[columnOptions.indexOf(columnMappings.ailments)]
+    //       : undefined,
+    //     Name: columnMappings.name
+    //       ? row[columnOptions.indexOf(columnMappings.name)]
+    //       : undefined,
+    //     Options: columnMappings.options
+    //       ? row[columnOptions.indexOf(columnMappings.options)]
+    //       : undefined,
+
+    //     Hindi: columnMappings.Hindi
+    //       ? row[columnOptions.indexOf(columnMappings.Hindi)]
+    //       : undefined,
+    //     HindiOpt: columnMappings.HindiOpt
+    //       ? row[columnOptions.indexOf(columnMappings.HindiOpt)]
+    //       : undefined,
+    //   }))
+    //   .filter((item) =>
+    //     Object.values(item).some((value) => value !== undefined)
+    //   );
 
     const trimmedMappedData = mappedData.slice(1);
     setData(trimmedMappedData);
     setSuccess(!success);
 
     let data = { data: trimmedMappedData };
-      console.log("Data:", data);
-    console.log("typeof",typeof(data.data[0].low_range))
+    console.log("Data:", data);
+    console.log(
+      "Language Translations:",
+      trimmedMappedData.map((item) => item.languageTranslation)
+    );
   };
+  console.log("these are the langs again:", languages);
 
   return (
     <CSVReader
@@ -85,24 +162,38 @@ export default function CSVReader({ setData, setSuccess, success }) {
         setZoneHover(false);
       }}
     >
-       {({ getRootProps, acceptedFile, ProgressBar, getRemoveFileProps, Remove }) => (
+      {({
+        getRootProps,
+        acceptedFile,
+        ProgressBar,
+        getRemoveFileProps,
+        Remove,
+      }) => (
         <div className="flex flex-col space-y-6">
           <div
             {...getRootProps()}
-            className={`flex justify-center items-center p-6 border-2 ${zoneHover ? 'border-gray-500' : 'border-gray-300'} rounded-lg`}
+            className={`flex justify-center items-center p-6 border-2 ${
+              zoneHover ? "border-gray-500" : "border-gray-300"
+            } rounded-lg`}
           >
             {acceptedFile ? (
               <div className="relative flex flex-col items-center justify-center w-32 h-32 bg-gradient-to-b from-gray-100 to-gray-200 rounded-lg">
                 <div className="text-center">
-                  <span className="block text-sm font-medium">{formatFileSize(acceptedFile.size)}</span>
+                  <span className="block text-sm font-medium">
+                    {formatFileSize(acceptedFile.size)}
+                  </span>
                   <span className="block text-xs">{acceptedFile.name}</span>
                 </div>
                 <ProgressBar className="absolute bottom-0 w-full" />
                 <div
                   {...getRemoveFileProps()}
                   className="absolute top-0 right-0 p-1 cursor-pointer"
-                  onMouseOver={() => setRemoveHoverColor(REMOVE_HOVER_COLOR_LIGHT)}
-                  onMouseOut={() => setRemoveHoverColor(DEFAULT_REMOVE_HOVER_COLOR)}
+                  onMouseOver={() =>
+                    setRemoveHoverColor(REMOVE_HOVER_COLOR_LIGHT)
+                  }
+                  onMouseOut={() =>
+                    setRemoveHoverColor(DEFAULT_REMOVE_HOVER_COLOR)
+                  }
                 >
                   <Remove color={removeHoverColor} />
                 </div>
@@ -113,34 +204,34 @@ export default function CSVReader({ setData, setSuccess, success }) {
           </div>
 
           {headData.length > 0 && (
-  <div>
-    <h2 className="text-xl font-semibold mb-4">First Five Entries</h2>
-    <div className="overflow-auto max-h-80 w-full">
-      <table className="table-auto border-collapse border border-gray-300 w-full">
-        <thead>
-          <tr className="bg-gray-200">
-            {headData[0].map((item, index) => (
-              <th key={index} className="border px-4 py-2">
-                {item}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {headData.slice(1).map((row, rowIndex) => (
-            <tr key={rowIndex}>
-              {row.map((cell, cellIndex) => (
-                <td key={cellIndex} className="border px-4 py-2">
-                  {cell}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </div>
-)}
+            <div>
+              <h2 className="text-xl font-semibold mb-4">First Five Entries</h2>
+              <div className="overflow-auto max-h-80 w-full">
+                <table className="table-auto border-collapse border border-gray-300 w-full">
+                  <thead>
+                    <tr className="bg-gray-200">
+                      {headData[0].map((item, index) => (
+                        <th key={index} className="border px-4 py-2">
+                          {item}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {headData.slice(1).map((row, rowIndex) => (
+                      <tr key={rowIndex}>
+                        {row.map((cell, cellIndex) => (
+                          <td key={cellIndex} className="border px-4 py-2">
+                            {cell}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           {headData.length > 0 && (
             <div>
@@ -148,7 +239,9 @@ export default function CSVReader({ setData, setSuccess, success }) {
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {Object.entries(columnMappings).map(([key, value]) => (
                   <li key={key} className="flex flex-col space-y-2">
-                    <label htmlFor={key} className="font-medium">{key}</label>
+                    <label htmlFor={key} className="font-medium">
+                      {key}
+                    </label>
                     <select
                       id={key}
                       value={value}
@@ -162,14 +255,15 @@ export default function CSVReader({ setData, setSuccess, success }) {
                     >
                       <option value="">Select Column</option>
                       {columnOptions.map((column, index) => (
-                        <option key={index} value={column}>{column}</option>
+                        <option key={index} value={column}>
+                          {column}
+                        </option>
                       ))}
                     </select>
                   </li>
                 ))}
               </ul>
               <div className="mt-4">
-              
                 <button
                   onClick={handleSubmit}
                   className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"

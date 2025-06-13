@@ -18,7 +18,6 @@ function DailyquestionCsv() {
     const [languages, setLanguages] = useState([]);
   const [patientData, setPatientData] = useState([
     {
-      
       title: "",
       type: "",
       assign_range:"",

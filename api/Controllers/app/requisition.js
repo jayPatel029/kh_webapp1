@@ -2,104 +2,10 @@ const { pool } = require("../../databaseConn/database.js");
 const {
   formatDate,
   getCurrentFormattedDate,
+  formatDateNew,
 } = require("../../Helpers/date_formatter.js");
 const { addToReadTable } = require("./prescription.js");
 
-// const getRequisitionInApp = async (req, res, next) => {
-//   const { id } = req.body;
-//   try {
-//     const query = `SELECT * FROM requisition WHERE Patient_id = ${id}`;
-//     const requisition = await pool.query(query);
-//     if (requisition.length > 0) {
-//       var out = [];
-
-//       for (var i in requisition) {
-//         out.push({
-//           requisitionID: requisition[i]["id"],
-//           image: requisition[i]["Requisition"],
-//           date: formatDate(requisition[i]["Date"]).replaceAll(" ", "-"),
-//         });
-//       }
-//       res.status(200).json({
-//         result: true,
-//         message: "Successful",
-//         data: out,
-//       });
-
-//       console.log("response", res);
-
-//     } else {
-//       res.status(200).json({
-//         result: false,
-//         message: "Data Not Found",
-//         data: null,
-//       });
-//     }
-//   } catch (err) {
-//     console.log("error: ", err);
-//     res.status(500).json({
-//       result: false,
-//       message: "Unsuccessful",
-//       error: "error while fetching user requisitions",
-//     });
-//   }
-// };
-
-// const getRequisitionInApp = async (req, res, next) => {
-//   const { id } = req.body;
-//   try {
-//     const query = `SELECT * FROM requisition WHERE Patient_id = ${id}`;
-//     const requisition = await pool.query(query);
-
-//     if (requisition.length > 0) {
-//       var out = [];
-
-//       for (var i in requisition) {
-//         let formattedDate = "Invalid Date";
-//         const dateStr = requisition[i]["Date"];
-
-//         if (dateStr) {
-//           try {
-//             // Manually parse the date in YYYY-DD-MM format to YYYY-MM-DD
-//             const [year, day, month] = dateStr.split("-");
-//             const parsedDate = new Date(`${year}-${month}-${day}`);
-//             formattedDate = formatDate(parsedDate).replaceAll(" ", "-");
-//           } catch (dateError) {
-//             console.log("Invalid Date format for requisition ID:", requisition[i]["id"], dateError);
-//           }
-//         }
-
-//         out.push({
-//           requisitionID: requisition[i]["id"],
-//           image: requisition[i]["Requisition"],
-//           date: requisition[i]['Date'],
-//         });
-//       }
-
-//       res.status(200).json({
-//         result: true,
-//         message: "Successful",
-//         data: out,
-//       });
-
-//       console.log("response", res);
-
-//     } else {
-//       res.status(200).json({
-//         result: false,
-//         message: "Data Not Found",
-//         data: null,
-//       });
-//     }
-//   } catch (err) {
-//     console.log("error: ", err);
-//     res.status(500).json({
-//       result: false,
-//       message: "Unsuccessful",
-//       error: "error while fetching user requisitions",
-//     });
-//   }
-// };
 
 const getRequisitionInApp = async (req, res, next) => {
   const { id } = req.body;
@@ -107,7 +13,7 @@ const getRequisitionInApp = async (req, res, next) => {
   console.log("Received request with Patient ID:", id);
 
   try {
-    const query = `SELECT * FROM requisition WHERE Patient_id = ${id}`;
+    const query = `SELECT * FROM requisition WHERE Patient_id = ${id} ORDER BY Date DESC`;
     console.log("Executing query:", query);
 
     const requisition = await pool.query(query);
@@ -172,7 +78,7 @@ const getRequisitionInApp = async (req, res, next) => {
       res.status(200).json({
         result: false,
         message: "Data Not Found",
-        data: null,
+        data: {},
       });
     }
   } catch (err) {
@@ -190,16 +96,37 @@ const fetchRequisitionComments = async (req, res) => {
   const { requisitionID } = req.body;
   try {
     const query = `SELECT * FROM comments where typeId = ${requisitionID} and type="Requisition"`;
-    const resp = await pool.query(query);
+    const comments = await pool.query(query);
     var respObj = [];
-    for (var i of resp) {
+    
+
+    for(const c of comments) {
+      console.log("this comment: ",c);
+      let dName = "";
+      if(c.isDoctor == 1) {
+        const doc = await pool.query(`SELECT name FROM doctors WHERE id = ?`, [c.doctorId]);
+        console.log("doc is ", doc);
+        dName = doc[0].name;
+      }
+
       respObj.push({
-        commentId: i["id"],
-        commentText: i["content"],
-        commentsBy: i["isDoctor"] == "1" ? "Doctor" : "Patient",
-        dateTime: i["date"],
+        commentId: c.id,
+        commentText: c.content,
+        commentsBy: c.isDoctor === "1" ? "Doctor" : "Patient",
+        doctorName: dName, // empty string for patient
+        dateTime: c.date,
       });
     }
+
+    
+    // for (var i of resp) {
+    //   respObj.push({
+    //     commentId: i["id"],
+    //     commentText: i["content"],
+    //     commentsBy: i["isDoctor"] == "1" ? "Doctor" : "Patient",
+    //     dateTime: i["date"],
+    //   });
+    // }
     res.status(200).json({
       dietId: 0,
       image: "",
@@ -218,7 +145,7 @@ const fetchRequisitionComments = async (req, res) => {
 
 const addRequisitionComment = async (req, res) => {
   const { requisitionID, comment, userID } = req.body;
-  var formattedDate = getCurrentFormattedDate();
+  var date = formatDateNew();
   try {
     const query2 = `INSERT INTO comments (content, userId, typeId, isDoctor, date, type, doctorId) VALUES (? , ? , ? , ? , ? , ?, ?);`;
     const resp2 = await pool.query(query2, [
@@ -226,7 +153,7 @@ const addRequisitionComment = async (req, res) => {
       userID,
       requisitionID,
       0,
-      formattedDate,
+      date,
       "Requisition",
       0,
     ]);

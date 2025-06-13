@@ -10,7 +10,7 @@ const UserCard = ({ user }) => {
   // console.log("from UserCard", user);
   const navigate = useNavigate();
   const [patientName, setPatientName] = useState("");
-
+  
   useEffect(() => {
     const fetchPatientName = async () => {
       if (user.patientId) {
@@ -84,11 +84,11 @@ const UserCard = ({ user }) => {
     ) {
       navigate(`/patient/${alert.patientId}`);
     } else if (
-      alert.type === "patient" &&
-      alert.category === "New Lab Report"
+      alert.type == "patient" &&
+      alert.category == "New Lab Report"
     ) {
       navigate(`/UserLabReports/${alert.patientId}`);
-    }else if (alert.category === "New Feedback") {
+    }else if (alert.category === "New Feedback" || alert.category ==="Contact Us") {
       navigate(`/contactus/${alert?.contactUsId}`);} 
     else if (
       alert.type === "doctor" &&
@@ -102,14 +102,16 @@ const UserCard = ({ user }) => {
         alert.category === "Change In Program")
     ) {
       navigate(`/userProgramSelection/${alert.patientId}`);
-    } else if (
-      alert.type === "patient" &&
-      alert.category === "New Requisition"
-    ) {
-      navigate(`/UserRequisition/${alert.patientId}`,
-        { state: { patientId: alert.patientId } }
-      );
-    } else if (
+    } 
+    // else if (
+    //   alert.type === "patient" &&
+    //   alert.category === "New Requisition" // alerts not needed for doc or admin dashoard 
+    // ) {
+    //   navigate(`/UserRequisition/${alert.patientId}`,
+    //     { state: { patientId: alert.patientId } }
+    //   );
+    // } 
+    else if (
       alert.type === "patient" &&
       alert.category === "Delete Account"
     ) {

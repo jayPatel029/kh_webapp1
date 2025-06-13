@@ -60,8 +60,17 @@ const DynamicModal = ({
                     type="checkbox"
                     id={option}
                     value={option}
-                    onChange={(e) => setSelectedResponse(e.target.value)}
-                    checked={selectedResponse === option}
+                    onChange={(e) => 
+                    
+                      // setSelectedResponse(e.target.value)
+                    {
+                      if(e.target.checked) {
+                        setSelectedResponse([...selectedResponse, option]);
+                      } else {
+                        setSelectedResponse(selectedResponse.filter((i) => i!==option));
+                      }}
+                    }
+                    checked={selectedResponse.includes(option)}
                   />
                   <label htmlFor={option}>{option}</label>
                 </div>

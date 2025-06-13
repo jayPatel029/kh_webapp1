@@ -35,7 +35,7 @@ const EnterReadingModalDialysisSys = ({ closeModal, title, question_id, user_id,
   const addReadings = async (data) => {
     axiosInstance.post(`${server_url}/readings//add/dia/sys`, data)
       .then(response => {
-        console.log("Response:", response.data);
+        console.log("Response for adding sys dys:", response.data);
         
         // console.log(response.data.success)
 
@@ -50,6 +50,7 @@ const EnterReadingModalDialysisSys = ({ closeModal, title, question_id, user_id,
         }
       })
       .catch(error => {
+        console.log("error adding", error.response.data.message);
         console.error("Error:", error.message);
       });
   }

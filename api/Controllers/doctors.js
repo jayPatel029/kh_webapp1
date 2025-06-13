@@ -98,7 +98,7 @@ const createDoctor = async (req, res, next) => {
       specialities,
       email_notification,
       can_export,
-      dialysis_updates,
+      Dialysis_updates,
       dailyReadingsAlerts,
     } = req.body;
     let dailyReadings = [];
@@ -107,7 +107,7 @@ const createDoctor = async (req, res, next) => {
       dailyReadings = req.body.dailyReadings;
       dialysisReadings = req.body.dialysisReadings;
     }
-
+    console.log("data received", req.body);
     const doctor = {
       name: name,
       role: role,
@@ -125,7 +125,7 @@ const createDoctor = async (req, res, next) => {
       description: description,
       email_notification: email_notification,
       can_export: can_export,
-      dialysis_updates: dialysis_updates,
+      Dialysis_updates: Dialysis_updates,
       dailyReadingsAlerts: dailyReadingsAlerts,
       regdate: new Date().toISOString().slice(0, 19).replace("T", " "),
     };
@@ -160,7 +160,7 @@ const createDoctor = async (req, res, next) => {
         doctor.description,
         doctor.email_notification,
         doctor.can_export,
-        doctor.dialysis_updates,
+        doctor.Dialysis_updates,
         doctor.dailyReadingsAlerts,
         doctor.regdate,
       ]);
@@ -349,7 +349,7 @@ const updateDoctor = async (req, res, next) => {
       dailyReadings = req.body.dailyReadings;
       dialysisReadings = req.body.dialysisReadings;
     }
-
+    console.log("doc update: ", req.body);
     const doctor = {
       name: name,
       role: role,

@@ -1,21 +1,62 @@
-const { pool } = require("../databaseConn/database.js");
+const { pool, sequelize } = require("../databaseConn/database.js");
 const { PdfTextFunction } = require("./PatientData.js");
 const LabReadings = require("../Models/labreadings.js");
-const { where } = require("sequelize");
+const { where, QueryTypes } = require("sequelize");
 const moment = require("moment-timezone");
 const { ReportLog } = require("./log.js");
-const {sendPushNotification} = require("./app/notification.js")
+const { sendPushNotification } = require("./app/notification.js");
+const { isConnected } = require("./moduleConnection.js");
 
 const getLabReports = async (req, res, next) => {
   const id = req.params.id;
-  const query = `SELECT * FROM labreport WHERE patient_id=${id}`;
-  const labreports = await pool.query(query);
-  console.log(labreports)
-  
-  res.status(200).json({
-    success: true,
-    data: labreports,
-  });
+
+  try {
+    const query = `SELECT * FROM labreport WHERE patient_id=${id}`;
+    const labreports = await pool.query(query);
+
+    //! check connection with other module?
+
+    const connection = await isConnected(id, "patient");
+
+    let teleLabReports = [];
+    if (connection && connection.is_connected) {
+      const results = await sequelize.query(
+        `SELECT * FROM tele_labreport 
+         WHERE patient_id = :new_pid
+         ORDER BY Date DESC`,
+        {
+          replacements: { new_pid: connection.new_entity_id },
+          type: QueryTypes.SELECT,
+        }
+      );
+      teleLabReports = results;
+    }
+
+    const mergedReports = [...labreports, ...teleLabReports].sort(
+      (a, b) => new Date(b.Date) - new Date(a.Date)
+    );
+
+    console.log("fetched ", mergedReports, " reports.");
+    // Step 3: Return combined response
+    res.status(200).json({
+      success: true,
+      data: mergedReports,
+    });
+  } catch (error) {
+    console.error("Error fetching lab reports:", error);
+    res.status(500).json({
+      success: false,
+      error: "Error fetching lab reports",
+    });
+  }
+  // const query = `SELECT * FROM labreport WHERE patient_id=${id}`;
+  // const labreports = await pool.query(query);
+  // console.log(labreports);
+
+  // res.status(200).json({
+  //   success: true,
+  //   data: labreports,
+  // });
 };
 
 const getLabReportById = async (req, res, next) => {
@@ -37,8 +78,10 @@ const getLabReportByPatient = async (req, res, next) => {
     data: labreports,
   });
 };
+
 const saveConfirmedData = async (req, res) => {
-  const { patient_id, date, Report_Type, email,Lab_Report, confirmedValues } = req.body;
+  const { patient_id, date, Report_Type, email, Lab_Report, confirmedValues } =
+    req.body;
 
   try {
     // Insert the lab report details
@@ -48,10 +91,16 @@ const saveConfirmedData = async (req, res) => {
     `;
     const reportResult = await pool.query(reportQuery);
 
-    const reportId =Number(reportResult.insertId);
+    const reportId = Number(reportResult.insertId);
 
     // Insert each confirmed medical parameter into the database
-    const success = await insertMedicalDataDB(confirmedValues, patient_id, date);
+    console.log("confirmedValues for", reportId);
+    const success = await insertMedicalDataDB(
+      confirmedValues,
+      patient_id,
+      date,
+      reportId
+    );
 
     // Log the operation
     // const logQuery = `
@@ -60,20 +109,15 @@ const saveConfirmedData = async (req, res) => {
     // `;
     // await pool.query(logQuery);
 
-     const {sendPushNotification} = require("./app/notification.js")
-      const pushNotiData = {
-      title: "New Lab Report",
-      body: `A Lab Report has been added by the Doctor`,
-      type: "New Lab Report",
-      customField: "This is a custom notification from Firebase.",
-    };
-    try {
-      await sendPushNotification(pushNotiData, patient_id);
-      console.log("Push Notification Sent Successfully");
-    } catch (error) {
-      console.error("Error Sending Push Notification:", error);
-    }
-    
+    // const getdocId = `select id from doctors where email = ${email}`;
+    // await pool.query(getdocId);
+    // const docId = getdocId[0].id
+
+    //remove this alert for doctor
+    // const queryA = `INSERT INTO alerts (patientId,type,category, date,  isOpened, labReportId) VALUES ('${patient_id}', 'patient', 'New Lab Report ', '${date}',  0, '${reportId}')`;
+    // console.log("adding alert: ",queryA);
+    // await pool.query(queryA);
+
     res.status(200).json({
       success: true,
       message: "Lab Report confirmed and saved successfully",
@@ -88,11 +132,10 @@ const saveConfirmedData = async (req, res) => {
   }
 };
 
-
 const addLabReport = async (req, res) => {
-  const { patient_id, date, Report_Type, Lab_Report } = req.body;
-  console.log("req.body",req.body)
-  if(Report_Type !== "Lab"){
+  const { patient_id, date, Report_Type, Lab_Report, email } = req.body;
+  console.log("req.body", req.body);
+  if (Report_Type !== "Lab" || !Lab_Report.endsWith(".pdf")) {
     try {
       // Insert the lab report details
       const reportQuery = `
@@ -100,19 +143,41 @@ const addLabReport = async (req, res) => {
         VALUES ('${date}', '${patient_id}','${Lab_Report}', '${Report_Type}')
       `;
       const reportResult = await pool.query(reportQuery);
-  
-      const reportId =Number(reportResult.insertId);
-  
+
+      const reportId = Number(reportResult.insertId);
+
       // Insert each confirmed medical parameter into the database
       // const success = await insertMedicalDataDB(confirmedValues, patient_id, date);
-  
+
       // Log the operation
       // const logQuery = `
       //   INSERT INTO report_log (patient_id, type, report_id, message, deletedBy)
       //   VALUES ('${patient_id}', '${Report_Type}', '${reportId}', 'Lab Report confirmed and saved', '${email}')
       // `;
       // await pool.query(logQuery);
-  
+
+      // const getdocId = `select id from doctors where email = ${email}`;
+      // await pool.query(getdocId);
+      // const docId = getdocId[0].id
+
+      //remove this alert for doctor
+
+      // const queryA = `INSERT INTO alerts (patientId,type,category, date, isOpened, labReportId) VALUES ('${patient_id}', 'patient','New Lab Report', '${date}', 0, '${reportId}')`;
+      // await pool.query(queryA);
+
+      const pushNotiData = {
+        title: "New Lab Report",
+        body: `A Lab Report has been added by the Doctor`,
+        type: "New Lab Report",
+        customField: "This is a custom notification from Firebase.",
+      };
+      try {
+        await sendPushNotification(pushNotiData, patient_id);
+        console.log("Push Notification Sent Successfully");
+      } catch (error) {
+        console.error("Error Sending Push Notification:", error);
+      }
+
       res.status(200).json({
         success: true,
         message: "Lab Report confirmed and saved successfully",
@@ -125,13 +190,23 @@ const addLabReport = async (req, res) => {
         message: "Error saving confirmed data",
       });
     }
-  }
-
-  else{
+  } else {
     try {
       // Extract data from the PDF
       const medicalData = await PdfTextFunction(Lab_Report);
-  
+
+      const pushNotiData = {
+        title: "New Lab Report",
+        body: `A Lab Report has been added by the Doctor`,
+        type: "New Lab Report",
+        customField: "This is a custom notification from Firebase.",
+      };
+      try {
+        await sendPushNotification(pushNotiData, patient_id);
+        console.log("Push Notification Sent Successfully");
+      } catch (error) {
+        console.error("Error Sending Push Notification:", error);
+      }
       res.status(200).json({
         success: true,
         message: "Extracted data from Lab Report successfully",
@@ -147,7 +222,12 @@ const addLabReport = async (req, res) => {
   }
 };
 
-async function insertIntoGraphReadingsLab(userId, date, questionTitle, extractedData) {
+async function insertIntoGraphReadingsLab(
+  userId,
+  date,
+  questionTitle,
+  extractedData
+) {
   try {
     // Fetch questionId based on questionTitle
     const questionId = await getQuestionId(questionTitle);
@@ -156,7 +236,7 @@ async function insertIntoGraphReadingsLab(userId, date, questionTitle, extracted
     const readingsObject = JSON.stringify({
       userId: userId,
       date: date,
-      readings: extractedData
+      readings: extractedData,
     });
 
     // Insert into graphReadingsLab table
@@ -164,28 +244,32 @@ async function insertIntoGraphReadingsLab(userId, date, questionTitle, extracted
       questionId: questionId,
       userId: userId,
       date: date,
-      readings: readingsObject
+      readings: readingsObject,
     });
 
     console.log(`Data inserted into graphReadingsLab with id: ${result.id}`);
     return result;
   } catch (error) {
-    throw new Error(`Error inserting data into graphReadingsLab table: ${error.message}`);
+    throw new Error(
+      `Error inserting data into graphReadingsLab table: ${error.message}`
+    );
   }
 }
 
 const deleteLabReport = async (req, res, next) => {
   const id = req.params.id;
-  const email = req.body.email
-  const massage="Lab Report deleted "
-  const type="Lab Report"
-  const query1 =`select Lab_Report,patient_id from labreport where id = ${id}`
-  const link= await pool.query(query1)
-  const report = link[0].Lab_Report
-  const patient_id = link[0].patient_id
+  const email = req.body.email;
+  const massage = "Lab Report deleted ";
+  const type = "Lab Report";
+  const query1 = `select Lab_Report,patient_id from labreport where id = ${id}`;
+  const link = await pool.query(query1);
+  const report = link[0].Lab_Report;
+  const patient_id = link[0].patient_id;
 
+  const query2 = `DELETE FROM graphreadingslabs WHERE labReportId = ${id}`;
+  await pool.query(query2);
   const query = `DELETE FROM labreport WHERE id = '${id}'`;
-  await ReportLog(patient_id,report,type,id,massage,email)
+  await ReportLog(patient_id, report, type, id, massage, email);
   const result = await pool.query(query);
   if (result) {
     res.status(200).json({
@@ -203,7 +287,7 @@ const deleteLabReport = async (req, res, next) => {
 const fetchLabReadings = async (req, res) => {
   try {
     // Fetch all lab readings from the LabReadings table
-    var User = LabReadings.LabReadings; 
+    var User = LabReadings.LabReadings;
     const labReadings = await User.findAll({});
 
     // Send the fetched data as a JSON response
@@ -228,8 +312,8 @@ const fetchLabReadingsResponse = async (req, res) => {
     const labReadings = await LabReadings.GraphReadingsLab.findAll({
       where: {
         questionId: question_id,
-        userId: user_id
-      }
+        userId: user_id,
+      },
     });
 
     // Check if labReadings is empty
@@ -241,9 +325,7 @@ const fetchLabReadingsResponse = async (req, res) => {
     res.status(200).json({
       success: true,
       data: labReadings,
-    }
-    );
-
+    });
   } catch (error) {
     // Handle any errors that occur during the query
     console.error("Error fetching lab readings:", error);
@@ -253,12 +335,7 @@ const fetchLabReadingsResponse = async (req, res) => {
 
 const addLabReadings = async (req, res) => {
   try {
-    const {
-      question_id,
-      user_id,
-      date,
-      readings,
-    } = req.body;
+    const { question_id, user_id, date, readings } = req.body;
 
     // Create a new record in the database using Sequelize
     const newLabReading = await LabReadings.GraphReadingsLab.create({
@@ -269,12 +346,90 @@ const addLabReadings = async (req, res) => {
     });
 
     // Send a success response if the record was successfully created
-    res.status(201).json({ message: "Lab readings added successfully", data: newLabReading });
-
+    res.status(201).json({
+      message: "Lab readings added successfully",
+      data: newLabReading,
+    });
   } catch (error) {
     // Handle any errors that occur during the database operation
     console.error("Error adding lab readings:", error);
     res.status(500).json({ error: "Failed to add lab readings" });
+  }
+};
+
+const deleteLabReading = async (req, res) => {
+  try {
+    const { id: readingId } = req.params;
+    if (!readingId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing readingId" });
+    }
+
+    console.log("deleting readingId:", readingId);
+
+    const deleteGraphReadingQuery =
+      "DELETE FROM graphreadingslabs WHERE questionId = ?";
+    const graphDeleteResult = await pool.query(deleteGraphReadingQuery, [
+      readingId,
+    ]);
+    console.log("graphreadingslabs delete res:", graphDeleteResult.rowCount);
+
+    const deleteReadingQuery = "DELETE FROM labreadings WHERE id = ?";
+    const labRdelResult = await pool.query(deleteReadingQuery, [readingId]);
+    console.log("labreadings delete res:", labRdelResult);
+
+    res.status(200).json({
+      success: true,
+      message: "Reading deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting labreadings: ", error);
+    res.status(500).json({
+      success: false,
+      message: "server error",
+      error: error.message,
+    });
+  }
+};
+
+const updateLabReadingTitle = async (req, res) => {
+  try {
+    const { readingId } = req.params;
+    const { newTitle } = req.body;
+    console.log("readingId", readingId, newTitle);
+
+    if (!readingId || !newTitle) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
+    }
+
+    console.log("updaintg title for: ", readingId, newTitle);
+
+    const updateQuery = "UPDATE labreadings SET title = ? WHERE id = ?";
+
+    const updateResult = await pool.query(updateQuery, [newTitle, readingId]);
+
+    console.log("update res:", updateResult.rowCount);
+
+    if (updateResult.rowCount === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Reading not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Reading updated successfully",
+    });
+  } catch (error) {
+    console.log("error updating title: ", error);
+    res.status(500).json({
+      success: false,
+      message: "server error",
+      error: error.message,
+    });
   }
 };
 
@@ -283,19 +438,21 @@ const getRange = async (req, res) => {
     const { question_id } = req.query;
 
     if (!question_id) {
-      return res.status(400).json({ error: 'Missing question_id parameter' });
+      return res.status(400).json({ error: "Missing question_id parameter" });
     }
 
     // Find one lab reading where id matches the question_id
-    var User = LabReadings.LabReadings; 
+    var User = LabReadings.LabReadings;
     const labReading = await User.findOne({
       where: {
-        id: question_id
-      }
+        id: question_id,
+      },
     });
 
     if (!labReading) {
-      return res.status(404).json({ error: 'Lab reading not found for the specified question_id' });
+      return res
+        .status(404)
+        .json({ error: "Lab reading not found for the specified question_id" });
     }
 
     // Return only the relevant data
@@ -305,7 +462,7 @@ const getRange = async (req, res) => {
       isGraph: labReading.isGraph,
       unit: labReading.unit,
       low_range: labReading.low_range,
-      high_range: labReading.high_range
+      high_range: labReading.high_range,
     };
 
     res.status(200).json({
@@ -313,19 +470,18 @@ const getRange = async (req, res) => {
       data: labReadingData,
     });
   } catch (error) {
-    console.error('Error fetching lab reading:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching lab reading:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
-
 async function getQuestionId(questionTitle) {
   try {
-    console.log("questionTitle",questionTitle)
+    console.log("questionTitle", questionTitle);
     const question = await LabReadings.LabReadings.findOne({
       where: {
-        title: questionTitle
-      }
+        title: questionTitle,
+      },
     });
     if (question) {
       return question.id;
@@ -337,43 +493,44 @@ async function getQuestionId(questionTitle) {
       return Number(id.id);
     }
   } catch (error) {
-    throw new Error(`Error fetching questionId for title '${questionTitle}': ${error.message}`);
+    throw new Error(
+      `Error fetching questionId for title '${questionTitle}': ${error.message}`
+    );
   }
 }
 
-const insertMedicalDataDB = async (extractedData,user_id,date)=>{
+const insertMedicalDataDB = async (extractedData, user_id, date, reportId) => {
   try {
+    console.log("extractedData for ID", reportId);
     for (let key in extractedData) {
-      if(key === "Date") continue;
+      if (key === "Date") continue;
       const questionId = await getQuestionId(key);
-      console.log("questionId",questionId)
+      console.log("questionId", questionId);
       const newLabReading = await LabReadings.GraphReadingsLab.create({
         questionId: questionId,
         userId: user_id,
         date: date,
         readings: extractedData[key],
+        labReportId: reportId,
       });
-      
-  }
+    }
 
-  return true;
-    
+    return true;
   } catch (error) {
-    console.log(error.message)
+    console.log(error.message);
     return false;
   }
+};
 
-}
-
-const getColoumnName = async (req,res) => {
-const query =`select title from labReadings`
-const result = await pool.execute(query)
-console.log("res",result)
-return res.status(200).json({
-  success: true,
-  data: result,
-});
-}
+const getColoumnName = async (req, res) => {
+  const query = `select title from labReadings`;
+  const result = await pool.execute(query);
+  console.log("res", result);
+  return res.status(200).json({
+    success: true,
+    data: result,
+  });
+};
 
 const uploadBulkLabReportIndividual = async (req, res) => {
   console.log("req", req.body);
@@ -387,7 +544,9 @@ const uploadBulkLabReportIndividual = async (req, res) => {
 
       // Validate and format the Date
       if (!Date || !Date.includes("-")) {
-        console.warn(`Invalid or missing Date field in record: ${JSON.stringify(record)}`);
+        console.warn(
+          `Invalid or missing Date field in record: ${JSON.stringify(record)}`
+        );
         continue; // Skip the record
       }
 
@@ -396,7 +555,9 @@ const uploadBulkLabReportIndividual = async (req, res) => {
         const [day, month, year] = Date.split("-");
         Date = `${year}-${month}-${day}`;
       } catch (error) {
-        console.warn(`Error parsing Date for record: ${JSON.stringify(record)}. Skipping.`);
+        console.warn(
+          `Error parsing Date for record: ${JSON.stringify(record)}. Skipping.`
+        );
         continue; // Skip the record if the date parsing fails
       }
 
@@ -440,4 +601,6 @@ module.exports = {
   addLabReadings,
   getRange,
   getColoumnName,
+  deleteLabReading,
+  updateLabReadingTitle,
 };

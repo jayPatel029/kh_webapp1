@@ -8,6 +8,7 @@ const TranslationModal = ({
   setTranslations,
   translations,
 }) => {
+  console.log("got this translations", translations);
   // JSX structure of TranslationModal component
   return (
     <>
@@ -20,22 +21,29 @@ const TranslationModal = ({
           <div>
             {languages.map((language, index) => {
               if (language.id !== 1)
-              return (
-                <div key={index} className="flex flex-col mt-4">
-                  <label>{language.language_name}</label>
-                  <input
-                    type="text"
-                    className="border border-primary  rounded-lg p-1.5"
-                    value={translations[language.id]}
-                    onChange={(e) => {
-                      setTranslations({
-                        ...translations,
-                        [language.id]: e.target.value,
-                      });
-                    }}
-                  />
-                </div>
-              );
+                return (
+                  <div key={index} className="flex flex-col mt-4">
+                    <label>{language.language_name}</label>
+                    <input
+                      type="text"
+                      className="border border-primary  rounded-lg p-1.5"
+                      value={
+                        typeof translations[language.id] === "string"
+                          ? translations[language.id] // If string, use as text
+                          : translations[language.id]?.text || "" // Otherwise, extract text
+                      }
+                      onChange={(e) => {
+                        setTranslations({
+                          ...translations,
+                          [language.id]: {
+                            text: e.target.value,
+                            options: translations[language.id]?.options || "",
+                          },
+                        });
+                      }}
+                    />
+                  </div>
+                );
             })}
           </div>
 

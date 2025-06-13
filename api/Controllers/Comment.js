@@ -19,7 +19,7 @@ const getComments = async (req, res, next) => {
     try {
         // Execute the query with parameterized inputs for security
         const comments = await pool.query(query, [fileId, fileType]);
-
+        console.log("all comments:", comments);
         res.status(200).json({
             success: true,
             data: comments,

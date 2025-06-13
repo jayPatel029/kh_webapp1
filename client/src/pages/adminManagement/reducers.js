@@ -308,6 +308,25 @@ export function newPatientReducer(state, action) {
         fitbit_token: action.payload,
       };
     }
+    case "address": {
+      return {
+        ...state,
+        address: action.payload,
+      };
+    }
+    case "pincode": {
+      return {
+        ...state,
+        pincode: action.payload,
+      };
+    }
+    case "state": {
+      return {
+        ...state,
+        state: action.payload,
+      };
+    }
+
     case "all": {
       return {
         name: "",
@@ -327,9 +346,13 @@ export function newPatientReducer(state, action) {
         kefr: 0,
         push_notification_id: "",
         fitbit_token: "",
+        address: "",
+        pincode: "",
+        state: "",
         ...action.payload,
       };
     }
+    
     default: {
       return state;
     }

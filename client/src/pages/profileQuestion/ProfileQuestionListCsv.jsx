@@ -7,6 +7,7 @@ import { calculateAge } from "../../helpers/utils";
 import {  addDialysisReading } from "../../ApiCalls/readingsApis";
 import { createQuestion } from "../../ApiCalls/questionApis";
 
+import { getLanguages } from "../../ApiCalls/languageApis";
 
 function ProfileQuestionListCsv() {
   const [patients, setPatients] = useState([]);
@@ -15,11 +16,10 @@ function ProfileQuestionListCsv() {
   const [patientData, setPatientData] = useState([
     {
       
-    
-      ailments:[],
+      ailment:[],
       type:"",
       name:"",
-        options:"",
+      options:"",
         
     },
   ]);
@@ -31,6 +31,8 @@ function ProfileQuestionListCsv() {
   const [kfre, setKfre] = useState();
   const [lab_id,setLab_id]=useState();
   const id = useParams();
+  const [translations, setTranslations] = useState({});
+  const [languages, setLanguages] = useState([]);
 
 
 
@@ -44,9 +46,8 @@ function ProfileQuestionListCsv() {
 
   const calculate = async () => {
     for (const data of patientData) { // Use for...of instead of forEach
-      if (data.type && data.name && data.ailment
-      ) {
-    
+      console.log("trying to submit: ",data);
+      if (data.type && data.name && data.ailment) {
        console.log("ygwdu",data)
         const response = await  createQuestion(data);
         console.log("response",response)
@@ -64,19 +65,40 @@ function ProfileQuestionListCsv() {
   useEffect(() => {
     if (csvData) {
       const formattedData = csvData.map((row) => ({
-       
-        ailment: row.ailments ? row.ailments.split(",") : [], // Convert ailments text to an array
+        ailment: row.ailments ? row.ailments.split(",") : [], // 
         type: row.type,
-        name: row.Name,
-        options: row.Options,
+        name: row.name,
+        options: row.options,
+        translations: row.languageTranslation,
+        // hindi: row.Hindi,
+        // hindiOpt: row.HindiOpt
       }));
-  
+
       setPatientData(formattedData);
       console.log("Formatted Data with Ailments Array:", formattedData);
     }
+
   }, [success]);
   
+useEffect(() => {
+  getLanguages().then((resultLanguage) => {
+    if (resultLanguage.success && resultLanguage.data) {
+      setLanguages(resultLanguage.data);
+      
+      let translationDict = {};
+      resultLanguage.data.forEach((lang) => {
+        if (lang.id !== 1) {
+          translationDict[lang.id] = "";
+        }
+      });
 
+      console.log("Translation Dict:", translationDict);
+      setTranslations(translationDict);
+    } else {
+      console.error("Failed to fetch Languages:", resultLanguage);
+    }
+  });
+}, []);
  
 
   return (
@@ -95,10 +117,12 @@ function ProfileQuestionListCsv() {
       </div>
       <div>
         <CSVReader
-          
+          translations={translations}
+          setTranslations={setTranslations}
           setData={setCsvData}
           setSuccess={setSuccess}
           success={success}
+          languages={languages}
         />
       </div>
      

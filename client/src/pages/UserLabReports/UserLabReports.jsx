@@ -13,6 +13,7 @@ import { FaFilePdf } from "react-icons/fa6";
 import CSVLab2 from "../../components/csvLab2/CSVLab2";
 import CSVReader from "../../components/csvlab/CSVLab";
 import { da } from "date-fns/locale";
+import { useSelector } from "react-redux";
 
 const UserLabReports = () => {
   const [showModal, setShowModal] = useState(false);
@@ -24,7 +25,8 @@ const UserLabReports = () => {
   const [patients, setPatients] = useState([]);
   const [viewPrescription, setViewPrescription] = useState(false);
   const email = localStorage.getItem("email");
-  
+  const role = useSelector((state) => state.permission);
+
   const [patientData, setPatientData] = useState([
     {
       selectedPatient: null,
@@ -41,14 +43,14 @@ const UserLabReports = () => {
   const openModal = () => {
     setShowModal(true);
   };
-  
 
   useEffect(() => {
     // console.log('================================');
     // console.log(patientOptions)
     // console.log(patientData)
+    console.log("my role is", role);
     if (csvData) {
-      const formattedData = csvData
+      const formattedData = csvData;
       setPatientData(formattedData);
       console.log("Formatted Data from KFRE List:", formattedData);
     }
@@ -81,7 +83,7 @@ const UserLabReports = () => {
     setUploadedFile(null);
   };
 
-  const deleteLabReport = async (id,email) => {
+  const deleteLabReport = async (id, email) => {
     const isConfirmed = window.confirm(
       "Are you sure you want to delete this lab report?"
     );
@@ -121,6 +123,7 @@ const UserLabReports = () => {
   useEffect(() => {
     fetchData();
     console.log(labReportData);
+    console.log("pat data", patientData);
   }, [showModal]);
 
   const handleDelete = async (id) => {
@@ -149,7 +152,8 @@ const UserLabReports = () => {
             <div className="manage-roles-container p-7 ml-4 mr-4 mt-4 bg-white max-w-7xl shadow-md border-t-4 border-primary">
               <Link
                 to={`/userProfile/${id}`}
-                className="text-primary border-b-2 border-primary">
+                className="text-primary border-b-2 border-primary"
+              >
                 go back
               </Link>
               <div className="mt-4 mb-4 flex items-center justify-end">
@@ -159,14 +163,15 @@ const UserLabReports = () => {
               <div className="flex justify-between items-center border-b pb-2 mb-4">
                 <h2 className="text-2xl font-bold">User Lab Report</h2>
                 <div className="flex items-center justify-end">
-                  <button
-                    className="block rounded-lg text-primary border-2 border-primary w-40 py-2"
-                    onClick={() => openModal()}>
-                    Upload Lab Report
-                  </button>
-                  
-                  
-                  
+                  {role.role_name != "Dialysis Technician" && (
+                    <button
+                      className="block rounded-lg text-primary border-2 border-primary w-40 py-2"
+                      onClick={() => openModal()}
+                    >
+                      Upload Lab Report
+                    </button>
+                  )}
+
                   {showModal && (
                     <MyModal
                       closeModal={closeModal}
@@ -180,17 +185,17 @@ const UserLabReports = () => {
                       user_id={location.state.id}
                       file_id={uploadedFile.id}
                       file={uploadedFile}
+                      patient_id={id}
                     />
                   )}
                 </div>
-                
               </div>
               <CSVLab2
-                  patientId={id}
-                  setData={setCsvData}
-                  setSuccess={setSuccess}
-                  success={success}
-                />
+                patientId={id}
+                setData={setCsvData}
+                setSuccess={setSuccess}
+                success={success}
+              />
               <div className=" overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead className="bg-white text-gray-700">
@@ -214,7 +219,8 @@ const UserLabReports = () => {
                              : ""
                          }
                          border-b border-gray-200 
-                        `}>
+                        `}
+                        >
                           <td>
                             {
                               (labReportsItem.date = formatDate(
@@ -258,8 +264,9 @@ const UserLabReports = () => {
                               className="text-red-500 "
                               style={{ fontSize: "1.5rem" }}
                               onClick={() =>
-                                deleteLabReport(labReportsItem.id,email)
-                              }>
+                                deleteLabReport(labReportsItem.id, email)
+                              }
+                            >
                               <BsTrash />
                               {/* <button
                                 className="text-green-600 inline-block mx-2 text-m"

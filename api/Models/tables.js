@@ -191,6 +191,7 @@ const createPatientTable = async () => {
     address varchar(255) NULL DEFAULT NULL,
     pincode varchar(6) NULL DEFAULT NULL,
     state varchar(50) NULL DEFAULT NULL,
+    \`condition\` ENUM('stable', 'unstable', 'critical') NOT NULL DEFAULT 'stable',
     PRIMARY KEY (id) USING BTREE
   )
   COLLATE='utf8mb4_general_ci'
@@ -563,6 +564,7 @@ async function createChatTable() {
       user1 VARCHAR(255),
       user2 VARCHAR(255),
       patientid INT(11),
+      type ENUM('Admin', 'Doctor'),
       FOREIGN KEY (patientid) REFERENCES patients(id) ON DELETE CASCADE ON UPDATE CASCADE
 
     )

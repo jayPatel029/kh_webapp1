@@ -102,7 +102,11 @@ const GraphReadingsLab = sequelize.define("graphReadingsLab", {
   readings: {
     type: DataTypes.STRING(255),
     allowNull: false,
-  }
+  },
+  labReportId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
 });
 
 // Export the models

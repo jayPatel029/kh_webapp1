@@ -23,6 +23,7 @@ const Sidebar = ({ mobile = false }) => {
   const role = useSelector((state) => state.permission);
   useEffect(() => {
     console.log("role", role);
+    console.log("role.patients", role.patients);
   }, []);
   return (
     <div
@@ -107,14 +108,16 @@ const Sidebar = ({ mobile = false }) => {
               </li>
             </Link>
           ) : null}
-          {(role?.role_name=="Admin" || role?.role_name=="PsAdmin" || role?.role_name=="Doctor") ? (
+     
+     
+          {/* {(role?.doctorReports) ? (
             <Link to="/doctorReport" style={{ textDecoration: "none" }}>
               <li>
                 <VaccinesIcon className="icon" />
                 <span>Doctor Reports</span>
               </li>
             </Link>
-          ) : null}
+          ) : null} */}
 
           {/* {(role?.role_name=="Admin" || role?.role_name=="PsAdmin" || role?.role_name=="Doctor") ? (
             <Link to="/kfre" style={{ textDecoration: "none" }}>
@@ -129,7 +132,7 @@ const Sidebar = ({ mobile = false }) => {
             </Link>
           ) : null} */}
 
-          {/* {role?.patients ? (
+          {/* {role?. patients ? (
             <Link to="/aiChat" style={{ textDecoration: "none" }}>
               <li>
                 <VaccinesIcon className="icon" />
@@ -185,7 +188,7 @@ const Sidebar = ({ mobile = false }) => {
               </li>
             </Link>
           ) : null}
-          {role?.changePassword ? (
+          {role?.feedback ? (
             <Link to="/contactuspage" style={{ textDecoration: "none" }}>
               <li>
                 <LockResetIcon className="icon" />

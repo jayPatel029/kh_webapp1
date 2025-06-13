@@ -62,6 +62,18 @@ const AddRole = () => {
       delete: false,
       name: "User Program Selection",
     },
+    doctorReports: {
+      view: false,
+      edit: false,
+      delete: false,
+      name: "Doctor Reports",
+    },
+    feedback: {
+      view: false,
+      edit: false,
+      delete: false,
+      name: "Feedback",
+    },
   });
 
   const handleCheckboxChange = (pageName, permissionType) => {

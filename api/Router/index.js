@@ -35,6 +35,8 @@ const dailyAlertsRouter = require("./dailyAlerts.js");
 const patientdatarouter = require("./patientdatarouter.js");
 const teleconsultationRouter = require("./teleconsultation.js");
 const analyticsRouter = require("./doctorAnalytics.js");
+const moduleRoutes = require("./moduleRoutes.js");
+
 
 router.use("/auth", authRouter);
 router.use("/users", userRouter);
@@ -72,5 +74,7 @@ router.use("/dailyAlerts", dailyAlertsRouter);
 router.use("/patientdata", patientdatarouter);
 router.use("/teleconsultation",teleconsultationRouter);
 router.use("/analytics",analyticsRouter);
+router.use("/moduleConnection",moduleRoutes);
+
 
 module.exports = router;

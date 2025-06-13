@@ -18,7 +18,7 @@ const getDoctorAlerts = async (diD) => {
     var patients = [];
    try {
     patients = await pool.query(getPatientsQuery);
-    
+
    } catch (error) {
 
     console.log("Error in getting patients", error);
@@ -40,6 +40,7 @@ const getDoctorAlerts = async (diD) => {
         console.log("Previous Date", previousDate);
         const patientAlerts = await pool.query(`SELECT * FROM alerts WHERE patientId = '${finalPatients[i]}' AND date = CURDATE() - INTERVAL 1 DAY`);
         for (var j = 0; j < patientAlerts.length; j++){
+            console.log(`alerts of patient ${finalPatients[i]}:`, patientAlerts);
             alerts.push(patientAlerts[j]);
         }
     }
@@ -58,8 +59,11 @@ const getDoctorAlerts = async (diD) => {
     var finalAlerts = [];
 
     for (var i = 0; i < alerts.length; i++){
+        console.log("alerts in loop:" ,alerts[i]);
         if (alerts[i].category === "New Prescription Alarm"){
             finalAlerts.push(await generateNewPrescriptionAlarmAlert(alerts[i]));
+        } else {
+            finalAlerts.push(alerts[i]);
         }
     }
 
@@ -67,7 +71,7 @@ const getDoctorAlerts = async (diD) => {
         finalAlerts.push(await structureReadingAlert(reading[i]));
     }
 
-    console.log(finalAlerts);
+    console.log("final alerts to sendd:", finalAlerts);
 
     return finalAlerts;
 
@@ -81,6 +85,10 @@ const generateEmail = async (doctor_id) =>{
     // group alerts by patient
     const alertsByPatient = {};
     alerts.forEach((alert) => {
+        if (!alert || !alert.patientId) {
+            console.error("Encountered null or undefined alert:", alert);
+            return; // Skip this iteration
+        }
         if (!alertsByPatient[alert.patientId]){
             alertsByPatient[alert.patientId] = [];
         }

@@ -17,13 +17,15 @@ import { useSelector } from "react-redux";
 import { uploadFile } from "../../../ApiCalls/dataUpload";
 
 function AdminManagement() {
-  const roleoptions = ["Doctor", "Medical Staff"].map((role, index) => {
-    return (
-      <option key={index} value={role}>
-        {role}
-      </option>
-    );
-  });
+  const roleoptions = ["Doctor", "Medical Staff", "Dialysis Technician"].map(
+    (role, index) => {
+      return (
+        <option key={index} value={role}>
+          {role}
+        </option>
+      );
+    }
+  );
 
   const practicingAtOptions = practicingAtList.map((pat, index) => {
     return (
@@ -154,6 +156,26 @@ function AdminManagement() {
     return true;
   };
 
+  const validateTechnicianData = (doctorData) => {
+    const { name, email, phoneNo, specialities } = doctorData;
+    if (!name || typeof name !== "string") {
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      return false;
+    }
+    if (specialities.length <= 0) {
+      return false;
+    }
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(phoneNo)) {
+      return false;
+    }
+    return true;
+  };
+
+
   const getFileRes = async (file) => {
     try {
       if (file) {
@@ -173,7 +195,6 @@ function AdminManagement() {
   const handleSubmit = async () => {
     setErrMsg("");
     setSuccessful("Uploading Data");
-
     if (newDoctor.role == "Doctor" && validateDoctorData(newDoctor)) {
       const photourl = await getFileRes(newDoctor.photo);
       const payload = {
@@ -196,10 +217,10 @@ function AdminManagement() {
         specialities: newDoctor.specialities,
         dailyReadings: newDoctor.dailyReadings,
         dialysisReadings: newDoctor.dialysisReadings,
-        changeby:localStorage.getItem("email"),
-        doctorid:newDoctor.id
+        changeby: localStorage.getItem("email"),
+        doctorid: newDoctor.id,
       };
-
+      console.log("ipdating with,", payload.dailyReadings);
       if (!editMode) {
         const response = await registerDoctor(payload);
         if (response.success) {
@@ -234,19 +255,20 @@ function AdminManagement() {
         email: newDoctor.email,
         experience: newDoctor.yearsOfExperience,
         ref: newDoctor.reference || null,
-        phoneno: newDoctor.phoneNo ,
+        phoneno: newDoctor.phoneNo,
         institute: newDoctor.institute,
         address: newDoctor.address,
         practicingAt: newDoctor.practicingAt,
-        resume: resumeurl.data.objectUrl ||null,
+        resume: resumeurl.data.objectUrl || null,
         photo: photourl?.data.objectUrl,
         description: newDoctor.description,
         email_notification: newDoctor.email_notification,
         can_export: newDoctor.can_export,
         specialities: newDoctor.specialities,
-        changeby:localStorage.getItem("email"),
-        doctorid:newDoctor.id
+        changeby: localStorage.getItem("email"),
+        doctorid: newDoctor.id,
       };
+      console.log("docs payload", payload);
       if (!editMode) {
         const response = await registerDoctor(payload);
         if (response.success) {
@@ -269,22 +291,81 @@ function AdminManagement() {
           setSuccessful("");
         }
       }
-    } else {
+    } 
+    
+    // add Dialysis Technician here
+    else if(newDoctor.role == "Dialysis Technician" && validateTechnicianData(newDoctor)) {
+      const photourl = await getFileRes(newDoctor.photo);
+      const payload = {
+        name: newDoctor.name,
+        role: newDoctor.role,
+        email: newDoctor.email,
+        experience: newDoctor.yearsOfExperience,
+        phoneno: newDoctor.phoneNo,
+        institute: newDoctor.institute,
+        address: newDoctor.address,
+        practicingAt: newDoctor.practicingAt,
+        photo: photourl?.data?.objectUrl,
+        description: newDoctor.description,
+        email_notification: newDoctor.email_notification,
+        // can_export: newDoctor.can_export,
+        specialities: newDoctor.specialities,
+        can_export: newDoctor.can_export,
+        dailyReadings: newDoctor.dailyReadings,
+        dialysisReadings: newDoctor.dialysisReadings,
+        dialysisReadings: newDoctor.dialysisReadings,
+        changeby: localStorage.getItem("email"),
+        doctorid: newDoctor.id,
+      };
+
+      console.log("Dialysis Technician payload", payload);
+      const response = editMode
+        ? await updateDoctor(newDoctor.id, payload)
+        : await registerDoctor(payload);
+  
+      if (response.success) {
+        setErrMsg("");
+        setSuccessful(editMode ? "Update Successful!" : "Registration Successful!");
+        setEditMode(false);
+        newDoctorDispatch({ type: "all", payload: {} });
+      } else {
+        setErrMsg((editMode ? "Update Error! " : "Registration Error! ") + response.data);
+        setSuccessful("");
+      }
+  
+  
+    }
+    
+    else {
       setSuccessful("");
       setErrMsg("Please fill all the * fields correctly!");
     }
   };
 
   async function handleDelete(id) {
-    setErrMsg("");
-    setSuccessful("Deleting Data");
-    const response = await deleteDoctor(id);
-    if (response.success) {
-      setSuccessful("Delete Successful!");
-      newDoctorDispatch({ type: "all", payload: {} });
-    } else {
-      setErrMsg("Delete Error! " + response.data);
-      setSuccessful("");
+    try {
+      // Display a confirmation dialog
+      const confirmed = window.confirm(
+        "Are you sure you want to delete this doctor?"
+      );
+
+      if (!confirmed) {
+        return; // If the user cancels, exit the function
+      }
+
+      setErrMsg("");
+      setSuccessful("Deleting Data");
+      const response = await deleteDoctor(id);
+      if (response.success) {
+        setSuccessful("Delete Successful!");
+        newDoctorDispatch({ type: "all", payload: {} });
+      } else {
+        setErrMsg(
+          "Delete Error! (Please delete this doctor from the patients list for all the assigned patients before deleting it permantly!)");
+        setSuccessful("");
+      }
+    } catch (error) {
+      console.error("Error deleting doctor:", error);
     }
   }
 
@@ -660,9 +741,9 @@ function AdminManagement() {
                       onChange={(event) => {
                         console.log(event.target.checked);
                         newDoctorDispatch({
-                          type:"dailyReadingsAlerts",
-                        payload: event.target.checked == true ? "yes" : "no",
-                        })
+                          type: "dailyReadingsAlerts",
+                          payload: event.target.checked == true ? "yes" : "no",
+                        });
                       }}
                     />
                     <label className="ms-2 text-sm font-medium text-gray-500">
@@ -677,9 +758,9 @@ function AdminManagement() {
                       onChange={(event) => {
                         console.log(event.target.checked);
                         newDoctorDispatch({
-                          type:"Dialysis_updates",
-                        payload: event.target.checked == true ? "yes" : "no",
-                        })
+                          type: "Dialysis_updates",
+                          payload: event.target.checked == true ? "yes" : "no",
+                        });
                       }}
                     />
                     <label className="ms-2 text-sm font-medium text-gray-500">

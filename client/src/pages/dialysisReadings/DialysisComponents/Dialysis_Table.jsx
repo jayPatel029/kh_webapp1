@@ -5,6 +5,7 @@ import {
   deleteDialysisReading,
   getDialysisReadings,
 } from "../../../ApiCalls/readingsApis";
+import { useSelector } from "react-redux";
 
 export default function DailyTable({
   setEditMode,
@@ -26,6 +27,7 @@ export default function DailyTable({
   const filteredData = tableData.filter((item) =>
     item.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  const role = useSelector((state) => state.permission);
 
   return (
     <>
@@ -63,7 +65,10 @@ export default function DailyTable({
                 Ailment
               </th>
               <th scope="col" className="px-6 py-3">
-                Assign Range
+                Condition
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Action
               </th>
             </tr>
           </thead>
@@ -79,7 +84,11 @@ export default function DailyTable({
                     <td className="px-6 py-4">{item.title}</td>
                     <td className="px-6 py-4">{item.alertTextDoc}</td>
                     <td className="px-6 py-4">{displayAilment}</td>
+                    <td className="px-6 py-4">{item.condition}</td>
                     <td className="px-6 py-4 text-2xl">
+                     
+                    {role.canEditDialysisReadings ? (
+
                       <button
                         className="text-primary inline-block mx-2"
                         onClick={() => {
@@ -100,6 +109,7 @@ export default function DailyTable({
                               unit : item.unit,
                               isGraph: item.isGraph ? 1 : 0,
                               alertTextDoc: item.alertTextDoc,
+                              condition: item.condition
                             },
                           });
 
@@ -126,6 +136,10 @@ export default function DailyTable({
                       >
                         <BsPencilSquare />
                       </button>
+                    ):null} 
+
+                      {role.canDeleteDialysisReadings ?(
+
                       <button
                         className="text-[#ff0000] inline-block mx-2 "
                         onClick={() => {
@@ -138,6 +152,9 @@ export default function DailyTable({
                       >
                         <BsTrash />
                       </button>
+                      ):null} 
+
+
                     </td>
                   </tr>
                 );

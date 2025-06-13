@@ -16,6 +16,8 @@ export const permissionSlice = createSlice({
     can_vud_dir: 0,
     can_vud_cp: 0,
     can_vud_ups: 0,
+    can_vud_docr: 0,
+    can_vud_fb: 0,
   },
   reducers: {
     setPermissions: (state, action) => {
@@ -30,6 +32,8 @@ export const permissionSlice = createSlice({
       state.dialysisReadings = action.payload.can_vud_dir;
       state.changePassword = action.payload.can_vud_cp;
       state.userProgramSelection = action.payload.can_vud_ups;
+      state.doctorReports = action.payload.can_vud_docr;
+      state.feedback = action.payload.can_vud_fb;
 
       // Extract permissions for manageRoles
       state.canViewManageRoles = ((action.payload?.can_vud_mr >> (VIEW_PERMISSION_BIT - 1)) & 1) !== 0;
@@ -80,6 +84,14 @@ export const permissionSlice = createSlice({
       state.canViewUserProgramSelection = ((action.payload?.can_vud_ups >> (VIEW_PERMISSION_BIT - 1)) & 1) !== 0;
       state.canEditUserProgramSelection = ((action.payload?.can_vud_ups >> (EDIT_PERMISSION_BIT - 1)) & 1) !== 0;
       state.canDeleteUserProgramSelection = ((action.payload?.can_vud_ups >> (DELETE_PERMISSION_BIT - 1)) & 1) !== 0;
+
+      state.canViewUserProgramSelection = ((action.payload?.can_vud_docr >> (VIEW_PERMISSION_BIT - 1)) & 1) !== 0;
+      state.canEditUserProgramSelection = ((action.payload?.can_vud_docr >> (EDIT_PERMISSION_BIT - 1)) & 1) !== 0;
+      state.canDeleteUserProgramSelection = ((action.payload?.can_vud_docr >> (DELETE_PERMISSION_BIT - 1)) & 1) !== 0;
+
+      state.canViewUserProgramSelection = ((action.payload?.can_vud_fb >> (VIEW_PERMISSION_BIT - 1)) & 1) !== 0;
+      state.canEditUserProgramSelection = ((action.payload?.can_vud_fb >> (EDIT_PERMISSION_BIT - 1)) & 1) !== 0;
+      state.canDeleteUserProgramSelection = ((action.payload?.can_vud_fb >> (DELETE_PERMISSION_BIT - 1)) & 1) !== 0;
 
     },
     setIndividualPermission: (state, action) => {

@@ -153,7 +153,7 @@ const updateUserAilment = async (req, res, next) => {
 const updateToken = async (req, res, next) => {
   const { UserID, PushNotificationId } = req.body;
 
-  const query = `UPDATE patients set pushNotificationId = ${PushNotificationId} where id = ${UserID};`;
+  const query = `UPDATE patients set push_notification_id = '${PushNotificationId}' where id = ${UserID};`;
 
   try {
     await pool.query(query);
@@ -162,6 +162,7 @@ const updateToken = async (req, res, next) => {
       message: "Successful",
     });
   } catch (err) {
+    console.log("error updating fcm: ", err);
     res.status(500).json({
       result: false,
       message: "Failed to update token",

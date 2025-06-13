@@ -27,6 +27,7 @@ export async function getAllChats(pid) {
                 Authorization: `Bearer ${token}`, // Send token in headers
             },
         });
+        console.log("doc chat api hre", response.data);
         return { success: true, data: response.data };
     } catch (error) {
         console.log("Error fetching all chats:", error.response.data.message);
@@ -63,6 +64,7 @@ export async function getMessages(chatId) {
 }
 
 
+
 export async function getAllChatsAdmin(pid) {
     try {
         const token = localStorage.getItem("token"); // Fetch token from local storage
@@ -71,6 +73,7 @@ export async function getAllChatsAdmin(pid) {
                 Authorization: `Bearer ${token}`, // Send token in headers
             },
         });
+        console.log("response of getAllChatsAdmin ", response.data);
         return { success: true, data: response.data };
     } catch (error) {
         console.log("Error fetching all chats:", error.response.data.message);
@@ -96,6 +99,7 @@ export async function getAllSWChats(pid, sender) {
     }
 }
 
+  
 export async function getSWMessages(chatId) {
     try {
         const token = localStorage.getItem("token"); // Fetch token from local storage
@@ -109,3 +113,4 @@ export async function getSWMessages(chatId) {
         return { success: false, data: error.response.data.message };
     }
 }
+

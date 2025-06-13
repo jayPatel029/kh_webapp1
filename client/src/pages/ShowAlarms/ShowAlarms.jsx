@@ -9,6 +9,7 @@ import axiosInstance from "../../helpers/axios/axiosInstance";
 import { BsTrash, BsPencilSquare, BsKey } from "react-icons/bs";
 import EditAlarmModal from "./EditAlarmModal";
 import DoctorAlarmModal from "./DoctorAlarmModal";
+
 function ShowAlarms() {
   const [showModal, setShowModal] = useState(false);
   const { pid } = useParams();

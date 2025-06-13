@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 const EditRole = () => {
   const navigate = useNavigate();
   const [roleName, setRoleName] = useState("");
+  
   const [permissions, setPermissions] = useState({
     manageRoles: {
       view: false,
@@ -65,6 +66,18 @@ const EditRole = () => {
       delete: false,
       name: "User Program Selection",
     },
+    doctorReports: {
+      view: false,
+      edit: false,
+      delete: false,
+      name: "Doctor Reports",
+    },
+    feedback: {
+      view: false,
+      edit: false,
+      delete: false,
+      name: "Feedback",
+    },
   });
 
   const handleCheckboxChange = (pageName, permissionType) => {
@@ -117,6 +130,9 @@ const EditRole = () => {
           res.data.data.can_vud_dir,
           res.data.data.can_vud_cp,
           res.data.data.can_vud_ups,
+          res.data.data.can_vud_docr,
+          res.data.data.can_vud_fb,
+
         ];
         console.log("at",auth_arr);
         const binaryArr = auth_arr.map((auth) =>

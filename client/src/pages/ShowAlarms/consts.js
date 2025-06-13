@@ -1,6 +1,6 @@
 export const alarmTypeOptions = [
   {
-    title: "Select Dialysis Parameter",
+    // title: "Select Dialysis Parameter",
     label: "Dialysis",
   },
   {

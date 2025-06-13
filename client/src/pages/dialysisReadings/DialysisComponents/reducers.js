@@ -75,6 +75,12 @@ export function newQuestionReducer(state, action) {
         unit: action.payload,
       };
     }
+    case 'condition': {
+      return{
+        ...state,
+        condition: action.payload,
+      }
+    }
     case "all": {
       return {
         id: null,
@@ -88,6 +94,7 @@ export function newQuestionReducer(state, action) {
         sendAlert: 0,
         unit: "",
         alertTextDoc:"",
+        condition: "",
         ...action.payload,
       };
     }

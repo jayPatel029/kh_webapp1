@@ -5,6 +5,7 @@ import { server_url } from "../../constants/constants";
 import { addComment } from "../../ApiCalls/commentApi";
 import MyPDFViewer from "../../components/pdf/MyPDFViewer";
 import axiosInstance from "../../helpers/axios/axiosInstance";
+import { getPatientByIdad } from "../../ApiCalls/patientAPis";
 
 function UploadedFileModal({ closeModal, file, user_id, file_id }) {
   //   const [comments, setComments] = useState([]);
@@ -12,14 +13,25 @@ function UploadedFileModal({ closeModal, file, user_id, file_id }) {
   const [prevComments, setPrevComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [successful,setSuccessful]=useState(true);
+  const [patientProgram, setProgram] = useState(false);
   const location = useLocation();
+
   console.log(file.file);
 
+  const getId  = async() => {
+    const res = await getPatientByIdad(user_id);
+    console.log("res for id", res.data);
+    if(res.data.data.program == "Advanced" ||res.data.data.program == "Standard" ){
+      setProgram(true);
+      console.log("the program", res.data.data.program);
+    }
+  }
   useEffect(() => {
     const data = {
       fileId: file_id,
       fileType: "Diet Details",
     };
+    getId();
     axiosInstance
       .post(`${server_url}/comments/getComments`, data)
       .then((res) => {
@@ -43,6 +55,9 @@ function UploadedFileModal({ closeModal, file, user_id, file_id }) {
 
   const uploadComment = async () => {
     try {
+      const trimmedComment = newComment.trim();
+      if(!trimmedComment) return;
+
       const id = location.state.id;
       const fileId = file_id;
       const fileType = "Diet Details";
@@ -53,7 +68,7 @@ function UploadedFileModal({ closeModal, file, user_id, file_id }) {
       }
 
       const response = await addComment(
-        newComment,
+        trimmedComment,
         fileId,
         fileType,
         id,
@@ -138,7 +153,8 @@ function UploadedFileModal({ closeModal, file, user_id, file_id }) {
             </div>
           )}
 
-          <div className="flex-1 mt-4">
+        { ( patientProgram ) ? (
+            <div className="flex-1 mt-4">
             <div className="mb-4 overflow-auto h-3/4">
               <h2 className="font-medium">Previous Comments</h2>
               <div className="bg-gray-100 p-4 rounded-lg overflow-y-auto max-h-[400px]">
@@ -203,6 +219,11 @@ function UploadedFileModal({ closeModal, file, user_id, file_id }) {
               </div>
             </div>
           </div>
+        
+        ):(
+          <p className="text-red-500 font-medium">Comments cannot be added as the patient is on the basic program.</p>
+        )}
+        
         </div>
       </div>
     </div>

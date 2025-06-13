@@ -5,6 +5,8 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import dummyadmin from "../../assets/dummyadmin.png";
 import { server_url } from "../../constants/constants";
+import { Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 function UserProgramSelection() {
   const recordsPerPage = 5;
@@ -12,6 +14,7 @@ function UserProgramSelection() {
   const [records, setRecords] = useState([]);
   const [request, setrequest] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
+  const role = useSelector((state) => state.permission);
 
   useEffect(() => {
     // Fetch patients data when component mounts
@@ -70,6 +73,10 @@ function UserProgramSelection() {
   }
   const handleSubmit = async (program, patientId) => {
     try {
+      if(!role?.canEditUserProgramSelection) {
+        alert("You are not authorized to perform this action");
+        return;
+      }
       const response = await axiosInstance.put(
         `${server_url}/patient/updateProgram`,
         {
@@ -85,7 +92,10 @@ function UserProgramSelection() {
         )
       );
 
+
       console.log("Selected Program:", program);
+      // location.reload();
+      window.location.reload();
       // Handle success response if needed
     } catch (error) {
       console.error("Error updating patient program:", error);
@@ -170,11 +180,13 @@ function UserProgramSelection() {
                           {formatDate(record.registered_date)}
                         </td>
                         <td className="py-2 px-4">{request?.filter(alert => alert.patientId === record.id).map(alert => (
-              <div key={alert.id}>
+             
+             <div key={alert.id}>
                 
                 <p className="font-bold">{alert.programName}</p>
                 <p>Date: {new Date(alert.date).toLocaleDateString()}</p>
                 <button className="bg-green-800 p-2 rounded-sm text-white " onClick={()=>handleSubmit(alert.programName,record.id)}>Accept?</button>
+            
               </div>))}</td>
                         <td className="py-2 px-4">
                           <button

@@ -7,10 +7,12 @@ import {
   getDailyReadings,
   getDialysisReadings,
 } from "../../ApiCalls/readingsApis";
+import { se } from "date-fns/locale";
 
 const EditAlarmModal = ({ closeModal, alarmData,pid,dosesData}) => {
   // Define alarmTypeOptions and state variables
   console.log(pid)
+  console.log("edit for:", alarmData,dosesData,pid );
   const [selectedAlarmType, setSelectedAlarmType] = useState(alarmData.type);
   const [selectedHealthParameter, setSelectedHealthParameter] = useState("");
   const [rejectionReason, setRejectionReason] = useState(alarmData.reason || "");
@@ -18,6 +20,7 @@ const EditAlarmModal = ({ closeModal, alarmData,pid,dosesData}) => {
   const [description, setDescription] = useState(alarmData.description);
   const [weekdays, setweekdays] = useState([]);
   const [timesaday, setTimesaday] = useState(alarmData.timesaday);
+  const [timesamonth, setTimesaMonth] = useState(alarmData.timesaday);
   const [timings, setTimings] = useState([]);
   const [dateOfMonth, setDOM] = useState([]);
   const [doctorid, setDoctorid] = useState();
@@ -44,7 +47,7 @@ const EditAlarmModal = ({ closeModal, alarmData,pid,dosesData}) => {
 
   const validate = () => {
     if (
-      selectedAlarmType === "Dialysis" ||
+   
       selectedAlarmType === "Health Reading"
     ) {
       if (selectedHealthParameter === "") {
@@ -100,7 +103,7 @@ const EditAlarmModal = ({ closeModal, alarmData,pid,dosesData}) => {
         description: description,
         message: messageToDoctor,
         frequency: selectTimings,
-        status: "Pending",
+        status:  selectedAlarmType === "Prescription" ? "Pending" : "Approved",
         reason: "",
         pid: pid,
         prescriptionid: null,
@@ -149,6 +152,7 @@ const EditAlarmModal = ({ closeModal, alarmData,pid,dosesData}) => {
           setSelectTimings("Daily/Weekly");
           setweekdays(alarmData.weekdays.split(","));
           setTimesaday(alarmData.timesaday);
+          console.log("timesaday" ,timesaday);
           const temp = alarmData.time.split(",");
           console.log("timings", timings);
           setTimings(temp);
@@ -156,6 +160,7 @@ const EditAlarmModal = ({ closeModal, alarmData,pid,dosesData}) => {
           setSelectTimings("Monthly");
           setDOM(alarmData.dateofmonth.split(","));
           setTimesaday(alarmData.timesamonth);
+          console.log("timesamoth" ,timesaday);
           setTimings(alarmData.time.split(","));
         
         }
@@ -552,7 +557,9 @@ const EditAlarmModal = ({ closeModal, alarmData,pid,dosesData}) => {
                         (type) => type.label === selectedAlarmType
                       )?.title}
                   </label>
-                  <select
+                 {
+                  selectedAlarmType != "Dialysis" && (
+                    <select
                     value={selectedHealthParameter}
                     onChange={(e) => setSelectedHealthParameter(e.target.value)}
                     disabled={!selectedAlarmType}
@@ -571,6 +578,11 @@ const EditAlarmModal = ({ closeModal, alarmData,pid,dosesData}) => {
                           </option>
                         ))}
                   </select>
+
+                  )
+                 }
+
+
                 </div>
               )}
 
@@ -632,7 +644,7 @@ const EditAlarmModal = ({ closeModal, alarmData,pid,dosesData}) => {
               </div>
             )}
             {selectedAlarmType === "Diet Details" ||
-            selectedAlarmType === "Prescription" ? (
+            selectedAlarmType === "Prescription" || selectedAlarmType === "Dialysis" ? (
               <div className="mb-4">
                 <label>Short Description*</label>
                 <input

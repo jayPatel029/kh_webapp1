@@ -71,7 +71,10 @@ const addRole = async (req, res, next) => {
                 can_vud_dr: auth_arr[6],
                 can_vud_dir: auth_arr[7],
                 can_vud_cp: auth_arr[8],
-                can_vud_ups: auth_arr[9]
+                can_vud_ups: auth_arr[9],
+                can_vud_docr: auth_arr[10],
+                can_vud_fb : auth_arr[11],
+    
             });
             res.status(200).json({
                 success: true,
@@ -89,6 +92,7 @@ const addRole = async (req, res, next) => {
 const updateRole = async (req, res, next) => {
     const { auth_arr } = req.body;
     const role_name = req.params.role_name;
+    console.log("role_name", role_name)
     try {
         const role = await Role.findOne({
             where: {
@@ -111,6 +115,8 @@ const updateRole = async (req, res, next) => {
             role.can_vud_dir = auth_arr[7];
             role.can_vud_cp = auth_arr[8];
             role.can_vud_ups = auth_arr[9];
+            role.can_vud_docr = auth_arr[10];
+            role.can_vud_fb = auth_arr[11];
             await role.save();
             res.status(200).json({
                 success: true,
@@ -182,6 +188,7 @@ const getUserRole = async (req, res, next) => {
 const deleteRole = async (req, res, next) => {
     const role_name = req.params.role_name;
     try {
+
         const role = await Role.findOne({
             where: {
                 role_name: role_name
@@ -200,6 +207,7 @@ const deleteRole = async (req, res, next) => {
             });
         }
     } catch (error) {
+        console.log("error deleting role", error);
         res.status(500).json({
             success: false,
             message: error.message

@@ -1051,7 +1051,7 @@ const LineChartComponentLab = ({
             <span className="font-bold text-xl animate-pulse">
               {numberOfAbnormalReadings}
             </span>
-            Abnormal Readings between
+             Abnormal Readings between
             {selectionRange.startDate.toLocaleDateString("en-US", {
               year: "numeric",
               month: "long",

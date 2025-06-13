@@ -32,10 +32,15 @@ function AdminDashboard() {
 
   // Redirect to login page if token is not present or expired
   useEffect(() => {
-    getAdminid()
+    getAdminid();
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
+    }
+    const role = localStorage.getItem("role");
+    // console.log("object");
+    if (role == "Dialysis Technician") {
+      navigate("/patient");
     }
   }, []);
 
@@ -43,10 +48,9 @@ function AdminDashboard() {
     const email = localStorage.getItem("email");
     const id = await axiosInstance.post(`${server_url}/users/byEmail/id`, {
       email: email,
-    })
-    localStorage.setItem("id",id.data.id)
-  
-  }
+    });
+    localStorage.setItem("id", id.data.id);
+  };
   useEffect(() => {
     // setTimeout(() => {
     //   window.location.reload();
@@ -62,7 +66,7 @@ function AdminDashboard() {
       if (!newU) newU = 0;
       setNewUsers(newU);
     };
-    
+
     const isDoctorfunc = async () => {
       try {
         const response = await axiosInstance.get(
@@ -147,27 +151,22 @@ function AdminDashboard() {
     };
     getAllData();
     // const interval = setInterval(() => {
-      //   getAllData();
-      // }, 300000);
-      // return () => clearInterval(interval);
-      
-      // call getallData() every 5 minutes
-      
-      const interval = setInterval(() => {
-        getAllData();
-      }, 300000);
-      
-      return () => clearInterval(interval);
-    }, [totalUsers, isDoctor]);
-    
-   
-    
-    
+    //   getAllData();
+    // }, 300000);
+    // return () => clearInterval(interval);
+
+    // call getallData() every 5 minutes
+
+    const interval = setInterval(() => {
+      getAllData();
+    }, 300000);
+
+    return () => clearInterval(interval);
+  }, [totalUsers, isDoctor]);
+
   // useEffect(() => {
   //   console.log("Updated patientAlertsData: ", patientAlertsData);
   // }, [patientAlertsData]);
-
-  
 
   return (
     <div className="md:flex block">
@@ -184,19 +183,20 @@ function AdminDashboard() {
 
         {isDoctor ? (
           <DoctorContainer />
-        ) : (
-          localStorage.getItem("id")==1?(
-            <AdminContainer
+        ) : localStorage.getItem("id") == 1 ? (
+          <AdminContainer
             newUsers={newUsers}
             totalUsers={totalUsers}
             doctorAlerts={doctorAlerts}
             patientAlerts={patientAlertsData}
           />
-          ):(<AdminContainer
+        ) : (
+          <AdminContainer
             newUsers={NewUsersSub}
             totalUsers={totalUsers}
             doctorAlerts={doctorAlerts}
-            patientAlerts={patientAlerts}/>)
+            patientAlerts={patientAlerts}
+          />
         )}
       </div>
     </div>

@@ -7,7 +7,12 @@ const cors = require("cors");
 const createTables = require("./Models/tables.js");
 const http = require("http");
 const cron = require("node-cron");
-const {pool} = require("./databaseConn/database.js")
+const { pool } = require("./databaseConn/database.js");
+const morgan = require("morgan");
+app.use(morgan("combined")); 
+const helmet = require('helmet');
+app.use(helmet());
+
 const {
   createNewAlertForPatientDoctors,
   check_missed_dr_readings,
@@ -17,26 +22,85 @@ const {
   checkMissedAlarmsForDoctors,
   checkDialysisEntries,
   checkDialysisEntriesForAdmin,
+  resetAllPatientsCondition,
 } = require("./cronjob/functions.js");
 
 const { sendEmails } = require("./cronjob/AlertEmail.js");
+const { configDotenv } = require("dotenv");
 
 connectToDatabase();
 createTables();
 
 // createNewAlertForPatientDoctors();
 
-
 app.use(body_parser.json());
 app.use(body_parser.urlencoded({ extended: true }));
 app.use(cors());
-app.use("/api", indexRouter);
+app.use("/api/app1", indexRouter);
+
+// Error logging middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', {
+    message: err.message,
+    stack: err.stack,
+    timestamp: new Date().toISOString()
+  });
+  res.status(500).json({
+    status: 'error',
+    message: 'Internal server error',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Health check endpoint
+app.get('/health', async (req, res) => {
+  try {
+    // Check database connection
+    const dbCheck = await pool.query('SELECT DATABASE()');
+    
+    // Check if database is connected
+    const isDbConnected = dbCheck.length > 0;
+    
+    // Get server uptime
+    const uptime = process.uptime();
+    
+    // Get memory usage
+    const memoryUsage = process.memoryUsage();
+    
+    res.status(200).json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      services: {
+        database: isDbConnected ? 'connected' : 'disconnected',
+        server: 'running'
+      },
+      metrics: {
+        uptime: `${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m ${Math.floor(uptime % 60)}s`,
+        memory: {
+          heapUsed: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,
+          heapTotal: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)}MB`
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Health check failed:', error);
+    res.status(500).json({
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      error: error.message,
+      services: {
+        database: 'error',
+        server: 'running'
+      }
+    });
+  }
+});
 
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
   // cors: {
   //   origin: "http://localhost:3000",
-  //   // origin: 'https://doctortest.kifaytihealth.com', 
+  //   // origin: 'https://doctortest.kifaytihealth.com',
   //   // methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   //   // allowedHeaders: ['Content-Type', 'Authorization'],
   //   // credentials: true,
@@ -89,29 +153,29 @@ io.on("connection", (socket) => {
 });
 
 // 9 PM cron job
-cron.schedule("0 21 * * *", async () => {
-  createNewAlertForPatientDoctors();
-  await checkMissedAlarmsForDoctors();
-  await check_missed_dr_readings();
-  await check_missed_readings();
-  checkDialysisEntries();
-  checkDialysisEntriesForAdmin();
+cron.schedule("56 18 * * *", async () => {
+  // await createNewAlertForPatientDoctors();
+  // await checkMissedAlarmsForDoctors();
+  // await check_missed_dr_readings();
+  // await check_missed_readings();
+  await checkDialysisEntries();
+  // await checkDialysisEntriesForAdmin();
 });
 
 // 12 AM cron job
-cron.schedule("0 0 * * *", () => {
+cron.schedule("58 11 * * *", () => {
   checkMissedAlarms();
   deleteExpiredOTPs();
+  resetAllPatientsCondition();
 });
 
-// 12 AM cron job
+// 12 AM cron job //todo update time
 cron.schedule("0 0 * * *", () => {
-  sendEmails()
+  sendEmails();
 });
 
 server.listen(8080, () => {
   console.log("Server is running on port 8080");
 });
-
 
 

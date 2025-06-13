@@ -8,6 +8,7 @@ import {
   getDailyReadings,
   getDialysisReadings,
 } from "../../ApiCalls/readingsApis";
+import { FaFilePdf } from "react-icons/fa6";
 
 // Define the AlarmModal component
 const AlarmModal = ({ closeModal, pid }) => {
@@ -51,23 +52,22 @@ const AlarmModal = ({ closeModal, pid }) => {
         return false;
       }
     } else if (selectedAlarmType === "Prescription") {
-      if(timings.length === 0){
+      if (timings.length === 0) {
         setMsg("Please select Time");
         return false;
       }
-      if(doses.length === 0){
+      if (doses.length === 0) {
         setMsg("Please enter Dose");
         return false;
       }
-      if(doseUnit.length === 0){
+      if (doseUnit.length === 0) {
         setMsg("Please select Dose Unit");
         return false;
       }
-      if(weekdays.length === 0){
+      if (selectTimings === "Daily/Weekly" && weekdays.length === 0) {
         setMsg("Please select Week Days");
         return false;
       }
-      
 
       if (selectedPrescription === "") {
         setMsg("Please select Prescription");
@@ -107,12 +107,135 @@ const AlarmModal = ({ closeModal, pid }) => {
   };
 
   // Define handleSubmit function
+  // const handleSubmit = async () => {
+  //   if (validate()) {
+  //     const payload = {
+  //       doctorId: doctorid,
+  //       type: selectedAlarmType,
+  //       parameter: selectedHealthParameter,
+  //       description: description,
+  //       message: messageToDoctor,
+  //       frequency: selectTimings,
+  //       status: "Pending",
+  //       reason: "",
+  //       pid: pid,
+  //       prescriptionid: null,
+  //       doses: null,
+  //       doseUnit: null,
+  //     };
+  //     if (selectedAlarmType === "Prescription") {
+  //       payload.prescriptionid = selectedPrescription;
+  //       payload.doses = doses.map((dose, index) => {
+  //         return {
+  //           dose: dose,
+  //           doseUnit: doseUnit[index],
+  //           time: timings[index],
+  //         };
+  //       });
+  //     }
+
+  //     if (selectTimings === "Daily/Weekly") {
+  //       payload.weekdays = weekdays.toString();
+  //       payload.timesaday = timesaday;
+  //       payload.time = timings.toString();
+  //     } else if (selectTimings === "Monthly") {
+  //       payload.dateofmonth = dateOfMonth.toString();
+  //       payload.timesamonth = timesaday;
+  //       payload.time = timings.toString();
+  //     }
+  //     const res = await insertAlarm(payload);
+  //     if (res.success) {
+  //       console.log("Alarm inserted successfully");
+  //       closeModal();
+  //     } else {
+  //       console.log("Error inserting alarm", res);
+  //       setMsg("Error inserting alarm");
+  //     }
+  //   }
+  // };
+
   const handleSubmit = async () => {
     if (validate()) {
+      let missingFields = [];
+
+      // Common required fields
+      if (!doctorid) missingFields.push("Doctor ID");
+      if (!selectedAlarmType) missingFields.push("Alarm Type");
+      // if (!description) missingFields.push("Description");
+      if (!selectTimings) missingFields.push("Timing Selection");
+      if (!pid) missingFields.push("Patient ID");
+
+      // Conditional validations based on Alarm Type
+      if (selectedAlarmType === "Health Reading") {
+        if (!selectedHealthParameter) {
+          missingFields.push("Health Parameter");
+        }
+      } else {
+        if (!description) missingFields.push("Description");
+      }
+
+      if (selectedAlarmType === "Prescription") {
+        let prescriptionMissingFields = [];
+
+        if (!selectedPrescription)
+          prescriptionMissingFields.push("Prescription ID");
+        if (doses.length === 0) prescriptionMissingFields.push("Doses");
+        if (doseUnit.length === 0) prescriptionMissingFields.push("Dose Unit");
+        if (timings.length === 0) prescriptionMissingFields.push("Timings");
+
+        if (prescriptionMissingFields.length > 0) {
+          setMsg(
+            `Please provide all prescription details: ${prescriptionMissingFields.join(
+              ", "
+            )}`
+          );
+          return;
+        }
+      }
+
+    
+      if (selectTimings === "Daily/Weekly") {
+        let dailyMissingFields = [];
+        if (!weekdays.length) dailyMissingFields.push("Weekdays");
+        if (!timesaday) dailyMissingFields.push("Times a Day");
+        if (!timings.length) dailyMissingFields.push("Timings");
+
+        if (dailyMissingFields.length > 0) {
+          setMsg(
+            `Please provide valid daily/weekly scheduling details: ${dailyMissingFields.join(
+              ", "
+            )}`
+          );
+          return;
+        }
+      } else if (selectTimings === "Monthly") {
+        let monthlyMissingFields = [];
+        if (!dateOfMonth.length) monthlyMissingFields.push("Date of Month");
+        if (!timesaday) monthlyMissingFields.push("Times a Month");
+        if (!timings.length) monthlyMissingFields.push("Timings");
+
+        if (monthlyMissingFields.length > 0) {
+          setMsg(
+            `Please provide valid monthly scheduling details: ${monthlyMissingFields.join(
+              ", "
+            )}`
+          );
+          return;
+        }
+      }
+
+      // If there are any general missing fields, show them
+      if (missingFields.length > 0) {
+        setMsg(
+          `Please fill in all required fields: ${missingFields.join(", ")}`
+        );
+        return;
+      }
+
+      // Prepare the payload
       const payload = {
         doctorId: doctorid,
         type: selectedAlarmType,
-        parameter: selectedHealthParameter,
         description: description,
         message: messageToDoctor,
         frequency: selectTimings,
@@ -123,15 +246,18 @@ const AlarmModal = ({ closeModal, pid }) => {
         doses: null,
         doseUnit: null,
       };
+
+      if (selectedAlarmType === "Health Reading") {
+        payload.parameter = selectedHealthParameter;
+      }
+
       if (selectedAlarmType === "Prescription") {
         payload.prescriptionid = selectedPrescription;
-        payload.doses = doses.map((dose, index) => {
-          return {
-            dose: dose,
-            doseUnit: doseUnit[index],
-            time: timings[index],
-          };
-        });
+        payload.doses = doses.map((dose, index) => ({
+          dose: dose,
+          doseUnit: doseUnit[index],
+          time: timings[index],
+        }));
       }
 
       if (selectTimings === "Daily/Weekly") {
@@ -143,9 +269,12 @@ const AlarmModal = ({ closeModal, pid }) => {
         payload.timesamonth = timesaday;
         payload.time = timings.toString();
       }
+
+      // Submit the alarm
       const res = await insertAlarm(payload);
       if (res.success) {
         console.log("Alarm inserted successfully");
+        console.log(payload);
         closeModal();
       } else {
         console.log("Error inserting alarm", res);
@@ -181,6 +310,7 @@ const AlarmModal = ({ closeModal, pid }) => {
       const responsePres = await getPrescriptionByPatient(pid);
       if (responsePres.success) {
         setPrescription(responsePres.data.data);
+        console.log("object123", prescription);
         setSelectedPrescription(responsePres.data?.data[0]?.id);
       }
     };
@@ -342,7 +472,8 @@ const AlarmModal = ({ closeModal, pid }) => {
           </div>
           <div>
             <label className="mb-2">Select Doctor For Approval*</label>
-            <select className="w-full border-2 mb-2 mt-2 py-2 px-3 rounded focus:outline-none focus:border-primary"
+            <select
+              className="w-full border-2 mb-2 mt-2 py-2 px-3 rounded focus:outline-none focus:border-primary"
               onChange={(e) => {
                 setDoctorid(e.target.value);
               }}
@@ -500,8 +631,8 @@ const AlarmModal = ({ closeModal, pid }) => {
             </div>
             {/* health parameter's section */}
             {selectedAlarmType !== "Diet Details" &&
-              selectedAlarmType !== "Prescription" && 
-                selectedAlarmType!== "Dialysis" &&(
+              selectedAlarmType !== "Prescription" &&
+              selectedAlarmType !== "Dialysis" && (
                 <div className="mb-4">
                   <label className="block text-gray-700 text-sm font-semibold mb-2">
                     {selectedAlarmType &&
@@ -554,18 +685,30 @@ const AlarmModal = ({ closeModal, pid }) => {
                       return (
                         <tr key={index} className="my-4">
                           <td className="px-6 py-4 text-3xl">
-                            <img
-                              src={pres.Prescription}
-                              alt="image"
-                              className="inline h-12 w-12 mx-10"
-                              onClick={() => {
-                                if (viewPrescription === index + 1) {
-                                  setViewPrescription(null);
-                                } else {
-                                  setViewPrescription(index + 1);
-                                }
-                              }}
-                            />
+                            {pres.Prescription?.endsWith(".pdf") ? (
+                              <FaFilePdf
+                                className="w-20 h-16 cursor-pointer py-3 text-red-500"
+                                // onClick={() =>
+                                //   openFileModal(
+                                //     pres.Prescription?.id,
+                                //     pres.Prescription?.Prescription
+                                //   )
+                                // }
+                              />
+                            ) : (
+                              <img
+                                src={pres.Prescription}
+                                alt="image"
+                                className="inline h-12 w-12 mx-10"
+                                onClick={() => {
+                                  if (viewPrescription === index + 1) {
+                                    setViewPrescription(null);
+                                  } else {
+                                    setViewPrescription(index + 1);
+                                  }
+                                }}
+                              />
+                            )}
                           </td>
                           <td className="px-6 py-4 text-md">
                             {new Date(pres.Date).toDateString()}
@@ -588,7 +731,8 @@ const AlarmModal = ({ closeModal, pid }) => {
               </div>
             )}
             {selectedAlarmType === "Diet Details" ||
-            selectedAlarmType === "Prescription" || selectedAlarmType==="Dialysis"? (
+            selectedAlarmType === "Prescription" ||
+            selectedAlarmType === "Dialysis" ? (
               <div className="mb-4">
                 <label>Short Description*</label>
                 <input

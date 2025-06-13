@@ -41,12 +41,14 @@ const ThumbnailModal = ({ closeModal, image, comment }) => {
 
   const uploadComment = async () => {
     try {
+      const trimmedComment = newComment.trim();
+      if(!trimmedComment) return;
       var type = "";
       if (comment.fileType === "Lab") {
         type = "Lab Report";
       }
       await addComment(
-        newComment,
+        trimmedComment,
         comment.fileId,
         comment.fileType,
         localStorage.getItem("email"),
