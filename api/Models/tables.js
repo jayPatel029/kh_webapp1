@@ -261,7 +261,6 @@ async function createDocLogTable() {
   }
 }
 
-
 async function ReportLogTable() {
   const query = `
     CREATE TABLE IF NOT EXISTS \`report_log\` (
@@ -284,7 +283,6 @@ async function ReportLogTable() {
     console.error("Error creating patient_log table:", error);
   }
 }
-
 
 async function createDoctorDialysisReadingTable() {
   const query =
@@ -610,7 +608,7 @@ async function createMailOtpTable() {
   }
 }
 
-const createappAlertsTable = async () =>{
+const createappAlertsTable = async () => {
   const query = `
    CREATE TABLE IF NOT EXISTS app_alerts (
     id INT(11) NOT NULL AUTO_INCREMENT,
@@ -622,17 +620,13 @@ const createappAlertsTable = async () =>{
     isOpened INT(11) NULL DEFAULT '0',
     PRIMARY KEY (id) USING BTREE
    ) COLLATE='utf8mb4_general_ci' ENGINE=InnoDB;
-  ` 
-   try {
-
+  `;
+  try {
     await pool.query(query);
-    
-   } catch (error) {
-      console.log(error);
-    
-   }
-
-}
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 const createCommentsTable = async () => {
   const query = `
@@ -708,7 +702,7 @@ const createAdminPatientsTable = async () => {
     console.error("Error creating admin patients table:", error);
   }
 };
-const createDeletedUserTable = async()=>{
+const createDeletedUserTable = async () => {
   const query = `CREATE TABLE IF NOT EXISTS deleted_user(
   patient_id INT NOT NULL,
   name VARCHAR(255) DEFAULT NULL,
@@ -716,12 +710,13 @@ const createDeletedUserTable = async()=>{
   FOREIGN KEY (patient_id) REFERENCES patients(id)
   );
 `;
-try {
-  await pool.query(query);
-  // console.log("Doctor patients table created successfully");
-} catch (error) {
-  console.error("Error creating doctor patients table:", error);
-}}
+  try {
+    await pool.query(query);
+    // console.log("Doctor patients table created successfully");
+  } catch (error) {
+    console.error("Error creating doctor patients table:", error);
+  }
+};
 const createDoctorPatientsTable = async () => {
   const query = `
     CREATE TABLE IF NOT EXISTS doctor_patients (
@@ -780,9 +775,6 @@ const createalertsReadingTable = async () => {
 };
 
 const createTables = async () => {
-  await createDeletedUserTable();
-  await ReportLogTable();
-  await createPatientLogTable();
   await createAndAddRoles();
   await createUsertable();
   await createAlamrsTable();
@@ -820,6 +812,10 @@ const createTables = async () => {
   await creatCommentsReadTable();
   await createappAlertsTable();
   await createDocLogTable();
+  await createDeletedUserTable();
+  await ReportLogTable();
+  await createPatientLogTable();
+  
   // await createAilmenttranslationTable();
 };
 
