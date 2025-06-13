@@ -1115,8 +1115,8 @@ const LineChartComponent = ({
             <span className="font-bold text-xl animate-pulse">
               {numberOfAbnormalReadings}
             </span>
-             Abnormal Readings between
-            {selectionRange.startDate.toLocaleDateString("en-US", {
+              Abnormal Readings
+            {/* {selectionRange.startDate.toLocaleDateString("en-US", {
               year: "numeric",
               month: "long",
               day: "numeric",
@@ -1126,7 +1126,7 @@ const LineChartComponent = ({
               year: "numeric",
               month: "long",
               day: "numeric",
-            })}
+            })} */}
           </div>
         </div>
       )}

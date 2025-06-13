@@ -156,6 +156,26 @@ function AdminManagement() {
     return true;
   };
 
+  const validateTechnicianData = (doctorData) => {
+    const { name, email, phoneNo, specialities } = doctorData;
+    if (!name || typeof name !== "string") {
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      return false;
+    }
+    if (specialities.length <= 0) {
+      return false;
+    }
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(phoneNo)) {
+      return false;
+    }
+    return true;
+  };
+
+
   const getFileRes = async (file) => {
     try {
       if (file) {
@@ -271,7 +291,52 @@ function AdminManagement() {
           setSuccessful("");
         }
       }
-    } else {
+    } 
+    
+    // add Dialysis Technician here
+    else if(newDoctor.role == "Dialysis Technician" && validateTechnicianData(newDoctor)) {
+      const photourl = await getFileRes(newDoctor.photo);
+      const payload = {
+        name: newDoctor.name,
+        role: newDoctor.role,
+        email: newDoctor.email,
+        experience: newDoctor.yearsOfExperience,
+        phoneno: newDoctor.phoneNo,
+        institute: newDoctor.institute,
+        address: newDoctor.address,
+        practicingAt: newDoctor.practicingAt,
+        photo: photourl?.data?.objectUrl,
+        description: newDoctor.description,
+        email_notification: newDoctor.email_notification,
+        // can_export: newDoctor.can_export,
+        specialities: newDoctor.specialities,
+        can_export: newDoctor.can_export,
+        dailyReadings: newDoctor.dailyReadings,
+        dialysisReadings: newDoctor.dialysisReadings,
+        dialysisReadings: newDoctor.dialysisReadings,
+        changeby: localStorage.getItem("email"),
+        doctorid: newDoctor.id,
+      };
+
+      console.log("Dialysis Technician payload", payload);
+      const response = editMode
+        ? await updateDoctor(newDoctor.id, payload)
+        : await registerDoctor(payload);
+  
+      if (response.success) {
+        setErrMsg("");
+        setSuccessful(editMode ? "Update Successful!" : "Registration Successful!");
+        setEditMode(false);
+        newDoctorDispatch({ type: "all", payload: {} });
+      } else {
+        setErrMsg((editMode ? "Update Error! " : "Registration Error! ") + response.data);
+        setSuccessful("");
+      }
+  
+  
+    }
+    
+    else {
       setSuccessful("");
       setErrMsg("Please fill all the * fields correctly!");
     }

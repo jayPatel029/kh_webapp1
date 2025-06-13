@@ -14,7 +14,6 @@ function UploadedFileModal({ closeModal, file, user_id, file_id }) {
   const [loading, setLoading] = useState(true);
   const [successful,setSuccessful]=useState(true);
   const [patientProgram, setProgram] = useState(false);
-  const [userRole, setRole] = useState(false);
   const location = useLocation();
 
   console.log(file.file);
@@ -24,9 +23,6 @@ function UploadedFileModal({ closeModal, file, user_id, file_id }) {
     console.log("res for id", res.data);
     if(res.data.data.program == "Advanced" ||res.data.data.program == "Standard" ){
       setProgram(true);
-    if(!(res.data.data.role == "Dialysis Technician")){
-      setRole(true);
-    }
       console.log("the program", res.data.data.program);
     }
   }
@@ -59,6 +55,9 @@ function UploadedFileModal({ closeModal, file, user_id, file_id }) {
 
   const uploadComment = async () => {
     try {
+      const trimmedComment = newComment.trim();
+      if(!trimmedComment) return;
+
       const id = location.state.id;
       const fileId = file_id;
       const fileType = "Diet Details";
@@ -69,7 +68,7 @@ function UploadedFileModal({ closeModal, file, user_id, file_id }) {
       }
 
       const response = await addComment(
-        newComment,
+        trimmedComment,
         fileId,
         fileType,
         id,
@@ -154,7 +153,7 @@ function UploadedFileModal({ closeModal, file, user_id, file_id }) {
             </div>
           )}
 
-        { ( patientProgram && userRole ) && (
+        { ( patientProgram ) ? (
             <div className="flex-1 mt-4">
             <div className="mb-4 overflow-auto h-3/4">
               <h2 className="font-medium">Previous Comments</h2>
@@ -221,6 +220,8 @@ function UploadedFileModal({ closeModal, file, user_id, file_id }) {
             </div>
           </div>
         
+        ):(
+          <p className="text-red-500 font-medium">Comments cannot be added as the patient is on the basic program.</p>
         )}
         
         </div>

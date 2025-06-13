@@ -18,6 +18,8 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [capturedImages, setCapturedImages] = useState([]);
   const [selectedImages, setSelectedImages] = useState([]);
+  const [msg, setMsg] = useState("");
+
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -64,15 +66,15 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
   const handleSubmit = async () => {
     // if (selectedImage || capturedImage) {
     if (!selectedDate) {
-      alert("Please Select Date");
+      setMsg("Please Select Date");
       return;
     }
     if (selectedDoctorId == 0) {
-      alert("Please Select Doctor");
+      setMsg("Please Select Doctor");
       return;
     }
     if (!(selectedImage || capturedImage || selectedImages)) {
-      alert("Please Select Prescription");
+      setMsg("Please Select Prescription");
       return;
     }
     if (selectedImage) {
@@ -344,6 +346,7 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
                 </div>
               )}
             </div>
+            <div className="text-[#ff0000]">{msg}</div>
           </div>
           <div className="flex justify-end p-4">
             <button

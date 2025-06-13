@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 const EditRole = () => {
   const navigate = useNavigate();
   const [roleName, setRoleName] = useState("");
+  
   const [permissions, setPermissions] = useState({
     manageRoles: {
       view: false,

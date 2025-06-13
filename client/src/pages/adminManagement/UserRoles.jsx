@@ -36,6 +36,19 @@ const UserRoles = () => {
       });
   };
 
+  const updateRole = (role_name) => {
+    console.log("object", role_name);
+    axiosInstance
+      .put(`${server_url}/roles/byName/${role_name}`)
+      .then((res) => {
+        alert("Role updated successfully");
+        window.location.reload();
+        console.log(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
   return (
     <div className="md:flex block">
       <div className="md:flex-1 hidden md:flex">

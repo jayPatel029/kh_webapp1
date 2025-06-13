@@ -10,6 +10,7 @@ const RequisitionModal = ({ closeModal, user_id, onSuccess }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedImages, setSelectedImages] = useState([]);
   const email = localStorage.getItem("email");
+  const [msg, setMsg] = useState("");
 
   const handleImageChange = (e) => {
     // const file = e.target.files[0];
@@ -39,6 +40,14 @@ const RequisitionModal = ({ closeModal, user_id, onSuccess }) => {
     console.log(selectedDate);
     console.log(selectedImage);
 
+    if(!selectedDate) {
+      setMsg("Please select a valid date");
+      return;
+    }
+    if(!selectedImage) {
+      setMsg("Please upload atleast one document or image");
+      return;
+    }
     if (selectedImage) {
       getFileRes(selectedImage)
         .then((res) => {
@@ -167,8 +176,10 @@ const RequisitionModal = ({ closeModal, user_id, onSuccess }) => {
                 required
               />
             </div>
+            <div className="text-[#ff0000]">{msg}</div>
           </div>
           <div className="flex justify-end p-4">
+
             <button
               onClick={handleSubmit}
               className="bg-primary text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"

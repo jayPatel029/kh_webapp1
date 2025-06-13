@@ -23,6 +23,7 @@ const Sidebar = ({ mobile = false }) => {
   const role = useSelector((state) => state.permission);
   useEffect(() => {
     console.log("role", role);
+    console.log("role.patients", role.patients);
   }, []);
   return (
     <div
@@ -131,7 +132,7 @@ const Sidebar = ({ mobile = false }) => {
             </Link>
           ) : null} */}
 
-          {/* {role?.patients ? (
+          {/* {role?. patients ? (
             <Link to="/aiChat" style={{ textDecoration: "none" }}>
               <li>
                 <VaccinesIcon className="icon" />

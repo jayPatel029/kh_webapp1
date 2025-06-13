@@ -268,7 +268,7 @@ const PrescriptionModal = ({ closeModal, user_id, onSuccess }) => {
                                   <div className="font-bold">
                                     {item.timesaday}{" "}
                                     {item.timesaday > 1 ? "times" : "time"}{" "}
-                                    {item.isWeek ? "a week" : "a month"}
+                                    {item.isWeek ? "a day" : "a month"}
                                   </div>
                                   {/* map times a day with doses*/}
                                   {item.doses.map((dose) => (

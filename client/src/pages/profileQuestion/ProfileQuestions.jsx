@@ -18,6 +18,7 @@ import OptTranslationModal from "../../components/modals/OptionTranslationModal"
 import Select from "react-select";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { te } from "date-fns/locale";
 
 function ProfileQuestions() {
   const [editMode, setEditMode] = useState(false);
@@ -150,12 +151,22 @@ function ProfileQuestions() {
     if (validateForm()) {
       if (!editMode) {
 
+        console.log("translations are: ", translations);
+        // format translation beofre submitting
+        const formattedTranslations = Object.fromEntries(
+          Object.entries(translations).map(([langId, value]) => [
+            langId,
+            typeof value === "string" ? { text: value, options: "" } : value,
+          ])
+        );
+
+        console.log("after format: ", formattedTranslations);
         const payload = {
           ailment: newQuestion.ailment?.map((x) => x.value),
           type: newQuestion.type,
           name: newQuestion.name,
           options: newQuestion.options,
-          translations: translations,
+          translations: formattedTranslations,
         };
         const response = await createQuestion(payload);
         if (response.success) {
@@ -170,6 +181,7 @@ function ProfileQuestions() {
           setSuccessful("");
         }
       } else {
+
         const payload = {
           id: newQuestion.id,
           ailment: newQuestion.ailment,
@@ -178,6 +190,9 @@ function ProfileQuestions() {
           options: newQuestion.options,
           translations: translations,
         };
+        console.log("updating with: ", payload);
+        console.log("translations here: ",translations);
+        console.log("options: ",newQuestion.options);
         console.log(newQuestion.id);
         const response = await updateQuestion(newQuestion.id, payload);
         if (response.success) {
@@ -244,8 +259,8 @@ function ProfileQuestions() {
               {modelOpenOpt && (
                 <OptTranslationModal
                   closeModal={closeModalOpt}
-                  translations={optTranslations}
-                  setTranslations={setOptTranslations}
+                  translations={translations}
+                  setTranslations={setTranslations}
                   setLanguages={setLanguages}
                   languages={languages}
                 />
@@ -457,14 +472,21 @@ function ProfileQuestions() {
 
                                   q.question_translations.forEach((element) => {
                                     translationDict[element.language_id] =
-                                      element.name;
+                                      // element.name;
+                                      {
+                                        text: element.name,
+                                        options: element.options,
+                                      };
                                   });
-                                  q.question_translations.forEach((element) => {
-                                    translationOptDict[element.language_id] =
-                                      element.options;
-                                  });
+
+                                  // q.question_translations.forEach((element) => {
+                                  //   translationOptDict[element.language_id] =
+                                  //     element.options;
+                                  // });
                                   setTranslations(translationDict);
-                                  setOptTranslations(translationOptDict);
+                                  // setOptTranslations(translationOptDict);
+                                  console.log("editing these: ", q);
+                                  console.log("qtrnaslaton: ", q.question_translations);
                                 }
                                 setEditMode(true);
                                 window.scrollTo({

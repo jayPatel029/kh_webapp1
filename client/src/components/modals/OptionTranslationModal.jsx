@@ -6,8 +6,10 @@ const OptTranslationModal = ({
   closeModal,
   languages,
   setTranslations,
-  translations,
+  translations,  
 }) => {
+  console.log("got this translations", translations);
+  // console.log("got this translations", languages);
   // JSX structure of TranslationModal component
   return (
     <>
@@ -20,22 +22,32 @@ const OptTranslationModal = ({
           <div>
             {languages.map((language, index) => {
               if (language.id !== 1)
-              return (
-                <div key={index} className="flex flex-col mt-4">
-                  <label>{language.language_name}</label>
-                  <input
-                    type="text"
-                    className="border border-primary  rounded-lg p-1.5"
-                    value={translations[language.id]}
-                    onChange={(e) => {
-                      setTranslations({
-                        ...translations,
-                        [language.id]: e.target.value,
-                      });
-                    }}
-                  />
-                </div>
-              );
+                return (
+                  <div key={index} className="flex flex-col mt-4">
+                    <label>{language.language_name}</label>
+                    <input
+                      type="text"
+                      className="border border-primary  rounded-lg p-1.5"
+                      value={
+                      // translations[index]?.options
+                        typeof translations[language.id] === "string"
+                          ? translations[language.id] // If string, use as text
+                          : translations[language.id]?.options || "" // Otherwise, extract text
+                      
+                      }
+
+                      onChange={(e) => {
+                        setTranslations({
+                          ...translations,
+                          [language.id]: {
+                            text: translations[language.id]?.text || "", 
+                            options: e.target.value, 
+                          },
+                        });
+                      }}
+                    />
+                  </div>
+                );
             })}
           </div>
 

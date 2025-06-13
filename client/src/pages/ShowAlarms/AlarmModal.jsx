@@ -64,7 +64,7 @@ const AlarmModal = ({ closeModal, pid }) => {
         setMsg("Please select Dose Unit");
         return false;
       }
-      if (weekdays.length === 0) {
+      if (selectTimings === "Daily/Weekly" && weekdays.length === 0) {
         setMsg("Please select Week Days");
         return false;
       }
@@ -193,7 +193,7 @@ const AlarmModal = ({ closeModal, pid }) => {
         }
       }
 
-      // Timing-based validations
+    
       if (selectTimings === "Daily/Weekly") {
         let dailyMissingFields = [];
         if (!weekdays.length) dailyMissingFields.push("Weekdays");
@@ -274,6 +274,7 @@ const AlarmModal = ({ closeModal, pid }) => {
       const res = await insertAlarm(payload);
       if (res.success) {
         console.log("Alarm inserted successfully");
+        console.log(payload);
         closeModal();
       } else {
         console.log("Error inserting alarm", res);

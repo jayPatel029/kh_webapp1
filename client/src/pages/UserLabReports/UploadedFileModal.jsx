@@ -9,6 +9,7 @@ import jsPDF from "jspdf";
 
 import { Document, Page, pdfjs } from "react-pdf";
 import { getPatientByIdad } from "../../ApiCalls/patientAPis";
+import { useSelector } from "react-redux";
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 // Ensure to set workerSrc
@@ -20,26 +21,31 @@ function UploadedFileModal({ closeModal, file, patient_id, file_id }) {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
   const [successful, setSuccessful] = useState(true);
-  const role = localStorage.getItem("role");
+  // const role = localStorage.getItem("role");
+  const role = useSelector((state) => state.permission);
   const [patientProgram, setProgram] = useState(false);
   const [userRole, setRole] = useState(false);
+  
   const getId = async () => {
     console.log("fetching fir");
-
+    
     const res = await getPatientByIdad(patient_id);
-    console.log("res for id", res.data);
+    console.log("res for id }", patient_id, res.data);
     if (
       res.data.data.program == "Advanced" ||
       res.data.data.program == "Standard"
     ) {
       setProgram(true);
-      if ((role != "Dialysis Technician")) {
+      console.log("the role is: ",role);
+      if (role.role_name === "Dialysis Technician") {
+        console.log("role is DT");
         setRole(true);
       }
       console.log("role here", userRole);
       console.log("the program", res.data.data.program);
     }
   };
+
   useEffect(() => {
     console.log("file_id", file.imageUrl);
     const data = {
@@ -68,13 +74,16 @@ function UploadedFileModal({ closeModal, file, patient_id, file_id }) {
 
   const uploadComment = async () => {
     try {
+      const trimmedComment = newComment.trim();
+      if (!trimmedComment) return;
+
       const id = location.state.id;
       const fileId = file_id;
       const fileType = "Lab Report";
       const iSDoctor = localStorage.getItem("isDoctor") === "true" ? 1 : 0;
 
       const response = await addComment(
-        newComment,
+        trimmedComment,
         fileId,
         fileType,
         id,
@@ -106,6 +115,7 @@ function UploadedFileModal({ closeModal, file, patient_id, file_id }) {
   // Ensure to set workerSrc
 
   const downloadPDF = async () => {
+    console.log("downloading: ", file);
     const pdf = new jsPDF("p", "mm", "a4");
     const pageWidth = pdf.internal.pageSize.getWidth();
 
@@ -164,6 +174,52 @@ function UploadedFileModal({ closeModal, file, patient_id, file_id }) {
       });
     } else {
       // Handle image download...
+      //! todo fix the image cors error
+      console.log("converting image to pdf");
+
+      const corsProxy = "https://cors-anywhere.herokuapp.com/";
+      const imageUrl = corsProxy + file.imageUrl;
+      const img = new Image();
+      img.crossOrigin = "Anonymous"; // Ensures cross-origin images work
+      img.src = imageUrl;
+
+      img.onload = () => {
+        const imgWidth = pageWidth;
+        const imgHeight = (img.height * imgWidth) / img.width; // Maintain aspect ratio
+
+        pdf.addImage(img, "JPEG", 0, 10, imgWidth, imgHeight);
+
+        // 🔹 Add comments section
+        let yPosition = imgHeight + 20; // Position comments below the image
+        pdf.setFontSize(12);
+        pdf.text("Comments:", 10, yPosition);
+        yPosition += 10;
+
+        prevComments.forEach((comment) => {
+          const commentText = `${
+            comment.isDoctor ? `Doctor ${comment.doctorName}` : "Patient"
+          }: ${comment.content}`;
+          const formattedDate = formatDate(comment.date);
+          const text = `${commentText} (${formattedDate})`;
+          const lines = pdf.splitTextToSize(text, pageWidth - 20);
+
+          lines.forEach((line) => {
+            if (yPosition > pdf.internal.pageSize.getHeight() - 10) {
+              pdf.addPage();
+              yPosition = 10;
+            }
+            pdf.text(line, 10, yPosition);
+            yPosition += 10;
+          });
+        });
+
+        // 🔹 Save the final PDF
+        pdf.save("report_with_comments.pdf");
+      };
+
+      img.onerror = (error) => {
+        console.error("Error loading image:", error);
+      };
     }
   };
 
@@ -210,67 +266,79 @@ function UploadedFileModal({ closeModal, file, patient_id, file_id }) {
             </div>
           )}
 
-{ ( patientProgram && userRole ) && (
+          {patientProgram ? (
             <div className="flex-1 mt-4">
-              <h2 className="font-medium">Previous Comments</h2>
-              <div className="bg-gray-100 p-4 rounded-lg overflow-y-auto max-h-[400px]">
-                {prevComments.map((comment) => (
-                  <div
-                    key={comment.id}
-                    className={`flex items-start mb-4 ${
-                      comment.isDoctor ? "justify-start" : "justify-end"
-                    }`}
-                  >
+              <div className="mb-4 overflow-auto h-3/4">
+                <h2 className="font-medium">Previous Comments</h2>
+                <div className="bg-gray-100 p-4 rounded-lg overflow-y-auto max-h-[400px]">
+                  {prevComments.map((comment) => (
                     <div
-                      className={`rounded-full bg-teal-500 text-white w-8 h-8 flex items-center justify-center mr-2 ${
-                        comment.isDoctor ? "order-1" : "order-2"
+                      key={comment.id}
+                      className={`flex items-start mb-4 ${
+                        comment.isDoctor ? "justify-start" : "justify-end"
                       }`}
                     >
-                      {comment.isDoctor ? "D" : "P"}
+                      <div
+                        className={`rounded-full bg-teal-500 text-white w-8 h-8 flex items-center justify-center mr-2 ${
+                          comment.isDoctor ? "order-1" : "order-2"
+                        }`}
+                      >
+                        {comment.isDoctor ? "D" : "P"}
+                      </div>
+                      <div
+                        className={`bg-white text-black p-2 text-sm rounded-lg shadow-md max-w-3/4 ${
+                          comment.isDoctor
+                            ? "ml-2 bg-black"
+                            : "mr-2 bg-teal-500 text-black"
+                        }`}
+                      >
+                        <span className="font-medium text-xs text-gray-500 mr-2">
+                          {comment.isDoctor
+                            ? `Doctor ${comment.doctorName} : `
+                            : "Patient: "}
+                        </span>
+                        <span className="flex-grow text-sm text-black font-bold">
+                          {comment.content}
+                        </span>
+                        <p className="flex justify-end text-gray-600 italic text-xs">
+                          {formatDate(comment.date)}
+                        </p>
+                      </div>
                     </div>
-                    <div
-                      className={`bg-white text-black p-2 text-sm rounded-lg shadow-md max-w-3/4 ${
-                        comment.isDoctor
-                          ? "ml-2 bg-black"
-                          : "mr-2 bg-teal-500 text-black"
-                      }`}
-                    >
-                      <span className="font-medium text-xs text-gray-500 mr-2">
-                        {comment.isDoctor
-                          ? `Doctor:${comment.doctorName} `
-                          : "Patient: "}
-                      </span>
-                      <span className="flex-grow text-sm text-black font-bold">
-                        {comment.content}
-                      </span>
-                      <p className="flex justify-end text-gray-600 italic text-xs">
-                        {formatDate(comment.date)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
 
-              <h2 className="font-medium mt-4">Add a Comment</h2>
-              <textarea
-                className="w-full border-2 py-2 px-3 rounded focus:outline-none focus:border-amber-950"
-                rows="1"
-                value={newComment}
-                onChange={(e) => {
-                  setNewComment(e.target.value);
-                  e.target.style.height = "auto";
-                  e.target.style.height = e.target.scrollHeight + "px";
-                }}
-              />
-              <div className="flex justify-end mt-4">
-                <button
-                  onClick={uploadComment}
-                  className="bg-teal-500 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                  Submit
-                </button>
-              </div>
+              {!userRole && (
+                <div>
+                  <h2 className="font-medium">Add a Comment</h2>
+                  <textarea
+                    id="text"
+                    className="w-full border-2 py-2 px-3 rounded focus:outline-none focus:border-amber-950"
+                    rows="1"
+                    style={{ minHeight: "38px", height: "auto" }}
+                    value={newComment}
+                    onChange={(e) => {
+                      setNewComment(e.target.value);
+                      e.target.style.height = "auto";
+                      e.target.style.height = e.target.scrollHeight + "px";
+                    }}
+                  />
+                  <div className="flex justify-end mt-4">
+                    <button
+                      onClick={uploadComment}
+                      className="bg-teal-500 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    >
+                      Submit
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
+          ) : (
+            <p className="text-red-500 font-medium">
+              Comments cannot be added as the patient is on the basic program.
+            </p>
           )}
         </div>
       </div>

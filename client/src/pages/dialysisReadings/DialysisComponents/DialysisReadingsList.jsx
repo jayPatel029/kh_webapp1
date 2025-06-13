@@ -47,7 +47,12 @@ function DialysisReadingsList() {
       try {
         getAilments().then((resultAilment) => {
           if (resultAilment.success && resultAilment.data.listOfAilments) {
-            setAilments(resultAilment.data.listOfAilments);
+            console.log("listofailments", resultAilment.data.listOfAilments);
+            const filteredAilments = resultAilment.data.listOfAilments.filter((a) => a.name.includes("Dialysis"));
+            console.log("filtered for dialysis", filteredAilments);
+            setAilments(filteredAilments);
+
+
           } else {
             console.error("Failed to fetch Ailments:", resultAilment);
           }
@@ -89,6 +94,7 @@ function DialysisReadingsList() {
   async function handleSubmit() {
     setSuccessful("");
     setErrMsg("");
+  
     const payload = {
       id: newReading.id,
       title: newReading.title,
@@ -105,6 +111,7 @@ function DialysisReadingsList() {
       condition: newReading.condition || 'stable',
     };
     if (validateForm()) {
+      console.log("submiting ailmetns", payload.ailments);
       if (!editMode) {
         const response = await addDialysisReading(payload);
         if (response.success) {

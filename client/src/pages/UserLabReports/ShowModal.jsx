@@ -11,6 +11,7 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
   const [extractedValues, setExtractedValues] = useState(null); // State for extracted data
   const [isExtracting, setIsExtracting] = useState(false); // Loading state for extraction
   const [email] = useState(localStorage.getItem("email"));
+  const [msg, setMsg] = useState("");
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -20,11 +21,16 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
   const handleExtract = async () => {
     if (!selectedImage) {
       alert("Please upload a file first.");
+      setIsExtracting(false);
       return;
     }
 
     setIsExtracting(true);
-
+    if(!selectedDate || !selectedReportType) {
+      setMsg("Please fill the required fields!");
+      setIsExtracting(false);
+      return;
+    }
     try {
       const uploadRes = await getFileRes(selectedImage);
       const pdfUrl = uploadRes.data.objectUrl;
@@ -151,6 +157,7 @@ const MyModal = ({ closeModal, user_id, onSuccess }) => {
               required
             />
           </div>
+          <div className="text-[#ff0000]">{msg}</div>
 
           <button
             onClick={handleExtract}

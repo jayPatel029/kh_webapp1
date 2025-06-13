@@ -38,6 +38,7 @@ function AdminDashboard() {
       navigate("/login");
     }
     const role = localStorage.getItem("role");
+    // console.log("object");
     if (role == "Dialysis Technician") {
       navigate("/patient");
     }

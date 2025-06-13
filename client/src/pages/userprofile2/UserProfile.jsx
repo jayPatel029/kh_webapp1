@@ -34,6 +34,7 @@ import { getDoctorsChat } from "../../ApiCalls/doctorApis";
 import Vaccines from "@mui/icons-material/Vaccines";
 import { ca } from "date-fns/locale";
 import LabRedingUpdateModal from "../../components/modals/LabReadingModal";
+import { BsTrash, BsPencilSquare, BsKey } from "react-icons/bs";
 
 function UserProfile({ patient }) {
   const [totalUnreadCount, settotalUnreadCount] = useState(0);
@@ -272,6 +273,7 @@ function UserProfile({ patient }) {
       });
 
       setGeneralParameters(temp);
+
       setLoading(false);
       console.log("my general params", temp);
     });
@@ -483,9 +485,8 @@ function UserProfile({ patient }) {
               <div className="w-3/4 flex justify-center mx-auto">
                 <div className="flex justify-center">
                   <div className="w-1/2 md:w-1/4 mb-2 flex  justify-center">
-                    {(role.role_name === "Admin" ||
-                      role.role_name === "PSadmin" ||
-                      role.role_name === "Doctor") && (
+                    {!(role.role_name === "Dialysis Technician" ||
+                      role.role_name === "Medical Staff") && (
                       <div className="navbuttons gap-2">
                         <Link to={"/adminChat/" + id} className="text-sm">
                           ADMIN CHAT
@@ -519,8 +520,10 @@ function UserProfile({ patient }) {
                       </div>
                     )}
                   </div>
-                  {!(role.role_name === "Medical Staff" ||
-                    role.role_name === "Dialysis Technician") && (
+                  {!(
+                    role.role_name === "Medical Staff" ||
+                    role.role_name === "Dialysis Technician"
+                  ) && (
                     <div className="w-1/2 md:w-1/4 mb-2 flex gap-2 justify-center">
                       <div className="navbuttons">
                         <Link to={"/doctorChat/" + id} className="text-sm">
@@ -606,15 +609,14 @@ function UserProfile({ patient }) {
                       </button>
                     </div>
                   </div>
-                  {!(
-                    role.role_name === "Dialysis Technician") && (
+                  {!(role.role_name === "Dialysis Technician") && (
                     <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
                       <div className="navbuttons">
                         <Link to={"/ShowAlarms/" + id}>ALARMS</Link>
                       </div>
                     </div>
                   )}
-                  {(role.role_name === "Admin" ) && (
+                  {role.role_name === "Admin" && (
                     <div className="w-1/2 md:w-1/4 mb-2 flex justify-center">
                       <div className="navbuttons">
                         <button
@@ -734,8 +736,7 @@ function UserProfile({ patient }) {
                         <div className="aliments mb-2">
                           <span className="font-bold">Ailments: </span>
                           <span>{userData.ailments.join(", ")}</span>
-                          {
-                            role?.role_name != "Dialysis Technician" &&
+                          {role?.role_name != "Dialysis Technician" &&
                             role?.role_name != "Medical Staff" && (
                               <button onClick={openEditalimentsModal}>
                                 <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
@@ -755,11 +756,11 @@ function UserProfile({ patient }) {
                           <span className="font-bold"> DOB: </span>
                           <span>{formatDate(userData.dob)}</span>
                           {role?.role_name != "Dialysis Technician" &&
-                              role?.role_name != "Medical Staff" && (
-                            <button onClick={openEditModal}>
-                              <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
-                            </button>
-                          )}
+                            role?.role_name != "Medical Staff" && (
+                              <button onClick={openEditModal}>
+                                <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
+                              </button>
+                            )}
                           {editModalOpen && (
                             <NameModal
                               closeEditModal={closeEditModal}
@@ -883,8 +884,7 @@ function UserProfile({ patient }) {
                           <div className="dry-weight">
                             <span className="font-bold">Dry Weight: </span>
                             <span>{userData.dry_weight}</span>
-                            {
-                              role?.role_name != "Dialysis Technician" &&
+                            {role?.role_name != "Dialysis Technician" &&
                               role?.role_name != "Medical Staff" && (
                                 <button onClick={openEditalimentsModal}>
                                   <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
@@ -901,11 +901,11 @@ function UserProfile({ patient }) {
                               <span className="font-bold">KFRE: </span>
                               <span>{(userData.kefr * 100).toFixed(2)}%</span>
                               {role?.role_name != "Dialysis Technician" &&
-                              role?.role_name != "Medical Staff" &&(
-                                <button onClick={openEditalimentsModal}>
-                                  <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
-                                </button>
-                              )}
+                                role?.role_name != "Medical Staff" && (
+                                  <button onClick={openEditalimentsModal}>
+                                    <BorderColorIcon className="h-3 w-3 text-[#19b9d4]" />
+                                  </button>
+                                )}
                             </div>
                           )}
                       </div>
@@ -914,9 +914,9 @@ function UserProfile({ patient }) {
                   <p
                     className={`${
                       userData?.condition == "stable"
-                        ? "text-green-500"
+                        ? "text-green-500 font-bold"
                         : userData?.condition == "unstable"
-                        ? "text-yellow-500"
+                        ? "text-yellow-500 font-bold"
                         : userData?.condition == "critical"
                         ? "text-red-500 font-bold"
                         : "text-gray-500"
@@ -934,7 +934,7 @@ function UserProfile({ patient }) {
                       </span>
                       <span>
                         <KeyboardArrowDownIcon />
-                      </span> 
+                      </span>
                     </div>
                   }
                   className="collapsable"
@@ -1185,7 +1185,7 @@ function UserProfile({ patient }) {
                                     onSuccess={handleUpdatelabRSuccess}
                                   />
                                 )}
-                                <button
+                                {/* <button
                                   className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition"
                                   onClick={() =>
                                     openLabReadingModal(
@@ -1201,6 +1201,23 @@ function UserProfile({ patient }) {
                                   onClick={() => deleteLabReading(reading.id)}
                                 >
                                   Delete
+                                </button> */}
+                                <button
+                                  className="text-[#87ca9c] inline-block mx-2 text-2xl"
+                                  onClick={() =>
+                                    openLabReadingModal(
+                                      reading.title,
+                                      reading.id
+                                    )
+                                  }
+                                >
+                                  <BsPencilSquare />
+                                </button>
+                                <button
+                                  className="text-[#ff0000] inline-block mx-2 text-2xl"
+                                  onClick={() => deleteLabReading(reading.id)}
+                                >
+                                  <BsTrash />
                                 </button>
                               </div>
                             ) : null}

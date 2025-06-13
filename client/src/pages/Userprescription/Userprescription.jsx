@@ -293,10 +293,6 @@
 
 // export default Userprescription;
 
-
-
-
-
 import React, { useState, useEffect } from "react";
 import "./Userprescription.scss";
 import Sidebar from "../../components/sidebar/Sidebar";
@@ -311,6 +307,7 @@ import { useParams, Link } from "react-router-dom";
 import UploadedFileModal from "./UploadedFileModal";
 
 import { FaFilePdf } from "react-icons/fa6";
+import { useSelector } from "react-redux";
 // import UploadBulkProfile from "../labreports/uploadBulkProfileQuestions";
 
 const Userprescription = () => {
@@ -322,12 +319,13 @@ const Userprescription = () => {
   const [doctorOptions, setDoctorOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const location = useLocation();
-  const email= localStorage.getItem("email");
- 
+  const email = localStorage.getItem("email");
+  const role = useSelector((state) => state.permission);
+
   const openModal = () => {
     setShowModal(true);
   };
-  
+
   const closeModal = () => {
     setShowModal(false);
   };
@@ -358,7 +356,7 @@ const Userprescription = () => {
       const response = await axiosInstance.get(
         `${server_url}/prescription/getPrescription/${patient_id}`
       );
-      console.log(response.data.data)
+      console.log(response.data.data);
       setUserPrescriptionData(response.data.data);
       setFilteredPrescriptionData(response.data.data);
       // console.log("data received on frontend : ", response.data.data);
@@ -391,7 +389,7 @@ const Userprescription = () => {
     }
   }, []);
 
-  const handleDelete = async (prescriptionId,email) => {
+  const handleDelete = async (prescriptionId, email) => {
     const isConfirmed = window.confirm(
       "Are you sure you want to delete this prescription?"
     );
@@ -402,8 +400,8 @@ const Userprescription = () => {
           `${server_url}/prescription/deletePrescription/${prescriptionId}`,
           {
             data: {
-              email: email
-            }
+              email: email,
+            },
           }
         );
 
@@ -448,7 +446,8 @@ const Userprescription = () => {
             <div className="manage-roles-container p-7 ml-4 mr-4 mt-4 bg-white shadow-md border-t-4 border-primary">
               <Link
                 to={`/userProfile/${id}`}
-                className="text-primary border-b-2 border-primary">
+                className="text-primary border-b-2 border-primary"
+              >
                 go back
               </Link>
               <div className="mt-4 mb-4 flex items-center justify-end">
@@ -457,11 +456,15 @@ const Userprescription = () => {
               <div className="flex justify-between items-center border-b pb-2 mb-4">
                 <h2 className="text-2xl font-bold">Prescription</h2>
                 <div className="flex items-center justify-end">
-                  <button
-                    className="block rounded-lg text-primary border-2 border-primary w-40 py-2"
-                    onClick={() => openModal()}>
-                    Upload Prescription
-                  </button>
+                  {role.role_name != "Dialysis Technician" && (
+                    <button
+                      className="block rounded-lg text-primary border-2 border-primary w-40 py-2"
+                      onClick={() => openModal()}
+                    >
+                      Upload Prescription
+                    </button>
+                  )}
+
                   {showModal && (
                     <PrescriptionModal
                       closeModal={closeModal}
@@ -476,6 +479,7 @@ const Userprescription = () => {
                       user_id={location.state.id}
                       // onSuccess={fetchData}
                       file={uploadedFile}
+                      patient_id={id}
                     />
                   )}
 
@@ -484,6 +488,7 @@ const Userprescription = () => {
                       closeModal={closeFileModal}
                       user_id={uploadedFile.user_id}
                       file={uploadedFile.file}
+                      patient_id={id}
                     />
                   )}
                 </div>
@@ -494,7 +499,8 @@ const Userprescription = () => {
                   id="doctorId"
                   className="w-1/3 border-2 py-2 px-3 rounded focus:outline-none focus:border-amber-950"
                   // value={selectedDoctorId}
-                  onChange={handleSelectChange}>
+                  onChange={handleSelectChange}
+                >
                   <option>sort by doctor</option>
                   {Array.isArray(doctorOptions) &&
                     doctorOptions.map((doctor, index) => (
@@ -507,7 +513,8 @@ const Userprescription = () => {
                   className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center ml-2"
                   onClick={() => {
                     setFilteredPrescriptionData(userPrescriptionData);
-                  }}>
+                  }}
+                >
                   Clear Filter
                 </button>
               </div>
@@ -565,8 +572,9 @@ const Userprescription = () => {
                               <button
                                 className="text-[#ff0000] inline-block mx-2 text-2xl"
                                 onClick={() =>
-                                  handleDelete(prescriptionItem.id,email)
-                                }>
+                                  handleDelete(prescriptionItem.id, email)
+                                }
+                              >
                                 <BsTrash />
                               </button>
                             </td>
