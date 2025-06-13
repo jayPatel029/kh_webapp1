@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken")
+const { sequelize } = require("../../databaseConn/database")
 const isTokenIncluded =(req) => {
    
     return (
@@ -36,7 +37,5 @@ const sendToken = (user,statusCode,res)=>{
     })
 
 }
-
-
 
 module.exports= {isTokenIncluded , getAccessTokenFromHeader , sendToken,generateJwtFromUser}

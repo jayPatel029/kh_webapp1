@@ -1,6 +1,7 @@
 const { be } = require("date-fns/locale");
 const { pool } = require("../databaseConn/database.js");
 const { AddDialysisReadingsAlerts } = require("./DailyReadingsAlerts.js");
+const { UpdatePatientCondition } = require("./readings.js");
 
 const AddGraphReading = async (req, res, next) => {
   const { question_id, user_id, date, readings } = req.body;
@@ -27,11 +28,12 @@ const AddGraphReading = async (req, res, next) => {
       });
     }
 
-    // Proceed with fetching the title of the question
+    // Proceed with fetching the title and condition of the question
     const titleQuery = await pool.execute(
-      `SELECT title FROM dialysis_readings WHERE id = ${question_id}`
+      `SELECT title, \`condition\` FROM dialysis_readings WHERE id = ${question_id}`
     );
     const questionTitle = titleQuery[0].title;
+    const questionCondition = titleQuery[0].condition;
 
     // If title is 'weight after dialysis', check if 'weight before dialysis' is recorded for the same date
     if (questionTitle.toLowerCase().trim() === "weight after dialysis") {
@@ -60,6 +62,31 @@ const AddGraphReading = async (req, res, next) => {
     const excludedTitles = ["weight before dialysis", "weight after dialysis"];
     if (!excludedTitles.includes(questionTitle.toLowerCase().trim())) {
       await AddDialysisReadingsAlerts(question_id, user_id, date, readings);
+    }
+
+    // Get all readings for the current date to determine patient condition
+    const currentDateReadingsQuery = `
+      SELECT dr.condition 
+      FROM graph_readings_dialysis grd
+      JOIN dialysis_readings dr ON grd.question_id = dr.id
+      WHERE grd.user_id = '${user_id}' 
+      AND DATE(grd.date) = '${currentDate}'
+      AND dr.condition IS NOT NULL
+    `;
+    const currentDateReadings = await pool.query(currentDateReadingsQuery);
+    
+    // Extract conditions from readings
+    const paramConditions = currentDateReadings.map(reading => reading.condition);
+    // Add current reading's condition if it exists
+    if (questionCondition) {
+      paramConditions.push(questionCondition);
+    }
+
+    // Update patient condition based on all readings
+    if (paramConditions.length > 0) {
+      console.log("conditions are", paramConditions, user_id);
+      const conditionUpdateResult = await UpdatePatientCondition(user_id, paramConditions);
+      console.log("Condition update result:", conditionUpdateResult);
     }
 
     return res.status(200).json({
@@ -328,12 +355,12 @@ const getReadingsInterDialyticsResponseGraph = async (question_id, user_id) => {
       FROM dialysis_readings
       WHERE LOWER(title) = 'weight after dialysis'
     `;
-    const interId=`
-    SELECT id
-    FROM dialysis_readings
-    WHERE LOWER(title) = 'inter dialysis weight'
-    `
-    const [beforeResult, afterResult,inter] = await Promise.all([
+    const interId = `
+      SELECT id
+      FROM dialysis_readings
+      WHERE LOWER(title) = 'inter dialysis weight'
+    `;
+    const [beforeResult, afterResult, inter] = await Promise.all([
       pool.query(beforeDialysisQuery),
       pool.query(afterDialysisQuery),
       pool.query(interId)
@@ -341,100 +368,157 @@ const getReadingsInterDialyticsResponseGraph = async (question_id, user_id) => {
 
     const beforeReadingId = beforeResult[0].id;
     const afterReadingId = afterResult[0].id;
-    const interReadingId=inter[0].id
+    const interReadingId = inter[0].id;
 
-    // Step 2: Get the responses for 'weight before dialysis' and 'weight after dialysis'
-    const beforeResponseQuery = `
-      SELECT date, readings
+    // Step 2: Get all dialysis readings for the user
+    const allDialysisReadingsQuery = `
+      SELECT date, readings, question_id
       FROM graph_readings_dialysis
-      WHERE question_id = ${beforeReadingId} AND user_id = ${user_id}
+      WHERE user_id = ${user_id}
       ORDER BY date
     `;
-    const afterResponseQuery = `
-      SELECT date, readings
-      FROM graph_readings_dialysis
-      WHERE question_id = ${afterReadingId} AND user_id = ${user_id}
-      ORDER BY date
-    `;
-    const otherDates =`
-    select date from graph_readings_dialysis where  user_id = ${user_id} AND question_id!=${interReadingId} AND  question_id != ${beforeReadingId} AND  question_id != ${afterReadingId} group by date`
 
-    const [beforeResponseResult, afterResponseResult, remaining] = await Promise.all([
-      pool.query(beforeResponseQuery),
-      pool.query(afterResponseQuery),
-      pool.query(otherDates)
-    ]);
+    const allReadings = await pool.query(allDialysisReadingsQuery);
 
-    // Step 3: Create a map of dates and their corresponding before/after readings
+    // Create a map of dates and their corresponding readings
     const dateMap = {};
-    
-    // Add "before" readings to the dateMap
-    beforeResponseResult.forEach(before => {
-      const date = new Date(before.date).toISOString().split('T')[0];
-      dateMap[date] = { before: before.readings, after: null };  // Initialize 'after' as null
+    const dialysisDates = new Set();
+
+    // First, collect all dates where dialysis readings exist
+    allReadings.forEach(reading => {
+      const date = new Date(reading.date).toISOString().split('T')[0];
+      dialysisDates.add(date);
+      
+      if (!dateMap[date]) {
+        dateMap[date] = {
+          before: null,
+          after: null,
+          hasOtherReadings: false
+        };
+      }
+
+      if (reading.question_id === beforeReadingId) {
+        dateMap[date].before = reading.readings;
+      } else if (reading.question_id === afterReadingId) {
+        dateMap[date].after = reading.readings;
+      } else if (reading.question_id !== interReadingId) {
+        dateMap[date].hasOtherReadings = true;
+      }
     });
 
-    // Add "after" readings to the dateMap
-    afterResponseResult.forEach(after => {
-      const date = new Date(after.date).toISOString().split('T')[0];
-      if (dateMap[date]) {
-        dateMap[date].after = after.readings;
-      } else {
-        dateMap[date] = { before: null, after: after.readings };  // Initialize 'before' as null
-      }
-    });
-    // for(let i=0;i<remaining.length;i++){
-    //   const date = new Date(remaining[i].date).toISOString().split('T')[0];
-    //   dateMap[date] = { before: null, after: null };  // Initialize 'before' as null
-    // }
-    for (let i = 0; i < remaining.length; i++) {
-      const date = new Date(remaining[i].date).toISOString().split('T')[0];
-      if (!dateMap[date]) {  // Only add if date is not already in dateMap
-        dateMap[date] = { before: null, after: null };
-      }
-    }
     const interDialyticResponses = [];
-    let previousDate = null;
-
-    // Step 4: Calculate interdialytic weight gain
-    const sortedDates = Object.keys(dateMap).sort((a, b) => new Date(a) - new Date(b));
+    const sortedDates = Array.from(dialysisDates).sort((a, b) => new Date(a) - new Date(b));
 
     for (let i = 0; i < sortedDates.length; i++) {
       const currentDate = sortedDates[i];
-      const { before, after } = dateMap[currentDate];
+      const currentData = dateMap[currentDate];
 
+      // Case 1: First day - can't calculate IDWG
       if (i === 0) {
-        // Skip the first day, since no calculation is possible
-        interDialyticResponses.push({
-          date: currentDate,
-          readings: 'No readings found'
-        });
-      } else {
-        const previousDateData = dateMap[sortedDates[i - 1]];
-
-        if (!before) {
-          // Case 1: No "Before" reading for the current day
+        if (!currentData.before && !currentData.after) {
+          if (currentData.hasOtherReadings) {
+            interDialyticResponses.push({
+              date: currentDate,
+              readings: 'No weight reading found',
+              error: 'Both before and after readings missing but other dialysis readings exist'
+            });
+          } else {
+            interDialyticResponses.push({
+              date: currentDate,
+              readings: 'DT has failed to enter one/mul reading',
+              error: 'No dialysis readings found for this date'
+            });
+          }
+        } else if (!currentData.before) {
           interDialyticResponses.push({
             date: currentDate,
-            readings: 'Reading of weight before dialysis is missing'
+            readings: 'Previous "weight before" reading missing',
+            error: 'Weight before dialysis is missing'
           });
-        } else if (!previousDateData.after) {
-          // Case 2: No "After" reading for the previous day
+        } else if (!currentData.after) {
           interDialyticResponses.push({
             date: currentDate,
-            readings: 'Reading of weight after dialysis for the previous dialysis session is missing'
+            readings: 'Previous "weight after" reading missing',
+            error: 'Weight after dialysis is missing'
           });
         } else {
-          // Case 3: Both "Before" reading for current day and "After" reading for previous day exist
-          const idwg = before - previousDateData.after;
           interDialyticResponses.push({
             date: currentDate,
-            readings: idwg
+            readings: 'First day - No previous reading for comparison',
+            error: 'Cannot calculate IDWG for first day'
           });
         }
+        continue;
       }
 
-      previousDate = currentDate; // Update the previousDate for the next iteration
+      // For subsequent days
+      const previousDate = sortedDates[i - 1];
+      const previousData = dateMap[previousDate];
+
+      // Case 2: Both before and after readings missing
+      if (!currentData.before && !currentData.after) {
+        if (currentData.hasOtherReadings) {
+          interDialyticResponses.push({
+            date: currentDate,
+            readings: 'No weight reading found',
+            error: 'Both before and after readings missing but other dialysis readings exist'
+          });
+        } else {
+          interDialyticResponses.push({
+            date: currentDate,
+            readings: 'DT has failed to enter one/multiple reading', // this alert to doc
+            error: 'No dialysis readings found for this date'
+          });
+        }
+        continue;
+      }
+
+      // Case 3: Only before reading is present
+      if (currentData.before && !currentData.after) {
+        if (!previousData.after) {
+          interDialyticResponses.push({
+            date: currentDate,
+            readings: 'Previous "weight after dialysis" reading is missing',
+            error: 'Cannot calculate IDWG - Previous weight after dialysis is missing'
+          });
+        } else {
+          // We can plot this point since we have both current before and previous after
+          const idwg = currentData.before - previousData.after;
+          interDialyticResponses.push({
+            date: currentDate,
+            readings: idwg,
+            error: 'After reading missing for current date'
+          });
+        }
+        continue;
+      }
+
+      // Case 4: Only after reading is present
+      if (!currentData.before && currentData.after) { // send DT alert for this case to doc
+        interDialyticResponses.push({
+          date: currentDate,
+          readings: 'This session\'s "weight before dialysis" reading is missing',
+          error: 'Weight before dialysis is missing'
+        });
+        continue;
+      }
+
+      // Case 5: Both readings present but previous after is missing
+      if (currentData.before && currentData.after && !previousData.after) {
+        interDialyticResponses.push({
+          date: currentDate,
+          readings: 'Previous "weight after dialysis" reading is missing',
+          error: 'Cannot calculate IDWG - Previous weight after dialysis is missing'
+        });
+        continue;
+      }
+
+      // Case 6: All required readings present - calculate IDWG
+      const idwg = currentData.before - previousData.after;
+      interDialyticResponses.push({
+        date: currentDate,
+        readings: idwg
+      });
     }
 
     return interDialyticResponses;

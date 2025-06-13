@@ -6,6 +6,7 @@ const {
   convertDateFormatYYYYmmDD,
   formatDateNew,
 } = require("../../Helpers/date_formatter.js");
+const { createNewPrescriptionAlert } = require("../Alerts.js");
 
 const addToReadTable = async (doctorId, commentId) => {
   const query = `INSERT INTO commentsread (commentId,isRead,doctorId) VALUES ('${commentId}',0,'${doctorId}')`;
@@ -34,7 +35,12 @@ const addPrescriptionFromApp = async (req, res) => {
     }
     const date2 = convertDateFormatYYYYmmDD(date);
     const query = `INSERT INTO prescriptions (Prescription, Date, patient_id) VALUES (?, ?, ?)`;
-    await pool.query(query, [phtotolocation, date2, userid]);
+    const [result] = await pool.query(query, [phtotolocation, date2, userid]);
+    
+    prescriptionId = Number(result.insertId);
+
+    createNewPrescriptionAlert(prescriptionID,userid); 
+
 
     res.status(200).json({
       success: true,
@@ -54,16 +60,36 @@ const fetchPrescriptionComments = async (req, res) => {
   const { priscriptionID } = req.body;
   try {
     const query = `SELECT * FROM comments where typeId = ${priscriptionID} and type="Prescription"`;
-    const resp = await pool.query(query);
+    const comments = await pool.query(query);
     var respObj = [];
-    for (var i of resp) {
+    console.log("comms are ", comments);
+
+    for(const c of comments) {
+      console.log("this comment: ",c);
+      let dName = "";
+      if(c.isDoctor == 1) {
+        const doc = await pool.query(`SELECT name FROM doctors WHERE id = ?`, [c.doctorId]);
+        console.log("doc is ", doc);
+        dName = doc[0].name;
+      }
+
       respObj.push({
-        commentId: i["id"],
-        commentText: i["content"],
-        commentsBy: i["isDoctor"] == "1" ? "Doctor" : "Patient",
-        dateTime: i["date"],
+        commentId: c.id,
+        commentText: c.content,
+        commentsBy: c.isDoctor === "1" ? "Doctor" : "Patient",
+        doctorName: dName, // empty string for patient
+        dateTime: c.date,
       });
     }
+
+    // for (var i of resp) {
+    //   respObj.push({
+    //     commentId: i["id"],
+    //     commentText: i["content"],
+    //     commentsBy: i["isDoctor"] == "1" ? "Doctor" : "Patient",
+    //     dateTime: i["date"],
+    //   });
+    // }
     console.log("response pres comments: ", respObj);
     res.status(200).json({
       dietId: 0,
@@ -81,52 +107,6 @@ const fetchPrescriptionComments = async (req, res) => {
   }
 };
 
-// const addPrescriptionComment = async (req, res) => {
-//   const { priscriptionID, comment, userID } = req.body;
-
-//   var formattedDate = getCurrentFormattedDate();
-//   try {
-//     const query2 = `INSERT INTO comments (content, userId, typeId, isDoctor, date, type) VALUES (? , ? , ? , ? , ? , ?);`;
-//     const resp2 = await pool.query(query2, [
-//       comment,
-//       userID,
-//       priscriptionID,
-//       0,
-//       formattedDate,
-//       "Prescription",
-//     ]);
-
-//     cid = Number(resp2.insertId);
-
-//     const query1 = `SELECT * FROM doctor_patients WHERE patient_id=${userID}`;
-//     try {
-//       const doctors = await pool.query(query1);
-//       for (let i = 0; i < doctors.length; i++) {
-//         const doctor = doctors[i];
-//         await addToReadTable(doctor.doctor_id, cid);
-//       }
-//     } catch (error) {
-//       // console.error("Error adding to read table:", error);
-//       throw "Error adding to read table:";
-//       // res.status(400).json({
-//       //   success: false,
-//       //   message: "Something went wrong",
-//       // });
-//     }
-
-//     res.status(200).json({
-//       success: true,
-//       // data: resp.toString(),
-//       message: "Prescription Comments added Successfully",
-//     });
-//   } catch (error) {
-//     console.error("Error adding prescription comments!", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Error adding prescription comments",
-//     });
-//   }
-// };
 
 const addPrescriptionComment = async (req, res) => {
   const { priscriptionID, comment, userID } = req.body;

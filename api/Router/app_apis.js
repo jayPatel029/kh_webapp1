@@ -90,7 +90,7 @@ router.post("/pushTokenUpdate", updateToken);
 
 // UPDATE
 router.post("/updateUserAilments", updateUserAilment);
-router.get("/getUnreadDoctorCmts",verifyToken,getUnreadDoctorComments);
+router.get("/getUnreadDoctorCmts",getUnreadDoctorComments);
 router.post("/markCommentsAsRead", markCommentAsRead);
 // ALARMS
 router.post("/alarms/fetchAlarms", getAlarmOfPatient);

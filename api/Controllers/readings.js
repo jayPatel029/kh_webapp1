@@ -86,7 +86,9 @@ async function addDailyReading(req, res) {
     console.log(title, type, assign_range, low_range, high_range,isGraph,unit, alertTextDoc, condition)
     console.log("ailments",ailments);
     console.log("this body: ", req.body);
-    const query=`select id from ailments where name in (${ailments.map((ailment)=>`'${ailment}'`).join(",")})`;
+    // const query=`select id from ailments where name in (${ailments.map((ailment)=>`'${ailment}'`).join(",")})`;
+    const query = `SELECT id FROM ailments WHERE id IN (${ailments.join(",")})`;
+
     const ailmentIds=await pool.query(query );
     console.log("ailmentIds",ailmentIds.map((ailment) => ailment.id));
     // Insert a new record into the daily_readings table
@@ -324,7 +326,8 @@ async function addDialysisReading(req, res) {
       unit,
       condition,
     });
-    const query=`select id from ailments where name in (${ailments.map((ailment)=>`'${ailment}'`).join(",")})`;
+    // const query=`select id from ailments where name in (${ailments.map((ailment)=>`'${ailment}'`).join(",")})`;
+    const query = `SELECT id FROM ailments WHERE id IN (${ailments.join(",")})`;
     const ailmentIds=await pool.query(query );
     console.log("ailmentIds",ailmentIds);
     const ailmentsInserted = await ailmentIds.map(async (ailment) => {
@@ -581,6 +584,140 @@ async function getAllUserReadingsByPid(req, res) {
     res.status(500).send("Internal Server Error");
   }
 }
+ 
+// const UpdatePatientCondition = async (patientId, paramConditions) => {
+//   try {
+//     // Validate patient exists
+//     const getPatientQuery = `SELECT \`condition\` FROM patients WHERE id = ?`;
+//     const [rows] = await pool.query(getPatientQuery, [patientId]);
+//     console.log("getPatientQuery", rows.condition);
+//     if (!rows || rows.length === 0) {
+//       console.log(`No patient found: ${patientId}`);
+//       return { success: false, message: "Patient not found" };
+//     }
+    
+//     console.log("got this data", patientId,paramConditions);
+//     // Count occurrences of each condition
+//     const conditionCounts = {
+//       stable: 0,
+//       unstable: 0,
+//       critical: 0
+//     };
+
+//     // Count each condition
+//     paramConditions.forEach(condition => {
+//       if (conditionCounts.hasOwnProperty(condition)) {
+//         conditionCounts[condition]++;
+//       }
+//     });
+
+//     // Find the condition with highest count
+//     let newCondition = null;
+//     let maxCount = 0;
+
+//     for (const [condition, count] of Object.entries(conditionCounts)) {
+//       if (count > maxCount) {
+//         maxCount = count;
+//         newCondition = condition;
+//       }
+//     }
+
+//     // If there's a tie, prioritize conditions in order: critical > unstable > stable
+//     if (maxCount > 0) {
+//       const tiedConditions = Object.entries(conditionCounts)
+//         .filter(([_, count]) => count === maxCount)
+//         .map(([condition]) => condition);
+
+//       if (tiedConditions.length > 1) {
+//         if (tiedConditions.includes('critical')) {
+//           newCondition = 'critical';
+//         } else if (tiedConditions.includes('unstable')) {
+//           newCondition = 'unstable';
+//         } else {
+//           newCondition = 'stable';
+//         }
+//       }
+//     }
+//     console.log("new condition", newCondition);
+//     // Update patient condition if different from current
+//     if (newCondition && newCondition !== rows.condition) {
+//       const updateQuery = `UPDATE patients SET \`condition\` = ? WHERE id = ?`;
+//       await pool.query(updateQuery, [newCondition, patientId]);
+
+//       console.log(`${patientId} condition updated to ${newCondition}`);
+//       return { 
+//         success: true, 
+//         message: `Condition updated to ${newCondition}`,
+//         previousCondition: rows.condition,
+//         newCondition: newCondition
+//       };
+//     }
+
+//     console.log(`No condition update required for patient ${patientId}`);
+//     return { 
+//       success: true, 
+//       message: "No condition change required",
+//       currentCondition: rows.condition
+//     };
+//   } catch (error) {
+//     console.error("Error updating patient condition:", error);
+//     return { success: false, message: "Error updating patient condition" };
+//   }
+// };
+
+
+const UpdatePatientCondition = async (patientId, paramConditions) => {
+  try {
+    // Validate patient exists
+    const getPatientQuery = `SELECT \`condition\` FROM patients WHERE id = ?`;
+    const [rows] = await pool.query(getPatientQuery, [patientId]);
+
+    if (!rows || rows.length === 0) {
+      console.log(`No patient found: ${patientId}`);
+      return { success: false, message: "Patient not found" };
+    }
+
+    console.log("Got conditions for update:", paramConditions);
+
+    // Determine most severe condition (critical > unstable > stable)
+    let newCondition = "stable"; // Default
+
+    if (paramConditions.includes("critical")) {
+      newCondition = "critical";
+    } else if (paramConditions.includes("unstable")) {
+      newCondition = "unstable";
+    }
+
+    console.log("Determined new condition:", newCondition);
+    console.log("curr condition:", rows.condition);
+
+    const currentCondition = rows.condition;
+
+    if (newCondition !== currentCondition) {
+      const updateQuery = `UPDATE patients SET \`condition\` = ? WHERE id = ?`;
+      await pool.query(updateQuery, [newCondition, patientId]);
+
+      console.log(`${patientId} condition updated to ${newCondition}`);
+      return {
+        success: true,
+        message: `Condition updated to ${newCondition}`,
+        previousCondition: currentCondition,
+        newCondition: newCondition
+      };
+    }
+
+    console.log(`No condition update required for patient ${patientId}`);
+    return {
+      success: true,
+      message: "No condition change required",
+      currentCondition: currentCondition
+    };
+
+  } catch (error) {
+    console.error("Error updating patient condition:", error);
+    return { success: false, message: "Error updating patient condition" };
+  }
+};
 
 module.exports = {
   getDailyReadings,
@@ -595,4 +732,5 @@ module.exports = {
   updateDailyReading,
   updateDialysisReading,
   getAllUserReadingsByPid,
+  UpdatePatientCondition,
 };

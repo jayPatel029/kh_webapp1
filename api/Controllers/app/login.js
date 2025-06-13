@@ -44,7 +44,8 @@ console.log(JWT_SECRET_KEY);
     const patient = result[0];
 
     const isAdvance = patient.program === "Advanced" ? 1 : 0;
-
+    console.log("patietns data is", patient);
+    const pushNotificationID = patient.push_notification_id || null;
     const payload = {
       name: patient.name,
       number: patient.number,

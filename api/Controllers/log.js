@@ -4,16 +4,19 @@ const { pool } = require("../databaseConn/database.js");
 const axios = require("axios");
 
 async function logChange(userId, field, patientName, number, oldValue, newValue, changedBy) {
+
     const query = `
         INSERT INTO patient_log (patient_id,changed_field, old_value, new_value, changed_by, patientName , number )
         VALUES (?, ?, ?, ?, ?,?,?)
     `;
     try {
+        console.log("adding log for patient: ", userId);
         await pool.query(query, [userId,  field, oldValue, newValue, changedBy,patientName,number,]);
     } catch (error) {
         console.error("Error logging change:", error);
     }
 }
+
 async function ReportLog(userId,report,type,report_id,message,deletedBy)
 {
     const query = `

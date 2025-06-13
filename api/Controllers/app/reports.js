@@ -5,12 +5,13 @@ const {
   getCurrentFormattedDate,
   formatDateNew,
 } = require("../../Helpers/date_formatter.js");
+const { createNewLabReportAlert } = require("../Alerts.js");
 const { addToReadTable } = require("./prescription.js");
 
 const fetchUserLabReports = async (req, res) => {
   const { userID } = req.body;
   try {
-    const query = `SELECT * FROM labreport where patient_id = ${userID}`;
+    const query = `SELECT * FROM labreport where patient_id = ${userID} ORDER BY Date DESC`;
     const resp = await pool.query(query);
     if (resp.length > 0) {
       var respOut = [];
@@ -60,7 +61,15 @@ const addLabReportFromApp = async (req, res) => {
     }
     const date2 = date.replaceAll(" ", "-");
     const query = `INSERT INTO labreport (Report_Type, Lab_Report, Date, patient_id) VALUES (?, ?, ?, ?)`;
-    await pool.query(query, [reporttype, phtotolocation, date2, userid]);
+    const result = await pool.query(query, [reporttype, phtotolocation, date2, userid]);
+
+    const labReportId = Number(result.insertId);
+    // createNewLabReportAlert({labReportId: labReportId, patient_id: userid}); 
+    
+    const queryA = `INSERT INTO alerts (patientId,type,category, date, isOpened, labReportId) VALUES ('${userid}', 'patient','New Lab Report', '${date2}', 0, '${labReportId}')`;
+    await pool.query(queryA);
+
+
 
     res.status(200).json({
       success: true,
@@ -80,16 +89,36 @@ const fetchReportComments = async (req, res) => {
   const { labReportID } = req.body;
   try {
     const query = `SELECT * FROM comments where typeId = ${labReportID} and type="Lab Report"`;
-    const resp = await pool.query(query);
+    const comments = await pool.query(query);
     var respObj = [];
-    for (var i of resp) {
+    
+    for(const c of comments) {
+      console.log("this comment: ",c);
+      let dName = "";
+      if(c.isDoctor == 1) {
+        const doc = await pool.query(`SELECT name FROM doctors WHERE id = ?`, [c.doctorId]);
+        console.log("doc is ", doc);
+        dName = doc[0].name;
+      }
+
       respObj.push({
-        commentId: i["id"],
-        commentText: i["content"],
-        commentsBy: i["isDoctor"] == "1" ? "Doctor" : "Patient",
-        dateTime: i["date"],
+        commentId: c.id,
+        commentText: c.content,
+        commentsBy: c.isDoctor === "1" ? "Doctor" : "Patient",
+        doctorName: dName, // empty string for patient
+        dateTime: c.date,
       });
     }
+
+    
+    // for (var i of resp) {
+    //   respObj.push({
+    //     commentId: i["id"],
+    //     commentText: i["content"],
+    //     commentsBy: i["isDoctor"] == "1" ? "Doctor" : "Patient",
+    //     dateTime: i["date"],
+    //   });
+    // }
     res.status(200).json({
       dietId: 0,
       image: "",

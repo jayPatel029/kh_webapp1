@@ -6,22 +6,103 @@ const {
 } = require("../../Helpers/date_formatter.js");
 const translations = require("./translation.json");
 
+// const fetchDialysisParameters = async (req, res) => {
+//   const { userID, date, language } = req.body;
+//   try {
+//     const query = `SELECT doctor_id, patient_id FROM doctor_patients WHERE patient_id = ${userID};`; //! added patient_id in qry
+//     const resp = await pool.query(query);
+//     var respOut = [];
+//     if (resp.length > 0) {
+//       for (var doctor of resp) {
+//         const query2 = `SELECT dialysisreadingid FROM doctor_dialysis_readings WHERE doctorid = ${doctor["doctor_id"]};`;
+//         var resp2 = await pool.query(query2);
+//         if (resp2.length > 0) {
+//           for (var dialysisReadingID of resp2) {
+//             const query3 = `SELECT * FROM dialysis_readings WHERE id = ${dialysisReadingID["dialysisreadingid"]}`;
+//             var resp3 = await pool.query(query3);
+//             if (resp3.length > 0) {
+//               for (var dialysisReadings of resp3) {
+//                 const answerQuery = `SELECT readings FROM graph_readings_dialysis WHERE question_id = ${dialysisReadingID["dialysisreadingid"]} AND user_id = ${userID} AND date = '${date}';`;
+//                 var answerResp = await pool.query(answerQuery);
+//                 let answer = "";
+//                 if (answerResp.length > 0) {
+//                   answer = answerResp[0].readings;
+//                 }
+
+//                 const parameterName = dialysisReadings.title;
+//                 const parameterTranslation = translations[parameterName];
+//                 const parameterNameTranslation = parameterTranslation
+//                   ? parameterTranslation[language]
+//                   : parameterName;
+
+//                 // console.log(parameterTranslation);
+//                 const unitOfMeasure = dialysisReadings.unit;
+//                 const unitOfMeasureTranslation = dialysisReadings.unit;
+
+//                 respOut.push({
+//                   dialysisUserParameterID: parseInt(doctor["patient_id"]), //! changed "medical_team" to "patient_id"
+//                   dialysisParameterID: dialysisReadingID["dialysisreadingid"],
+//                   dialysisParameterName: parameterName,
+//                   dialysisParameterNameTranslation: parameterNameTranslation ?? parameterName,
+//                   parameterType: dialysisReadings["type"],
+//                   unitOfMeasure: unitOfMeasure,
+//                   unitOfMeasureTranslation: unitOfMeasureTranslation,
+//                   daysOfWeek: "1,2,3,4,5,6,7",
+//                   daysOfMonth: "",
+//                   answer: answer.toString(),
+//                   date: date,
+//                 });
+//               }
+//             }
+//           }
+//         }
+//       }
+//       res.status(200).json({
+//         result: true,
+//         message: "Successful",
+//         list: respOut,
+//       });
+//     } else {
+//       res.status(200).json({
+//         result: false,
+//         message: "No doctor found",
+//         list: null,
+//       });
+//     }
+//   } catch (err) {
+//     res.status(500).json({
+//       result: false,
+//       message: "Error while fetching daily parameters",
+//       list: null,
+//     });
+//   }
+// };
+
+
 const fetchDialysisParameters = async (req, res) => {
   const { userID, date, language } = req.body;
   try {
-    const query = `SELECT doctor_id, patient_id FROM doctor_patients WHERE patient_id = ${userID};`; //! added patient_id in qry
+    const query = `SELECT doctor_id, patient_id FROM doctor_patients WHERE patient_id = ${userID};`;
     const resp = await pool.query(query);
     var respOut = [];
+    const processedDialysisReadings = new Set();
+
     if (resp.length > 0) {
       for (var doctor of resp) {
         const query2 = `SELECT dialysisreadingid FROM doctor_dialysis_readings WHERE doctorid = ${doctor["doctor_id"]};`;
         var resp2 = await pool.query(query2);
+
         if (resp2.length > 0) {
           for (var dialysisReadingID of resp2) {
             const query3 = `SELECT * FROM dialysis_readings WHERE id = ${dialysisReadingID["dialysisreadingid"]}`;
             var resp3 = await pool.query(query3);
+
             if (resp3.length > 0) {
               for (var dialysisReadings of resp3) {
+                if (processedDialysisReadings.has(dialysisReadingID["dialysisreadingid"])) {
+                  continue;
+                }
+
                 const answerQuery = `SELECT readings FROM graph_readings_dialysis WHERE question_id = ${dialysisReadingID["dialysisreadingid"]} AND user_id = ${userID} AND date = '${date}';`;
                 var answerResp = await pool.query(answerQuery);
                 let answer = "";
@@ -35,12 +116,11 @@ const fetchDialysisParameters = async (req, res) => {
                   ? parameterTranslation[language]
                   : parameterName;
 
-                // console.log(parameterTranslation);
                 const unitOfMeasure = dialysisReadings.unit;
                 const unitOfMeasureTranslation = dialysisReadings.unit;
 
                 respOut.push({
-                  dialysisUserParameterID: parseInt(doctor["patient_id"]), //! changed "medical_team" to "patient_id"
+                  dialysisUserParameterID: parseInt(doctor["patient_id"]),
                   dialysisParameterID: dialysisReadingID["dialysisreadingid"],
                   dialysisParameterName: parameterName,
                   dialysisParameterNameTranslation: parameterNameTranslation ?? parameterName,
@@ -52,11 +132,64 @@ const fetchDialysisParameters = async (req, res) => {
                   answer: answer.toString(),
                   date: date,
                 });
+
+                processedDialysisReadings.add(dialysisReadingID["dialysisreadingid"]);
+
+                // Check for Diastolic counterpart if Systolic is found
+                if (parameterName.toLowerCase().includes("systolic")) {
+                  const systolicVariants = parameterName.match(/Systolic/gi);
+                  if (systolicVariants) {
+                    for (const systolicVariant of systolicVariants) {
+                      const diastolicTitle = parameterName.replace(
+                        new RegExp(systolicVariant, "gi"),
+                        "Diastolic"
+                      );
+
+                      const diastolicQuery = `SELECT * FROM dialysis_readings WHERE title = '${diastolicTitle}'`;
+                      const diastolicResp = await pool.query(diastolicQuery);
+
+                      if (diastolicResp.length > 0) {
+                        const diastolicReadings = diastolicResp[0];
+                        const diastolicAnswerQuery = `SELECT readings FROM graph_readings_dialysis 
+                          WHERE question_id = ${diastolicReadings.id} 
+                            AND user_id = ${userID} 
+                            AND date = '${date}'
+                          ORDER BY id DESC 
+                          LIMIT 1;`;
+
+                        const diastolicAnswerResp = await pool.query(diastolicAnswerQuery);
+                        let diastolicAnswer = "";
+                        if (diastolicAnswerResp.length > 0) {
+                          diastolicAnswer = diastolicAnswerResp[0].readings;
+                        }
+
+                        respOut.push({
+                          dialysisUserParameterID: parseInt(doctor["patient_id"]),
+                          dialysisParameterID: diastolicReadings.id,
+                          dialysisParameterName: diastolicReadings.title,
+                          dialysisParameterNameTranslation: translations[diastolicReadings.title]
+                            ? translations[diastolicReadings.title][language]
+                            : diastolicReadings.title,
+                          parameterType: diastolicReadings["type"],
+                          unitOfMeasure: diastolicReadings.unit,
+                          unitOfMeasureTranslation: diastolicReadings.unit,
+                          daysOfWeek: "1,2,3,4,5,6,7",
+                          daysOfMonth: "",
+                          answer: diastolicAnswer.toString(),
+                          date: date,
+                        });
+
+                        processedDialysisReadings.add(diastolicReadings.id);
+                      }
+                    }
+                  }
+                }
               }
             }
           }
         }
       }
+
       res.status(200).json({
         result: true,
         message: "Successful",
@@ -72,7 +205,7 @@ const fetchDialysisParameters = async (req, res) => {
   } catch (err) {
     res.status(500).json({
       result: false,
-      message: "Error while fetching daily parameters",
+      message: "Error while fetching dialysis parameters",
       list: null,
     });
   }

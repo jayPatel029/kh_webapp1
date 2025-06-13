@@ -11,6 +11,7 @@ const generateDoctorMessageToAdminAlert = async (obj) => {
     try {
       const getDoctorNameQuery = `SELECT name FROM doctors WHERE email = '${chat.user2}'`;
       var doctorName = await pool.query(getDoctorNameQuery);
+      console.log("check thisL:",doctorName);
       doctorName = doctorName[0].name;
       var adminEmail = chat.user2;
       const getAdminIdQuery = `SELECT id FROM users WHERE email = '${adminEmail}'`;
@@ -447,19 +448,19 @@ const generateAnyMissedAlert = async (obj) => {
       chat = chat[0];
 
       redirect = `/adminChat/${chat.patientid}`;
-    } else if (obj.category === "Prescription Disapproved") {
+    } else if (obj.category === "Prescription Disapproved") { // admin: doc col 
       redirect = `/ShowAlarms/${patientId}`;
-    } else if (obj.category === "New Program Enrollment") {
+    } else if (obj.category === "New Program Enrollment") { // admin: patients col
       redirect = "/userProgramSelection";
-    } else if (obj.category === "Missed Alarm") {
+    } else if (obj.category === "Missed Alarm") { // admin: no need || show for doc dashboard
       redirect = `/ShowAlarms/${patientId}`;
-    } else if (obj.category === "New Lab Report") {
+    } else if (obj.category === "New Lab Report") { // admin: patients col
       redirect = `/UserLabReports/${patientId}`;
-    } else if (obj.category === "New Prescription") {
+    } else if (obj.category === "New Prescription") { // admin: patients col
       redirect = `/userPrescription/${patientId}`;
-    } else if (obj.category === "Contact Us") {
+    } else if (obj.category === "Contact Us") { // admin: patients col
       redirect = `/contactus/${patientId}`;
-    } else if (obj.category === "Delete Account") {
+    } else if (obj.category === "Delete Account") { // admin: patients col
       redirect = `/patient/${patientId}`;
     } else {
       redirect = `/`;
@@ -595,12 +596,12 @@ const getAdminAlerts = async (req, res) => {
 
     for (const alert of alerts) {
       if (
-        alert.category.slice(0, 23).trim() === "Doctor Message to Admin" ||
+        alert.category.slice(0, 23).trim() === "Doctor Message to Admin" || // admin: doc col
         alert.category === "Prescription Disapproved" ||
-        alert.category === "New Program Enrollment" ||
-        alert.category === "New Enrollment" ||
-        alert.category === "Missed Prescription Alarm" ||
-        alert.category === "New Lab Report" ||
+        alert.category === "New Program Enrollment" || // admin: patients col
+        alert.category === "New Enrollment" || 
+        alert.category === "Missed Prescription Alarm" || // doc dashboard
+        alert.category === "New Lab Report" || 
         alert.category === "New Prescription" ||
         alert.category === "Delete Account" ||
         alert.category === "Contact Us" ||

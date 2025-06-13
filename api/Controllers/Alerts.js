@@ -233,7 +233,7 @@ const createChangeInProgramAlert = async (req, res) => {
 };
 
 const createNewLabReportAlert = async (req, res) => {
-  const type = "doctor";
+  const type = "patient";
   const category = "New Lab Report";
   const { labReportId, patient_id } = req.body;
   console.log(labReportId);
@@ -297,8 +297,8 @@ const createContactUsAlert = async (req, res) => {
 };
 
 const createPrescriptionNotViewedAlert = async (req, res) => {
-  const type = "patient";
-  const category = "Prescription Not Viewed";
+  const type = "doctor";
+  const category = "";
   const { alarmId, patientId } = req.body;
   const date = new Date().toISOString().slice(0, 19).replace("T", " ");
   const query = `INSERT INTO alerts (type, category, alarmId, patientId, date) VALUES ('${type}', '${category}', ${alarmId}, ${patientId}, '${date}')`;
@@ -454,7 +454,7 @@ const approveAllAlerts = async (req, res) => {
 
 const createNewPrescriptionAlert = async (prescriptionId, patientId) => {
   try {
-    const type = "doctor";
+    const type = "patient";
     const category = "New Prescription";
     const date = new Date().toISOString().slice(0, 19).replace("T", " ");
     const query = `INSERT INTO alerts (type, category, prescriptionId,date,patientId) VALUES ('${type}', '${category}', ${prescriptionId},'${date}',${patientId})`;

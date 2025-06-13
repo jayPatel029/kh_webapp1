@@ -132,9 +132,11 @@ const updateQuestion = async (req, res) => {
   try {
     const { ailment, type, name, options, translations } = req.body;
 
-    const query = `select id from ailments where name='${ailment[0].label}'`;
-    const ailmentId = await pool.execute(query);
-    console.log(ailmentId[0].id);
+    console.log("req body: ", req.body);
+
+    // const query = `select id from ailments where name='${ailment[0].label}'`;
+    // const ailmentId = await pool.execute(query);
+    // console.log(ailmentId[0].id);
     console.log("id", req.body.id);
     const id = req.body.id;
     const question = await pool.execute(
@@ -151,20 +153,44 @@ const updateQuestion = async (req, res) => {
         question_id: id,
       },
     });
-    const ailmentsInserted = await QuestionAilments.create({
-      question_id: id,
-      ailment_id: ailmentId[0].id,
-    });
+
+    if (ailment && ailment.length > 0) {
+      const query = `SELECT id FROM ailments WHERE name='${ailment[0].label}'`;
+      const [ailmentId] = await pool.execute(query);
+
+      if (ailmentId.length > 0) {
+        await QuestionAilments.create({
+          question_id: id,
+          ailment_id: ailmentId[0].id,
+        });
+      }
+    }
+
+    // const ailmentsInserted = await QuestionAilments.create({
+    //   question_id: id,
+    //   ailment_id: ailmentId[0].id,
+    // });
+
+    // const translationsInserted = Object.entries(translations).map(
+    //   ([language, translation]) => ({
+    //     dr_id: id,
+    //     language_id: parseInt(language),
+    //     title: translation,
+    //   })
+    // );
     const translationsInserted = Object.entries(translations).map(
-      ([language, translation]) => ({
-        dr_id: id,
-        language_id: parseInt(language),
-        title: translation,
+      ([languageId, translationData]) => ({
+        question_id: id,  
+        language_id: parseInt(languageId),
+        name: translationData.text || "",    
+        options: translationData.options || "", 
       })
     );
+    
     await QuestionTranslation.bulkCreate(translationsInserted);
     res.status(200).json({ message: "Question updated" });
   } catch (error) {
+    console.log("error updaing,",error);
     res.status(500).json({ message: error.message });
   }
 };

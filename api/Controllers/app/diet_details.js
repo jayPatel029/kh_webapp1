@@ -4,6 +4,7 @@ const {
   getCurrentFormattedDate,
   formatDate,
   convertDateFormatYYYYmmDD,
+  formatDateNew,
 } = require("../../Helpers/date_formatter.js");
 
 const getPatientDietDetails = async (req, res) => {
@@ -98,7 +99,9 @@ const addToReadTable = async (doctorId, commentId) => {
 const addDietComment = async (req, res) => {
   const { dietId, comment, userID, isDoctor } = req.body;
 
-  var formattedDate = getCurrentFormattedDate();
+  // var formattedDate = getCurrentFormattedDate();
+    var date = formatDateNew();
+  
   try {
     const query2 = `INSERT INTO comments (content, userId, typeId, isDoctor, date, type, doctorId) VALUES (? , ? , ? , ? , ? , ?, ?);`;
     const resp2 = await pool.query(query2, [
@@ -106,8 +109,8 @@ const addDietComment = async (req, res) => {
       userID,
       dietId,
       isDoctor,
-      formattedDate,
-      "Diet",
+      date,
+      "Diet Details",
       0,
     ]);
 
@@ -146,7 +149,7 @@ const addDietComment = async (req, res) => {
 const fetchDietComments = async (req, res) => {
   const { dietId } = req.body;
   try {
-    const query = `SELECT * FROM comments where typeId = ${dietId} and type="Diet"`;
+    const query = `SELECT * FROM comments where typeId = ${dietId} and type="Diet Details"`;
     const resp = await pool.query(query);
     var respObj = [];
     for (var i of resp) {

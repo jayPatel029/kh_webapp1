@@ -223,7 +223,7 @@ const getUnreadDoctorComments = async (req, res, next) => {
       WHERE c.isDoctor = 1 AND (cr.isRead = 0 OR cr.isRead IS NULL)
     `;
     const result = await pool.query(query);
-
+    console.log("result cmts: ", result);
     if (result.length > 0) {
       const messages = [];
 
@@ -260,7 +260,7 @@ const getUnreadDoctorComments = async (req, res, next) => {
 
         messages.push(messageObject);
       }
-
+      console.log("comments: ", messages);
       res.status(200).json({
         result: true,
         message: "Doctor comments fetched successfully",
@@ -274,7 +274,7 @@ const getUnreadDoctorComments = async (req, res, next) => {
       });
     }
   } catch (error) {
-    console.error(error);
+    console.error("error fetching cmts: ", error);
     res.status(500).json({
       result: false,
       message: "Error fetching doctor comments",

@@ -92,6 +92,7 @@ const addRole = async (req, res, next) => {
 const updateRole = async (req, res, next) => {
     const { auth_arr } = req.body;
     const role_name = req.params.role_name;
+    console.log("role_name", role_name)
     try {
         const role = await Role.findOne({
             where: {

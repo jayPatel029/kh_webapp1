@@ -10,7 +10,7 @@ const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 const getPatients = async (req, res) => {
   try {
     const { role, id } = req.user; // Assuming role and userId are available in req.user
-
+    console.log("fetching patients for", role);
     let query;
     if (role === "Admin") {
       query = `
@@ -22,7 +22,7 @@ const getPatients = async (req, res) => {
       if (id === 1) {
         query = `SELECT * FROM patients WHERE name <> '';`;
       }
-    } else if (role === "Doctor" || role === "Medical Staff") {
+    } else if (role === "Doctor" || role === "Medical Staff" || role === "Dialysis Technician") {
       const doctor_id_query = ` select * from doctors where email = '${req.user.email}'`;
       const result = await pool.execute(doctor_id_query);
       // console.log(result[0].id)
@@ -32,7 +32,7 @@ const getPatients = async (req, res) => {
         FROM patients p
         JOIN doctor_patients dp ON p.id = dp.patient_id and dp.doctor_id = ${doctor_id} and p.name <> '';
       `;
-    } else if (role === "PSadmin" || role === "Dialysis Technician"  || role != "") {
+    } else if (role === "PSadmin" || role != "") { // ! removed DT role from here 
       query = `
         SELECT p.*
         FROM patients p
@@ -76,6 +76,7 @@ const getDeletdPatients = async (req, res) => {
     });
   }
 };
+
 // new addition added new cols and dynamic jwt!
 const AddPatient = async (req, res, next) => {
   const {

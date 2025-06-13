@@ -1,21 +1,62 @@
-const { pool } = require("../databaseConn/database.js");
+const { pool, sequelize } = require("../databaseConn/database.js");
 const { PdfTextFunction } = require("./PatientData.js");
 const LabReadings = require("../Models/labreadings.js");
-const { where } = require("sequelize");
+const { where, QueryTypes } = require("sequelize");
 const moment = require("moment-timezone");
 const { ReportLog } = require("./log.js");
 const { sendPushNotification } = require("./app/notification.js");
+const { isConnected } = require("./moduleConnection.js");
 
 const getLabReports = async (req, res, next) => {
   const id = req.params.id;
-  const query = `SELECT * FROM labreport WHERE patient_id=${id}`;
-  const labreports = await pool.query(query);
-  console.log(labreports);
 
-  res.status(200).json({
-    success: true,
-    data: labreports,
-  });
+  try {
+    const query = `SELECT * FROM labreport WHERE patient_id=${id}`;
+    const labreports = await pool.query(query);
+
+    //! check connection with other module?
+
+    const connection = await isConnected(id, "patient");
+
+    let teleLabReports = [];
+    if (connection && connection.is_connected) {
+      const results = await sequelize.query(
+        `SELECT * FROM tele_labreport 
+         WHERE patient_id = :new_pid
+         ORDER BY Date DESC`,
+        {
+          replacements: { new_pid: connection.new_entity_id },
+          type: QueryTypes.SELECT,
+        }
+      );
+      teleLabReports = results;
+    }
+
+    const mergedReports = [...labreports, ...teleLabReports].sort(
+      (a, b) => new Date(b.Date) - new Date(a.Date)
+    );
+
+    console.log("fetched ", mergedReports, " reports.");
+    // Step 3: Return combined response
+    res.status(200).json({
+      success: true,
+      data: mergedReports,
+    });
+  } catch (error) {
+    console.error("Error fetching lab reports:", error);
+    res.status(500).json({
+      success: false,
+      error: "Error fetching lab reports",
+    });
+  }
+  // const query = `SELECT * FROM labreport WHERE patient_id=${id}`;
+  // const labreports = await pool.query(query);
+  // console.log(labreports);
+
+  // res.status(200).json({
+  //   success: true,
+  //   data: labreports,
+  // });
 };
 
 const getLabReportById = async (req, res, next) => {
@@ -37,6 +78,7 @@ const getLabReportByPatient = async (req, res, next) => {
     data: labreports,
   });
 };
+
 const saveConfirmedData = async (req, res) => {
   const { patient_id, date, Report_Type, email, Lab_Report, confirmedValues } =
     req.body;
@@ -70,22 +112,11 @@ const saveConfirmedData = async (req, res) => {
     // const getdocId = `select id from doctors where email = ${email}`;
     // await pool.query(getdocId);
     // const docId = getdocId[0].id
-    const queryA = `INSERT INTO alerts (patientId,type,category, date,  isOpened, labReportId) VALUES ('${patient_id}', 'doctor', 'New Lab Report ', '${date}',  0, '${reportId}')`;
-    await pool.query(queryA);
 
-    const { sendPushNotification } = require("./app/notification.js");
-    const pushNotiData = {
-      title: "New Lab Report",
-      body: `A Lab Report has been added by the Doctor`,
-      type: "New Lab Report",
-      customField: "This is a custom notification from Firebase.",
-    };
-    try {
-      await sendPushNotification(pushNotiData, patient_id);
-      console.log("Push Notification Sent Successfully");
-    } catch (error) {
-      console.error("Error Sending Push Notification:", error);
-    }
+    //remove this alert for doctor
+    // const queryA = `INSERT INTO alerts (patientId,type,category, date,  isOpened, labReportId) VALUES ('${patient_id}', 'patient', 'New Lab Report ', '${date}',  0, '${reportId}')`;
+    // console.log("adding alert: ",queryA);
+    // await pool.query(queryA);
 
     res.status(200).json({
       success: true,
@@ -128,8 +159,24 @@ const addLabReport = async (req, res) => {
       // const getdocId = `select id from doctors where email = ${email}`;
       // await pool.query(getdocId);
       // const docId = getdocId[0].id
-      const queryA = `INSERT INTO alerts (patientId,type,category, date, isOpened, labReportId) VALUES ('${patient_id}', 'doctor','New Lab Report', '${date}', 0, '${reportId}')`;
-      await pool.query(queryA);
+
+      //remove this alert for doctor
+
+      // const queryA = `INSERT INTO alerts (patientId,type,category, date, isOpened, labReportId) VALUES ('${patient_id}', 'patient','New Lab Report', '${date}', 0, '${reportId}')`;
+      // await pool.query(queryA);
+
+      const pushNotiData = {
+        title: "New Lab Report",
+        body: `A Lab Report has been added by the Doctor`,
+        type: "New Lab Report",
+        customField: "This is a custom notification from Firebase.",
+      };
+      try {
+        await sendPushNotification(pushNotiData, patient_id);
+        console.log("Push Notification Sent Successfully");
+      } catch (error) {
+        console.error("Error Sending Push Notification:", error);
+      }
 
       res.status(200).json({
         success: true,
@@ -148,6 +195,18 @@ const addLabReport = async (req, res) => {
       // Extract data from the PDF
       const medicalData = await PdfTextFunction(Lab_Report);
 
+      const pushNotiData = {
+        title: "New Lab Report",
+        body: `A Lab Report has been added by the Doctor`,
+        type: "New Lab Report",
+        customField: "This is a custom notification from Firebase.",
+      };
+      try {
+        await sendPushNotification(pushNotiData, patient_id);
+        console.log("Push Notification Sent Successfully");
+      } catch (error) {
+        console.error("Error Sending Push Notification:", error);
+      }
       res.status(200).json({
         success: true,
         message: "Extracted data from Lab Report successfully",
@@ -336,11 +395,10 @@ const deleteLabReading = async (req, res) => {
 
 const updateLabReadingTitle = async (req, res) => {
   try {
-    
-    const {readingId} = req.params;
-    const {newTitle } = req.body;
-    console.log("readingId",readingId,newTitle);
-    
+    const { readingId } = req.params;
+    const { newTitle } = req.body;
+    console.log("readingId", readingId, newTitle);
+
     if (!readingId || !newTitle) {
       return res
         .status(400)
@@ -544,5 +602,5 @@ module.exports = {
   getRange,
   getColoumnName,
   deleteLabReading,
-  updateLabReadingTitle
+  updateLabReadingTitle,
 };
